@@ -32,12 +32,11 @@
          h: 'manhattan' }
      ];
      this.algIndex = 0;
-     this.initial = new Puzzle('012345E67', 0, 0, 2);
-     this.puzzle = this.initial;
+     this.initial = new Puzzle('304E21675', 0, 0, 1);
+     this.goal = new Puzzle('012345678E', 0, 2, 2);
      this.message = '';
      this.cmp = (a, b) => a.h - b.h;
-     this.how_many_loop = 0;
-     this.max_queue_size = 0;
+     this.interval = 10;
 
      makeInitialPQ() {
        return new PriorityQueue({
@@ -46,14 +45,7 @@
        });
      }
 
-     runSearch(e) {
-       e.preventDefault();
-       this.alg = this.algorithms[this.algIndex];
-       if (this.alg.h === 'manhattan') {
-         this.h = Puzzle.heuristic.manhattan(Puzzle.goal);
-       } else {
-         this.h = Puzzle.heuristic.countIncorrectPiece(Puzzle.goal);
-       }
+     initialize() {
        this.visited = {}
        this.visited[this.initial.puzzlestr] = true;
        this.puzzle = this.initial;
@@ -61,7 +53,20 @@
        this.max_depth = 0;
        this.how_many_loop = 0;
        this.max_queue_size = 0;
-       this.timer = setInterval(this.step, 10);
+     }
+
+     this.initialize();
+
+     runSearch(e) {
+       e.preventDefault();
+       this.alg = this.algorithms[this.algIndex];
+       if (this.alg.h === 'manhattan') {
+         this.h = Puzzle.heuristic.manhattan(this.goal);
+       } else {
+         this.h = Puzzle.heuristic.countIncorrectPiece(this.goal);
+       }
+       this.initialize();
+       this.timer = setInterval(this.step, this.interval);
      }
 
      step() {
@@ -86,7 +91,7 @@
        this.puzzle = first.p;
        this.how_many_loop++;
 
-       if (first.p.puzzlestr === Puzzle.goal.puzzlestr) {
+       if (first.p.puzzlestr === this.goal.puzzlestr) {
          this.message = '探索が終了しました。';
          clearInterval(this.timer);
          this.update();
@@ -94,16 +99,18 @@
        }
 
        if (this.alg.type == 'A*') {
-         Puzzle.aStarStep(first.p, this.h, this.pq, this.visited, Puzzle.goal);
+         Puzzle.aStarStep(first.p, this.h, this.pq, this.visited, this.goal);
        } else {
          // IDA*
-         Puzzle.idaStarStep(first.p, this.h, this.pq, this.visited, Puzzle.goal, this.max_depth);
+         Puzzle.idaStarStep(first.p, this.h, this.pq, this.visited, this.goal, this.max_depth);
        }
        this.update();
      }
 
      cancel() {
        clearInterval(this.timer);
+       this.initialize();
+       this.update();
      }
     </script>
 </main-view>
