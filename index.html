@@ -2,10 +2,14 @@
 layout: default
 title: TOP
 ---
-<h2>記事一覧</h2>
-<ul>
-  {% for post in site.posts %}
-  <li style="list-style: none;"><a href="{{ BASE_PATH }}{{ post.url }}">{{ post.title }}</a></li>
-  {% endfor %}
-</ul>
+<h1>記事一覧</h1>
+{% for post in site.posts %}
+<article style="padding-top: 30px; padding-bottom: 10px;">
+  <h2><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></h2>
+  <div>
+    {{ post.content | strip_html | slice: 0, 500 }}
+  </div>
+</article>
+<hr>
+{% endfor %}
 <hr>
