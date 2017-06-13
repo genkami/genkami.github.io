@@ -1,0 +1,146 @@
+---
+layout: post
+title: はてなブログからGithub Pagesに移行しました
+tags:
+- Others
+---
+
+タイトルの通りです。
+
+サイトのレイアウトとかは今後少しずつなんとかしていこうかと思います。
+
+ちなみに移行の方法についてですが、はてなブログからエクスポートしたMovable type形式のファイルを、以下のスクリプトにかけて大量のjekyll用htmlファイルに変換しました。
+
+{% highlight python %}
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import sys, os, re
+import html
+
+END_OF_ARTICLE = '--------'
+END_OF_BODY = '-----'
+
+class Post(object):
+template = '''\
+---
+layout: post
+title: {title}
+tags:
+{tag_list}
+---
+{RAW}
+{body}
+{ENDRAW}
+'''
+
+def __init__(self):
+self.author = None
+self.title = None
+self.basename = None
+self.status = None
+self.date = None
+self.tags = []
+self.body = None
+self.comments = []
+self.rest_metadata = {}
+
+def render_tag_list(self):
+out = ''
+for tag in self.tags:
+out += '- {}\n'.format(tag)
+return out
+
+def render_body(self):
+return self.template.format(
+title=self.title,
+tag_list=self.render_tag_list(),
+body=self.body,
+RAW='{% raw %}', # jekyll の命令が format に間違えて解釈されるのを防ぐ
+ENDRAW='{% endraw %}'
+)
+
+def out_path(self):
+return self.basename.replace('/', '-') + '.html'
+
+def add_metadata(self, name, value):
+if name == 'TITLE':
+self.title = html.unescape(value).replace(':', '&#58;')
+elif name in ['AUTHOR', 'BASENAME', 'STATUS', 'DATE']:
+self.__setattr__(name.lower(), value)
+elif name == 'CATEGORY':
+self.tags.append(value)
+else:
+self.rest_metadata[name] = value
+
+
+# f から一記事分だけ読み取る
+def read_post(f):
+post = Post()
+while True:
+line = f.readline()
+if line == '': raise EOFError() # EOF
+line = line.strip()
+if line == END_OF_ARTICLE:
+return post
+elif line == END_OF_BODY or line == '':
+pass
+elif line == 'BODY:':
+post.body = read_body(f)
+elif line == 'COMMENT:':
+post.comments.append(read_comment(f))
+else:
+# HOGE: FUGA 形式のメタデータ
+name, value = line.split(': ', maxsplit=1)
+post.add_metadata(name, value)
+return post
+
+# f から記事の body を読み取る
+def read_body(f):
+body = ''
+link_to_self = re.compile(r'https?://inkar-us-i.hatenablog.com/entry/(?P<y>\d+)/(?P<m>\d+)/(?P<d>\d+)/(?P<base>\d+)')
+  while True:
+  line = f.readline()
+  if line.strip() == END_OF_BODY:
+  return body
+  else:
+  body += link_to_self.sub(r'/\g<y>/\g<m>/\g<d>/\g<base>.html', line)
+  return body
+
+  # f から記事のコメントを読み取る
+  def read_comment(f):
+  # 今のところコメントは使わないので、ただの文字列として読み取る
+  # 実際は AUTHOR: とかのメタデータがあったりするので、そのへんも考慮する必要がある
+  return read_body(f)
+
+  def main():
+  try:
+  src_file = sys.argv[1]
+  dst_dir = sys.argv[2]
+  except IndexError:
+  sys.stderr.write('Usage: python mt_to_md.py SRC_FILE DST_DIR\n')
+  sys.exit(1)
+
+  os.makedirs(dst_dir, exist_ok=True)
+
+  with open(src_file) as f:
+  while True:
+  try:
+  post = read_post(f)
+  out_path = os.path.join(dst_dir, post.out_path())
+  if post.status == 'Publish':
+  with open(out_path, 'w') as out:
+  out.write(post.render_body())
+  print('wrote: {}'.format(out_path))
+  else:
+  print('skipped: {}'.format(out_path))
+  except EOFError:
+  return # たぶん終わり
+
+  print('done.')
+
+  if __name__ == '__main__':
+  main()
+{% endhighlight %}
+
+というわけで今後はGithub Pagesで記事書きます。たぶん。
