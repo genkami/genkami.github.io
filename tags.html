@@ -2,7 +2,7 @@
 layout: default
 title: tags
 ---
-<h2>タグ '<span id="tag-name"></span>' の記事一覧</h2>
+<h1>タグ '<span class="tag-name"></span>' の記事一覧</h1>
 {% for tag in site.tags %}
 <div class="tag tag-{{ tag[0] }}">
   <ul>
@@ -14,27 +14,25 @@ title: tags
 {% endfor %}
 
 <div class="tag tag-unknown">
-  <h3 class="unknown-tag-name"></h3>
-  <span class="unknown-tag-name"></span>にマッチする記事はありません。
+  <span class="tag-name"></span>にマッチする記事はありません。
 </div>
 
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 <script>
  (function () {
-   var filterTags = function () {
+   var filterTags = () => {
      $('.tag').hide();
      var currentTag = location.hash.substring(1);
      var articles = $('.tag-' + currentTag);
+     $('.tag-name').text(currentTag);
      if (articles.length > 0) {
-       $('#tag-name').text(currentTag);
        articles.show();
      } else {
-       $('#tag-name').text(currentTag);
-       $('.unknown-tag-name').text(currentTag);
        $('.tag-unknown').show();
      }
    }
 
-   window.onload = filterTags;
+   $(document).ready(() => filterTags());
    window.onhashchange = filterTags;
  })();
 </script>

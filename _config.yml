@@ -3,3 +3,6 @@ markdown: kramdown
 kramdown:
   input: GFM
   highlighter: rouge
+
+title: genkami.github.io
+
