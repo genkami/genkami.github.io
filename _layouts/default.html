@@ -35,7 +35,7 @@
         <b>タグ</b>
         <ul>
           {% for tag in site.tags %}
-          <li><a href="{{ BASE_PATH }}/tags.html#{{ tag[0] }}">{{ tag[0] }}</a></li>
+          <li><a href="{{ site.baseurl }}/tags.html#{{ tag[0] }}">{{ tag[0] }}</a></li>
           {% endfor %}
         </ul>
       </header>
