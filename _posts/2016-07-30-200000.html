@@ -1,0 +1,93 @@
+---
+layout: post
+title: Gaucheでクラスの作成
+tags:
+- Gauche
+
+---
+{% raw %}
+<p>どうやら<a class="keyword" href="http://d.hatena.ne.jp/keyword/Gauche">Gauche</a>にもクラスは存在するようで、継承やアクセサの設定など、基本的なクラスに関する操作は行うことができます。<br />
+<br />
+</p>
+
+<div class="section">
+    <h4>クラスの定義</h4>
+    <pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span>define-class <span class="synConstant">&lt;animal&gt;</span> <span class="synComment">; クラス名</span>
+  <span class="synSpecial">()</span>                   <span class="synComment">; 親クラスのリスト</span>
+  <span class="synSpecial">())</span>                  <span class="synComment">; スロット一覧</span>
+
+<span class="synSpecial">(</span>define-class <span class="synConstant">&lt;person&gt;</span> <span class="synSpecial">(</span><span class="synConstant">&lt;animal&gt;</span><span class="synSpecial">)</span>
+  <span class="synSpecial">((</span>name<span class="synSpecial">)</span>
+   <span class="synSpecial">(</span>age<span class="synSpecial">)))</span>
+</pre>
+</div>
+<div class="section">
+    <h4><a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%B9%A5%BF%A5%F3%A5%B9">インスタンス</a>の生成</h4>
+    <pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synStatement">define</span> taro <span class="synSpecial">(</span>make <span class="synConstant">&lt;person&gt;</span><span class="synSpecial">))</span>
+</pre>
+</div>
+<div class="section">
+    <h4>スロットへのアクセス</h4>
+    <pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span>slot-set! taro <span class="synSpecial">'</span>name <span class="synConstant">&quot;Taro&quot;</span><span class="synSpecial">)</span>
+<span class="synSpecial">(</span>slot-set! taro <span class="synSpecial">'</span>age <span class="synConstant">15</span><span class="synSpecial">)</span>
+
+<span class="synSpecial">(</span>slot-ref taro <span class="synSpecial">'</span>name<span class="synSpecial">)</span> <span class="synComment">; =&gt; &quot;Taro&quot;</span>
+<span class="synSpecial">(</span>slot-ref taro <span class="synSpecial">'</span>age<span class="synSpecial">)</span>  <span class="synComment">; =&gt; 15</span>
+</pre>
+</div>
+<div class="section">
+    <h4>アクセサの生成</h4>
+    <pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span>define-class <span class="synConstant">&lt;person&gt;</span> <span class="synSpecial">(</span><span class="synConstant">&lt;animal&gt;</span><span class="synSpecial">)</span>
+  <span class="synSpecial">((</span>name :accessor name<span class="synSpecial">)</span>
+   <span class="synSpecial">(</span>age :accessor age<span class="synSpecial">)))</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define</span> taro <span class="synSpecial">(</span>make <span class="synConstant">&lt;person&gt;</span><span class="synSpecial">))</span>
+
+<span class="synSpecial">(</span><span class="synStatement">set!</span> <span class="synSpecial">(</span>name taro<span class="synSpecial">)</span> <span class="synConstant">&quot;Taro&quot;</span><span class="synSpecial">)</span>
+<span class="synSpecial">(</span><span class="synStatement">set!</span> <span class="synSpecial">(</span>age taro<span class="synSpecial">)</span> <span class="synConstant">15</span><span class="synSpecial">)</span>
+
+<span class="synSpecial">(</span>name taro<span class="synSpecial">)</span> <span class="synComment">; =&gt; &quot;Taro&quot;</span>
+<span class="synSpecial">(</span>age taro<span class="synSpecial">)</span>  <span class="synComment">; =&gt; 15</span>
+</pre><p>このときname, ageは<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%B8%A5%A7%A5%CD%A5%EA%A5%C3%A5%AF">ジェネリック</a>関数となるため、他のクラスのスロットへのアクセサと名前が重複していても構いません。<br />
+また、読み込み専用のアクセサは:getter, 書き込み専用のアクセサは:setterで作ることができます。</p>
+
+</div>
+<div class="section">
+    <h4>初期化時にスロットの値を指定</h4>
+    <pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span>define-class <span class="synConstant">&lt;person&gt;</span> <span class="synSpecial">(</span><span class="synConstant">&lt;animal&gt;</span><span class="synSpecial">)</span>
+  <span class="synSpecial">((</span>name :accessor name :init-keyword :name<span class="synSpecial">)</span>
+   <span class="synSpecial">(</span>age :accessor age :init-keyword :age<span class="synSpecial">)))</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define</span> taro <span class="synSpecial">(</span>make <span class="synConstant">&lt;person&gt;</span> :name <span class="synConstant">&quot;Taro&quot;</span> :age <span class="synConstant">15</span><span class="synSpecial">))</span>
+
+<span class="synSpecial">(</span>name taro<span class="synSpecial">)</span> <span class="synComment">; =&gt; &quot;Taro&quot;</span>
+<span class="synSpecial">(</span>age taro<span class="synSpecial">)</span>  <span class="synComment">; =&gt; 15</span>
+</pre>
+</div>
+<div class="section">
+    <h4>デフォルト値の指定</h4>
+    <pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span>define-class <span class="synConstant">&lt;person&gt;</span> <span class="synSpecial">(</span><span class="synConstant">&lt;animal&gt;</span><span class="synSpecial">)</span>
+  <span class="synSpecial">((</span>name :accessor name :init-keyword :name<span class="synSpecial">)</span>
+   <span class="synSpecial">(</span>age :accessor age :init-keyword :age<span class="synSpecial">)</span>
+   <span class="synSpecial">(</span>country :accessor country :init-keyword :country :init-value <span class="synConstant">&quot;Japan&quot;</span><span class="synSpecial">)</span>
+   <span class="synSpecial">(</span>sex :accessor sex
+        :init-keyword :sex
+        :init-form <span class="synSpecial">(</span>error <span class="synConstant">&quot;sex must be specified&quot;</span><span class="synSpecial">))))</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define</span> taro <span class="synSpecial">(</span>make <span class="synConstant">&lt;person&gt;</span> :name <span class="synConstant">&quot;Taro&quot;</span> :age <span class="synConstant">15</span> :sex <span class="synSpecial">'</span>male<span class="synSpecial">))</span>
+
+<span class="synSpecial">(</span>country taro<span class="synSpecial">)</span> <span class="synComment">; =&gt; &quot;Japan&quot;</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define</span> jiro <span class="synSpecial">(</span>make <span class="synConstant">&lt;person&gt;</span> :name <span class="synConstant">&quot;Jiro&quot;</span> :age <span class="synConstant">12</span><span class="synSpecial">))</span> <span class="synComment">; =&gt; ERROR: sex must be specified</span>
+</pre><p>init-value, init-formを用いると、スロットのデフォルト値を設定することができます。init-valueはクラス生成時に値が評価され、init-formは<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%B9%A5%BF%A5%F3%A5%B9">インスタンス</a>生成時に値が評価されます。<br />
+<a class="keyword" href="http://d.hatena.ne.jp/keyword/Gauche">Gauche</a>のクラスでは初期化時に特定のスロットの値の指定を必須にすることができないので、そのようにしたい場合は上の例のように:init-formにエラーや例外などを指定するとよいかもしれません。</p>
+
+</div>
+<div class="section">
+    <h4>参考</h4>
+    <p>define-classのオプション一覧などはこちらを参照してください。<br />
+<a href="http://practical-scheme.net/gauche/man/gauche-refj_69.html">Gauche &#x30E6;&#x30FC;&#x30B6;&#x30EA;&#x30D5;&#x30A1;&#x30EC;&#x30F3;&#x30B9;: 7.2 &#x30AF;&#x30E9;&#x30B9;</a></p>
+
+</div>
+
+{% endraw %}

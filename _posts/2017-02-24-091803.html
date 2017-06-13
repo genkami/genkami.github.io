@@ -1,0 +1,90 @@
+---
+layout: post
+title: 正規表現エンジン制作入門(2)&#58; いろいろなDFA
+tags:
+- Haskell
+
+---
+{% raw %}
+<p><a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a>の単位を落としてしまいましたが、<a class="keyword" href="http://d.hatena.ne.jp/keyword/%C0%B5%B5%AC%C9%BD%B8%BD">正規表現</a>エンジンは作っていきたいと思います。</p><p>前回定義した<a class="keyword" href="http://d.hatena.ne.jp/keyword/DFA">DFA</a>を思い出してみましょう。</p><p><iframe src="http://inkar-us-i.hatenablog.com/embed/2017/02/12/120000" title="正規表現エンジン制作入門(1): 正規表現とDFA - きくらげ観察日記" class="embed-card embed-blogcard" scrolling="no" frameborder="0" style="display: block; width: 100%; height: 190px; max-width: 500px; margin: 10px 0px;"></iframe><cite class="hatena-citation"><a href="/2017/02/12/120000.html">inkar-us-i.hatenablog.com</a></cite></p><p><a class="keyword" href="http://d.hatena.ne.jp/keyword/DFA">DFA</a>は状態を持ち、入力された文字によってその状態を変えていく機械でした。</p><p><span itemscope itemtype="http://schema.org/Photograph"><img src="https://cdn-ak.f.st-hatena.com/images/fotolife/c/cloudear8/20170224/20170224082156.png" alt="f:id:cloudear8:20170224082156p:plain" title="f:id:cloudear8:20170224082156p:plain" class="hatena-fotolife" itemprop="image"></span></p><p>この図はsが初期状態であり、文字'0'を受け取れば状態aに、'1'を受け取れば状態bに、'2'を受け取れば状態cに遷移し、bが受理状態である<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a>を表しています。</p><p>この<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a>を使って、簡単な<a class="keyword" href="http://d.hatena.ne.jp/keyword/%C0%B5%B5%AC%C9%BD%B8%BD">正規表現</a>を表してみましょう。</p>
+
+<div class="section">
+    <h3>[abc]+を受理する<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a></h3>
+    <p><span itemscope itemtype="http://schema.org/Photograph"><img src="https://cdn-ak.f.st-hatena.com/images/fotolife/c/cloudear8/20170224/20170224082931.png" alt="f:id:cloudear8:20170224082931p:plain" title="f:id:cloudear8:20170224082931p:plain" class="hatena-fotolife" itemprop="image"></span><br />
+上図の<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a>は<a class="keyword" href="http://d.hatena.ne.jp/keyword/%C0%B5%B5%AC%C9%BD%B8%BD">正規表現</a>[abc]+を受理します。初期状態はs0であり、そこからa, b, cのいずれかの文字を受け取ると受理状態s1に遷移します。<br />
+矢印が省略されている場合は失敗を意味します。すなわち、この<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a>は実際は以下の<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a>の省略になっています。<br />
+<span itemscope itemtype="http://schema.org/Photograph"><img src="https://cdn-ak.f.st-hatena.com/images/fotolife/c/cloudear8/20170224/20170224083321.png" alt="f:id:cloudear8:20170224083321p:plain" title="f:id:cloudear8:20170224083321p:plain" class="hatena-fotolife" itemprop="image"></span><br />
+ちなみに、この暗黙的に用意される非受理状態fは前回実装した<a class="keyword" href="http://d.hatena.ne.jp/keyword/DFA">DFA</a>ではNothingで表されます。</p><p>この<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a>を前回実装した<a class="keyword" href="http://d.hatena.ne.jp/keyword/DFA">DFA</a>型の値として表してみましょう。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synComment">-- Examples.hs</span>
+<span class="synComment">-- [abc]+</span>
+abcPlus <span class="synStatement">::</span> DFA Int Char
+abcPlus <span class="synStatement">=</span> DFA {
+    dfaTransTable <span class="synStatement">=</span> [
+        (s0, <span class="synConstant">'a'</span>) <span class="synStatement">--&gt;</span> s1
+      , (s0, <span class="synConstant">'b'</span>) <span class="synStatement">--&gt;</span> s1
+      , (s0, <span class="synConstant">'c'</span>) <span class="synStatement">--&gt;</span> s1
+      , (s1, <span class="synConstant">'a'</span>) <span class="synStatement">--&gt;</span> s1
+      , (s1, <span class="synConstant">'b'</span>) <span class="synStatement">--&gt;</span> s1
+      , (s1, <span class="synConstant">'c'</span>) <span class="synStatement">--&gt;</span> s1
+      ]
+  , dfaStart <span class="synStatement">=</span> s0
+  , dfaAccepts <span class="synStatement">=</span> [s1]
+  } <span class="synType">where</span> s0<span class="synStatement">:</span>s1<span class="synStatement">:</span>_ <span class="synStatement">=</span> [<span class="synConstant">0</span><span class="synStatement">..</span>]
+</pre><p>前回も説明しましたが、状態s0, s1の実体は区別できれば何でもいいので、</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink>s0<span class="synStatement">:</span>s1<span class="synStatement">:</span>_ <span class="synStatement">=</span> [<span class="synConstant">0</span><span class="synStatement">..</span>]
+</pre><p>として適当な数値を割り当てています。</p><p>試しに実行してみましょう。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synStatement">&gt;&gt;&gt;</span> abcPlus <span class="synStatement">`accepts`</span> <span class="synConstant">&quot;a&quot;</span>
+True
+<span class="synStatement">&gt;&gt;&gt;</span> abcPlus <span class="synStatement">`accepts`</span> <span class="synConstant">&quot;b&quot;</span>
+True
+<span class="synStatement">&gt;&gt;&gt;</span> abcPlus <span class="synStatement">`accepts`</span> <span class="synConstant">&quot;c&quot;</span>
+True
+<span class="synStatement">&gt;&gt;&gt;</span> abcPlus <span class="synStatement">`accepts`</span> <span class="synConstant">&quot;accabbccbcbc&quot;</span>
+True
+<span class="synStatement">&gt;&gt;&gt;</span> abcPlus <span class="synStatement">`accepts`</span> <span class="synConstant">&quot;accabbccbcbcd&quot;</span>
+False
+<span class="synStatement">&gt;&gt;&gt;</span> abcPlus <span class="synStatement">`accepts`</span> <span class="synConstant">&quot;accabbdccbcbc&quot;</span>
+False
+</pre><p>abcPlusが<a class="keyword" href="http://d.hatena.ne.jp/keyword/%C0%B5%B5%AC%C9%BD%B8%BD">正規表現</a>[abc]+を表していることがわかると思います。</p>
+
+</div>
+<div class="section">
+    <h3>a(b|cd)*eを受理する<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a></h3>
+    <p>このような<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a>は以下のように作ることができます。<br />
+<span itemscope itemtype="http://schema.org/Photograph"><img src="https://cdn-ak.f.st-hatena.com/images/fotolife/c/cloudear8/20170224/20170224091002.png" alt="f:id:cloudear8:20170224091002p:plain" title="f:id:cloudear8:20170224091002p:plain" class="hatena-fotolife" itemprop="image"></span><br />
+また、このような<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a>を表す<a class="keyword" href="http://d.hatena.ne.jp/keyword/DFA">DFA</a>型の値は以下のように定義することができます。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synComment">-- Example.hs</span>
+<span class="synComment">-- a(b|cd)*e</span>
+abcde <span class="synStatement">::</span> DFA Int Char
+abcde <span class="synStatement">=</span> DFA {
+    dfaTransTable <span class="synStatement">=</span> [
+        (s1, <span class="synConstant">'a'</span>) <span class="synStatement">--&gt;</span> s2
+      , (s2, <span class="synConstant">'b'</span>) <span class="synStatement">--&gt;</span> s2
+      , (s2, <span class="synConstant">'c'</span>) <span class="synStatement">--&gt;</span> s3
+      , (s3, <span class="synConstant">'d'</span>) <span class="synStatement">--&gt;</span> s2
+      , (s2, <span class="synConstant">'e'</span>) <span class="synStatement">--&gt;</span> s4
+      ]
+  , dfaStart <span class="synStatement">=</span> s1
+  , dfaAccepts <span class="synStatement">=</span> [s4]
+  } <span class="synType">where</span> s1<span class="synStatement">:</span>s2<span class="synStatement">:</span>s3<span class="synStatement">:</span>s4<span class="synStatement">:</span>_ <span class="synStatement">=</span> [<span class="synConstant">0</span><span class="synStatement">..</span>]
+</pre><p>実行結果:</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synStatement">&gt;&gt;&gt;</span> abcde <span class="synStatement">`accepts`</span> <span class="synConstant">&quot;abcde&quot;</span>
+True
+<span class="synStatement">&gt;&gt;&gt;</span> abcde <span class="synStatement">`accepts`</span> <span class="synConstant">&quot;ae&quot;</span>
+True
+<span class="synStatement">&gt;&gt;&gt;</span> abcde <span class="synStatement">`accepts`</span> <span class="synConstant">&quot;abbbbe&quot;</span>
+True
+<span class="synStatement">&gt;&gt;&gt;</span> abcde <span class="synStatement">`accepts`</span> <span class="synConstant">&quot;acdcdbcde&quot;</span>
+True
+<span class="synStatement">&gt;&gt;&gt;</span> abcde <span class="synStatement">`accepts`</span> <span class="synConstant">&quot;acbde&quot;</span>
+False
+<span class="synStatement">&gt;&gt;&gt;</span> abcde <span class="synStatement">`accepts`</span> <span class="synConstant">&quot;abcdcd&quot;</span>
+False
+<span class="synStatement">&gt;&gt;&gt;</span> abcde <span class="synStatement">`accepts`</span> <span class="synConstant">&quot;abbeb&quot;</span>
+False
+</pre><p>このようにして実例を見ていくと、<a class="keyword" href="http://d.hatena.ne.jp/keyword/%C0%B5%B5%AC%C9%BD%B8%BD">正規表現</a>が<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a>で表せそうなことが何となくわかるのではないでしょうか。<br />
+それでは次回に続きます。</p>
+
+</div>
+
+{% endraw %}

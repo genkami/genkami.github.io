@@ -1,0 +1,45 @@
+---
+layout: post
+title: getter, setterの定義
+tags:
+- Scala
+
+---
+{% raw %}
+<p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Scala">Scala</a>では「<a class="keyword" href="http://d.hatena.ne.jp/keyword/hoge">hoge</a>_=(x)」という形の<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%E1%A5%BD%A5%C3%A5%C9">メソッド</a>を定義すると、「<a class="keyword" href="http://d.hatena.ne.jp/keyword/hoge">hoge</a> = x」という形でその<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%E1%A5%BD%A5%C3%A5%C9">メソッド</a>へのアクセスができます。</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink><span class="synType">class</span> Coffee(
+  <span class="synType">private</span> <span class="synType">var</span> country_ : <span class="synConstant">String</span>,
+  <span class="synType">private</span> <span class="synType">var</span> roast_ : <span class="synConstant">String</span>,
+  <span class="synType">private</span> <span class="synType">var</span> grind_ : <span class="synConstant">String</span>
+) {
+<span class="synIdentifier">  def</span> country = country_
+<span class="synIdentifier">  def</span> country_=(c: <span class="synConstant">String</span>) { country_ = c }
+
+<span class="synIdentifier">  def</span> roast = roast_
+<span class="synIdentifier">  def</span> roast_=(r: <span class="synConstant">String</span>) { roast_ = r }
+
+<span class="synIdentifier">  def</span> grind = grind_
+<span class="synIdentifier">  def</span> grind_=(g: <span class="synConstant">String</span>) { grind_ = g }
+}
+</pre>
+<div class="section">
+    <h4>実行例</h4>
+    <pre class="code lang-scala" data-lang="scala" data-unlink>scala&gt; <span class="synType">val</span> coffee = <span class="synStatement">new</span> Coffee(<span class="synConstant">&quot;Ethiopia&quot;</span>, <span class="synConstant">&quot;Cinnamon&quot;</span>, <span class="synConstant">&quot;Fine&quot;</span>)
+coffee: Coffee = Coffee@2fc789eb
+
+scala&gt; coffee.grind = <span class="synConstant">&quot;Coarse&quot;</span>
+coffee.grind: <span class="synConstant">String</span> = Coarse
+
+scala&gt; coffee.country
+res0: <span class="synConstant">String</span> = Ethiopia
+
+scala&gt; coffee.roast
+res1: <span class="synConstant">String</span> = Cinnamon
+
+scala&gt; coffee.grind
+res2: <span class="synConstant">String</span> = Coarse
+</pre><p>実際の所、実は<a class="keyword" href="http://d.hatena.ne.jp/keyword/Scala">Scala</a>には再代入可能な変数というものは存在せず、varで定義したプロパティ<a class="keyword" href="http://d.hatena.ne.jp/keyword/hoge">hoge</a>に対しては自動的にgetter <a class="keyword" href="http://d.hatena.ne.jp/keyword/hoge">hoge</a>とsetter <a class="keyword" href="http://d.hatena.ne.jp/keyword/hoge">hoge</a>_=が定義されるだけ、という仕様になっているようです。</p><p><div class="hatena-asin-detail"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/4864873798/cloudear-22/"><img src="http://ecx.images-amazon.com/images/I/41Rr1Iv8lhL._SL160_.jpg" class="hatena-asin-detail-image" alt="Scalaファンクショナルデザイン ―関数型プログラミングの設計と理解" title="Scalaファンクショナルデザイン ―関数型プログラミングの設計と理解"></a><div class="hatena-asin-detail-info"><p class="hatena-asin-detail-title"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/4864873798/cloudear-22/">Scalaファンクショナルデザイン ―関数型プログラミングの設計と理解</a></p><ul><li><span class="hatena-asin-detail-label">作者:</span> 深井裕二</li><li><span class="hatena-asin-detail-label">出版社/メーカー:</span> 三恵社</li><li><span class="hatena-asin-detail-label">発売日:</span> 2015/05/29</li><li><span class="hatena-asin-detail-label">メディア:</span> 単行本（ソフトカバー）</li><li><a href="http://d.hatena.ne.jp/asin/4864873798/cloudear-22" target="_blank">この商品を含むブログを見る</a></li></ul></div><div class="hatena-asin-detail-foot"></div></div><div class="hatena-asin-detail"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/4844337769/cloudear-22/"><img src="http://ecx.images-amazon.com/images/I/51aLg4EvWzL._SL160_.jpg" class="hatena-asin-detail-image" alt="Scala関数型デザイン&プログラミング ―Scalazコントリビューターによる関数型徹底ガイド (impress top gear)" title="Scala関数型デザイン&プログラミング ―Scalazコントリビューターによる関数型徹底ガイド (impress top gear)"></a><div class="hatena-asin-detail-info"><p class="hatena-asin-detail-title"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/4844337769/cloudear-22/">Scala関数型デザイン&プログラミング ―Scalazコントリビューターによる関数型徹底ガイド (impress top gear)</a></p><ul><li><span class="hatena-asin-detail-label">作者:</span> Paul Chiusano,Rúnar Bjarnason,<a class="keyword" href="http://d.hatena.ne.jp/keyword/%B3%F4%BC%B0%B2%F1%BC%D2%A5%AF%A5%A4%A1%BC%A5%D7">株式会社クイープ</a></li><li><span class="hatena-asin-detail-label">出版社/メーカー:</span> <a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%D7%A5%EC%A5%B9">インプレス</a></li><li><span class="hatena-asin-detail-label">発売日:</span> 2015/03/20</li><li><span class="hatena-asin-detail-label">メディア:</span> 単行本（ソフトカバー）</li><li><a href="http://d.hatena.ne.jp/asin/4844337769/cloudear-22" target="_blank">この商品を含むブログ (7件) を見る</a></li></ul></div><div class="hatena-asin-detail-foot"></div></div></p>
+
+</div>
+
+{% endraw %}

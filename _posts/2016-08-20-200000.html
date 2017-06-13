@@ -1,0 +1,98 @@
+---
+layout: post
+title: dynamic-wind
+tags:
+- Gauche
+
+---
+{% raw %}
+<p>R5RSではdynamic-windという面白い関数が定義されています。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synIdentifier">dynamic-wind</span> before thunk after<span class="synSpecial">)</span>
+</pre><p>dynamic-windはまずbeforeを呼び出し、その次にthunkを、最後にafterを呼び出します。</p><p>試しに以下のようなプログラムを実行してみましょう。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synConstant">*outer-cont*</span> <span class="synConstant">#f</span><span class="synSpecial">)</span>
+
+<span class="synSpecial">(</span><span class="synStatement">let</span> <span class="synSpecial">((</span>message <span class="synSpecial">(</span><span class="synIdentifier">call/cc</span> <span class="synSpecial">(</span>^<span class="synSpecial">(</span>cont<span class="synSpecial">)</span>
+                          <span class="synSpecial">(</span><span class="synStatement">set!</span> <span class="synConstant">*outer-cont*</span> cont<span class="synSpecial">)</span>
+                          <span class="synSpecial">(</span>cont <span class="synConstant">&quot;first&quot;</span><span class="synSpecial">)))))</span>
+  <span class="synSpecial">(</span>print #<span class="synConstant">&quot;out of thunk: message: ~message&quot;</span><span class="synSpecial">))</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synConstant">*inner-cont-a*</span> <span class="synConstant">#f</span><span class="synSpecial">)</span>
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synConstant">*inner-cont-b*</span> <span class="synConstant">#f</span><span class="synSpecial">)</span>
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synConstant">*inner-cont-c*</span> <span class="synConstant">#f</span><span class="synSpecial">)</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>before<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span>print <span class="synConstant">&quot;this MUST be called before thunk&quot;</span><span class="synSpecial">))</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>after<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span>print <span class="synConstant">&quot;this MUST be called after thunk&quot;</span><span class="synSpecial">))</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>thunk<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span><span class="synStatement">let</span> <span class="synSpecial">((</span>a <span class="synSpecial">(</span><span class="synIdentifier">call/cc</span> <span class="synSpecial">(</span>^<span class="synSpecial">(</span>cont<span class="synSpecial">)</span>
+                      <span class="synSpecial">(</span><span class="synStatement">set!</span> <span class="synConstant">*inner-cont-a*</span> cont<span class="synSpecial">)</span>
+                      <span class="synSpecial">(</span>cont <span class="synConstant">&quot;this is A&quot;</span><span class="synSpecial">)))))</span>
+    <span class="synSpecial">(</span>print #<span class="synConstant">&quot;a: ~a&quot;</span><span class="synSpecial">)</span>
+    <span class="synSpecial">(</span><span class="synStatement">let</span> <span class="synSpecial">((</span>b <span class="synSpecial">(</span><span class="synIdentifier">call/cc</span> <span class="synSpecial">(</span>^<span class="synSpecial">(</span>cont<span class="synSpecial">)</span>
+                        <span class="synSpecial">(</span><span class="synStatement">set!</span> <span class="synConstant">*inner-cont-b*</span> cont<span class="synSpecial">)</span>
+                        <span class="synSpecial">(</span>cont <span class="synConstant">&quot;this is B&quot;</span><span class="synSpecial">)))))</span>
+      <span class="synSpecial">(</span>print #<span class="synConstant">&quot;b: ~b&quot;</span><span class="synSpecial">)</span>
+      <span class="synSpecial">(</span><span class="synStatement">let</span> <span class="synSpecial">((</span>c <span class="synSpecial">(</span><span class="synIdentifier">call/cc</span> <span class="synSpecial">(</span>^<span class="synSpecial">(</span>cont<span class="synSpecial">)</span>
+                          <span class="synSpecial">(</span><span class="synStatement">set!</span> <span class="synConstant">*inner-cont-c*</span> cont<span class="synSpecial">)</span>
+                          <span class="synSpecial">(</span>cont <span class="synConstant">&quot;this is C&quot;</span><span class="synSpecial">)))))</span>
+        <span class="synSpecial">(</span>print #<span class="synConstant">&quot;c: ~c&quot;</span><span class="synSpecial">)))))</span>
+
+<span class="synSpecial">(</span><span class="synIdentifier">dynamic-wind</span> before thunk after<span class="synSpecial">)</span>
+</pre><p>やたらcall/ccしてるのはとりあえず無視してください。現時点では</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synStatement">let</span> <span class="synSpecial">((</span>message <span class="synConstant">&quot;first&quot;</span><span class="synSpecial">))</span> ...<span class="synSpecial">)</span>
+<span class="synSpecial">(</span><span class="synStatement">let</span> <span class="synSpecial">((</span>a <span class="synConstant">&quot;this is A&quot;</span><span class="synSpecial">))</span> ...<span class="synSpecial">)</span>
+<span class="synSpecial">(</span><span class="synStatement">let</span> <span class="synSpecial">((</span>b <span class="synConstant">&quot;this is B&quot;</span><span class="synSpecial">))</span> ...<span class="synSpecial">)</span>
+<span class="synSpecial">(</span><span class="synStatement">let</span> <span class="synSpecial">((</span>c <span class="synConstant">&quot;this is C&quot;</span><span class="synSpecial">))</span> ...<span class="synSpecial">)</span>
+</pre><p>してるのと同じです。</p><p>とりあえず実行してみましょう。以下のような結果が得られるはずです。</p>
+<pre class="code" data-lang="" data-unlink>this MUST be called before thunk
+a: this is A
+b: this is B
+c: this is C
+this MUST be called after thunk</pre><p>最初にbeforeが呼ばれ、その後にthunkが呼ばれ、最後にafterが呼ばれています。<br />
+ここまでは普通ですね。</p><p>しかし、dynamic-windでは、thunkの中に継続を使って入ったり、thunkの中から継続を使って飛び出したりした場合でも、<br />
+きちんとbeforeやafterが呼ばれるようになっています。</p><p>試しに、先ほど保存した*inner-cont-<a class="keyword" href="http://d.hatena.ne.jp/keyword/hoge">hoge</a>*を呼び出してみましょう</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink>gosh&gt; <span class="synSpecial">(</span><span class="synConstant">*inner-cont-a*</span> <span class="synConstant">&quot;this is A'&quot;</span><span class="synSpecial">)</span>
+this MUST be called before thunk
+a: this is <span class="synError">A'</span>
+b: this is B
+c: this is C
+this MUST be called after thunk
+
+gosh&gt; <span class="synSpecial">(</span><span class="synConstant">*inner-cont-b*</span> <span class="synConstant">&quot;hey! I am B!&quot;</span><span class="synSpecial">)</span>
+this MUST be called before thunk
+b: hey! I am B!
+c: this is C
+this MUST be called after thunk
+
+gosh&gt; <span class="synSpecial">(</span><span class="synConstant">*inner-cont-c*</span> <span class="synConstant">&quot;hello, my name is C&quot;</span><span class="synSpecial">)</span>
+this MUST be called before thunk
+c: <span class="synError">hello,</span> my name is C
+this MUST be called after thunk
+</pre><p>継続でthunkの中に入る前にbeforeが、thunkでの処理のあとにafterが呼ばれているのが分かります。</p><p>また、先ほどのthunkを少し書き換えて、最後に上のほうで保存した*outer-cont*に飛んでみるようにしてみましょう。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>thunk<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span><span class="synStatement">let</span> <span class="synSpecial">((</span>a <span class="synSpecial">(</span><span class="synIdentifier">call/cc</span> <span class="synSpecial">(</span>^<span class="synSpecial">(</span>cont<span class="synSpecial">)</span>
+                      <span class="synSpecial">(</span><span class="synStatement">set!</span> <span class="synConstant">*inner-cont-a*</span> cont<span class="synSpecial">)</span>
+                      <span class="synSpecial">(</span>cont <span class="synConstant">&quot;this is A&quot;</span><span class="synSpecial">)))))</span>
+    <span class="synSpecial">(</span>print #<span class="synConstant">&quot;a: ~a&quot;</span><span class="synSpecial">)</span>
+    <span class="synSpecial">(</span><span class="synConstant">*outer-cont*</span> <span class="synConstant">&quot;hey! this is second message&quot;</span><span class="synSpecial">)</span> <span class="synComment">; ここで抜ける</span>
+    <span class="synSpecial">(</span><span class="synStatement">let</span> <span class="synSpecial">((</span>b <span class="synSpecial">(</span><span class="synIdentifier">call/cc</span> <span class="synSpecial">(</span>^<span class="synSpecial">(</span>cont<span class="synSpecial">)</span>
+                        <span class="synSpecial">(</span><span class="synStatement">set!</span> <span class="synConstant">*inner-cont-b*</span> cont<span class="synSpecial">)</span>
+                        <span class="synSpecial">(</span>cont <span class="synConstant">&quot;this is B&quot;</span><span class="synSpecial">)))))</span>
+      <span class="synSpecial">(</span>print #<span class="synConstant">&quot;b: ~b&quot;</span><span class="synSpecial">)</span>
+      <span class="synSpecial">(</span><span class="synStatement">let</span> <span class="synSpecial">((</span>c <span class="synSpecial">(</span><span class="synIdentifier">call/cc</span> <span class="synSpecial">(</span>^<span class="synSpecial">(</span>cont<span class="synSpecial">)</span>
+                          <span class="synSpecial">(</span><span class="synStatement">set!</span> <span class="synConstant">*inner-cont-c*</span> cont<span class="synSpecial">)</span>
+                          <span class="synSpecial">(</span>cont <span class="synConstant">&quot;this is C&quot;</span><span class="synSpecial">)))))</span>
+        <span class="synSpecial">(</span>print #<span class="synConstant">&quot;c: ~c&quot;</span><span class="synSpecial">)))))</span>
+</pre><p>このプログラムをもう一度実行してみましょう。以下のような結果が得られるはずです。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink>out of thunk: message: first
+this MUST be called before thunk
+a: this is A
+this MUST be called after thunk
+out of thunk: message: hey! this is second message
+</pre><p>最後の*outer-cont*の呼び出しでthunkから抜けるときに、afterが呼ばれているのがわかります。</p><p>面白いですね。</p><p>継続をちゃんと理解したら自分でも実装できるようになるのかな…？</p>
+
+
+{% endraw %}

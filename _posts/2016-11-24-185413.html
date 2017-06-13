@@ -1,0 +1,28 @@
+---
+layout: post
+title: Gaucheのwriteのバグ(?)を発見した
+tags:
+- Gauche
+
+---
+{% raw %}
+<p>全角スペースはwriteでは||で囲われずに普通に表示されるのに、readでは半角スペースと同一の扱いでスキップされます。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink>gosh&gt; <span class="synSpecial">(</span>with-output-to-string <span class="synSpecial">(</span>^<span class="synSpecial">()</span> <span class="synSpecial">(</span><span class="synIdentifier">write</span> <span class="synSpecial">'</span><span class="synError">|　|</span><span class="synSpecial">)))</span> <span class="synComment">; 全角スペース</span>
+<span class="synConstant">&quot;　&quot;</span>
+gosh&gt; <span class="synSpecial">(</span>call-with-input-string <span class="synConstant">&quot;|　|&quot;</span> <span class="synIdentifier">read</span><span class="synSpecial">)</span> <span class="synComment">; ||で囲わないとreadできない</span>
+<span class="synError">　</span>
+</pre><p>なので、シンボル|　|(全角スペース)からなるS式を<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%B7%A5%EA%A5%A2%A5%E9%A5%A4%A5%BA">シリアライズ</a>しようとした場合、readで読み込めずにエラーになります。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synStatement">define</span> s
+  <span class="synSpecial">(</span>with-output-to-string
+    <span class="synSpecial">(</span>^<span class="synSpecial">()</span> <span class="synSpecial">(</span><span class="synIdentifier">write</span> <span class="synSpecial">'((</span>hoge <span class="synSpecial">.</span> <span class="synConstant">3</span><span class="synSpecial">)</span>
+                  <span class="synSpecial">(</span>fuga <span class="synSpecial">.</span> <span class="synConstant">2</span><span class="synSpecial">)</span>
+                  <span class="synSpecial">(</span><span class="synError">|　|</span> <span class="synSpecial">.</span> <span class="synConstant">1</span><span class="synSpecial">))))))</span>
+<span class="synComment">;; =&gt; &quot;((hoge . 3) (fuga . 2) (　 . 1))&quot;</span>
+
+<span class="synSpecial">(</span>with-input-from-string s
+  <span class="synSpecial">(</span>^<span class="synSpecial">()</span>
+    <span class="synSpecial">(</span><span class="synIdentifier">read</span><span class="synSpecial">)))</span>
+<span class="synComment">;; =&gt; *** READ-ERROR: Read error at &quot;(input string port)&quot;:line 1: bad dot syntax</span>
+</pre>
+
+{% endraw %}

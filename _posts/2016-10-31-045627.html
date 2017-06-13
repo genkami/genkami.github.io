@@ -1,0 +1,65 @@
+---
+layout: post
+title: Schemeと各括弧
+tags:
+- Gauche
+
+---
+{% raw %}
+<p>多くの<a class="keyword" href="http://d.hatena.ne.jp/keyword/Scheme">Scheme</a>処理系では、角括弧[]が通常の括弧()と同一視されます。<br />
+この角括弧の使いどころについてまとめてみました。</p>
+
+<div class="section">
+    <h3>角括弧は使うな</h3>
+    <p>まず始めに結論から書くと、今後書く<a class="keyword" href="http://d.hatena.ne.jp/keyword/Scheme">Scheme</a>のコードでは、角括弧は使用しない方が良いでしょう。というのも、R7RS<a href="#f-791778f0" name="fn-791778f0" title="[http://trac.sacrideo.us/wg/wiki/R7RSHomePage]">*1</a>における角括弧の扱いは、</p>
+
+    <blockquote>
+        <p>[ ] { } Left and right square and curly <a class="keyword" href="http://d.hatena.ne.jp/keyword/brackets">brackets</a> (braces)<br />
+are reserved for possible future extensions to the language.</p>
+
+    </blockquote>
+<p>すなわち、将来の言語拡張のための<a class="keyword" href="http://d.hatena.ne.jp/keyword/%CD%BD%CC%F3%B8%EC">予約語</a>ということになっているためです。</p>
+
+</div>
+<div class="section">
+    <h3>それでも使いたい場合</h3>
+    <p>とはいえ、角括弧は一度<a class="keyword" href="http://d.hatena.ne.jp/keyword/R6RS">R6RS</a><a href="#f-8b3e5acd" name="fn-8b3e5acd" title="[http://www.r6rs.org/]">*2</a>で仕様として正式に括弧の代替物として認められています。</p>
+
+    <blockquote>
+        <p>Matched square <a class="keyword" href="http://d.hatena.ne.jp/keyword/brackets">brackets</a> can be used synonymously<br />
+with parentheses.</p>
+
+    </blockquote>
+<p>この時代に書いたコードの中には、角括弧を含んでいるものも多くあるはずです。<br />
+したがって、コーディングスタイルの統一という点で考えれば、<a class="keyword" href="http://d.hatena.ne.jp/keyword/R6RS">R6RS</a>時代の角括弧の使い方を学んでおいて損はないかもしれません。</p><br />
+<p><a class="keyword" href="http://d.hatena.ne.jp/keyword/R6RS">R6RS</a>では角括弧の用途について、以下のように書かれています。</p><p><a href="http://www.r6rs.org/final/html/r6rs-app/r6rs-app-Z-H-5.html">Revised^6 Report on the Algorithmic Language Scheme - Non-Normative Appendices -</a></p><p>要約すると、だいたい以下のような場合に角括弧を使用してよいということになります。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synComment">;; let-hoge系の[変数名 値]</span>
+<span class="synSpecial">(</span><span class="synStatement">let</span> <span class="synSpecial">([</span>a <span class="synSpecial">(</span>hoge<span class="synSpecial">)]</span>
+      <span class="synSpecial">[</span>b <span class="synSpecial">(</span>fuga<span class="synSpecial">)])</span>
+  <span class="synSpecial">(</span><span class="synIdentifier">+</span> a b<span class="synSpecial">))</span>
+
+<span class="synComment">;; cond, guard等の[条件 式]</span>
+<span class="synSpecial">(</span><span class="synStatement">cond</span>
+ <span class="synSpecial">[(</span><span class="synIdentifier">string?</span> x<span class="synSpecial">)</span> x<span class="synSpecial">]</span>
+ <span class="synSpecial">[</span><span class="synStatement">else</span> <span class="synSpecial">(</span>x-&gt;string x<span class="synSpecial">)])</span>
+
+<span class="synComment">;; case等の[パターン 式]</span>
+<span class="synSpecial">(</span><span class="synStatement">case</span> status
+  <span class="synSpecial">[(</span><span class="synConstant">200</span><span class="synSpecial">)</span> <span class="synConstant">&quot;OK&quot;</span><span class="synSpecial">]</span>
+  <span class="synSpecial">[(</span><span class="synConstant">404</span><span class="synSpecial">)</span> <span class="synConstant">&quot;Not Found&quot;</span><span class="synSpecial">]</span>
+  <span class="synSpecial">[(</span><span class="synConstant">500</span><span class="synSpecial">)</span> <span class="synConstant">&quot;Internal Server Error&quot;</span><span class="synSpecial">])</span>
+</pre><p>簡単に言うと、手続きやマクロの呼び出しではなく、さらにリストでもない場合に使うのが良さそうです。<br />
+<a class="keyword" href="http://d.hatena.ne.jp/keyword/Gauche">Gauche</a>の場合はクラスのスロット定義やmatchのパターンに使ってもいいかもしれません。</p>
+
+</div>
+<div class="section">
+    <h3>処理系の対応状況</h3>
+    <p>ざっと調べてみた所、Racketや<a class="keyword" href="http://d.hatena.ne.jp/keyword/Gauche">Gauche</a>, Guile等、現在の有名な<a class="keyword" href="http://d.hatena.ne.jp/keyword/Scheme">Scheme</a>処理系は大半が角括弧を通常の括弧として扱うようになっているようです。<br />
+一度処理系に実装されてしまった以上、<a class="keyword" href="http://d.hatena.ne.jp/keyword/%B8%E5%CA%FD%B8%DF%B4%B9">後方互換</a>性のために延々と処理系の仕様に残り続けるでしょうし、それを信じて今後書くコードにもバリバリ角括弧を使ってしまうのもいいかもしれません(よくない)。</p>
+
+</div><div class="footnote">
+<p class="footnote"><a href="#fn-791778f0" name="f-791778f0" class="footnote-number">*1</a><span class="footnote-delimiter">:</span><span class="footnote-text"><a href="http://trac.sacrideo.us/wg/wiki/R7RSHomePage">http://trac.sacrideo.us/wg/wiki/R7RSHomePage</a></span></p>
+<p class="footnote"><a href="#fn-8b3e5acd" name="f-8b3e5acd" class="footnote-number">*2</a><span class="footnote-delimiter">:</span><span class="footnote-text"><a href="http://www.r6rs.org/">http://www.r6rs.org/</a></span></p>
+</div>
+
+{% endraw %}

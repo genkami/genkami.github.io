@@ -1,0 +1,29 @@
+---
+layout: post
+title: libraryとexecutable両方を含むcabalパッケージを作る
+tags:
+- Haskell
+
+---
+{% raw %}
+<p>cabal initした時に「libraryとexecutable、どっちのパッケージにする？」みたいなことを聞かれるので、今まで1つのパッケージにはlibraryとexecutableのどちらか一方しか含むことができないと思っていました。</p><p>.cabalにlibrary:とexecutable:の両方を書けば、普通に両方を含むようなパッケージも作ることができます。</p>
+<pre class="code" data-lang="" data-unlink>name:             mypkg
+...
+library:
+  hs-source-dirs:
+                 src/lib
+  exposed-modules:
+                  Hoge.Fuga
+                , Hoge.Foo
+...
+executable my-executable
+  main-is:
+          Main.hs
+  hs-source-dirs:
+                 src/bin
+  build-depends:
+                base
+              , mypkg</pre><p>上の例のように、executableのbuild-dependsに自身のパッケージ名を書いておけば、executableからlibraryを利用することもできます。</p>
+
+
+{% endraw %}

@@ -1,0 +1,51 @@
+---
+layout: post
+title: Null, Nothing, Any
+tags:
+- Scala
+
+---
+{% raw %}
+
+<div class="section">
+    <h3>Any</h3>
+    <p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Scala">Scala</a>では全てのクラスはAnyのサブクラスとなります。そのため、任意のAny型の変数には任意の型の値を代入することができます。<br />
+Anyのサブクラスとして、任意のプリミティブな値を表す型であるAnyValと、任意の参照型を表すAnyRefの2種類が存在します。</p>
+
+</div>
+<div class="section">
+    <h3>Null</h3>
+    <p>Nullは全ての参照型のサブクラスであり、単一の値nullのみを持ちます。そのため、任意の参照型(AnyRefのサブクラス)の変数には、nullを代入することができます。</p>
+
+</div>
+<div class="section">
+    <h3>Nothing</h3>
+    <p>Nothingは全てのクラスのサブクラスのサブクラスであり、Nothing型の値は存在しません。<a class="keyword" href="http://d.hatena.ne.jp/keyword/Haskell">Haskell</a>でいうData.Void.Voidに近いものですね。NullやUnitがシングルトンを表すのに対し、Nothingは<a class="keyword" href="http://d.hatena.ne.jp/keyword/%B6%F5%BD%B8%B9%E7">空集合</a>を意味します。<a href="#f-65e40183" name="fn-65e40183" title="とは言っても、実際はエラーを発生させる可能性もあるので空集合ではなく{_|_}とかになるのかもしれませんが、意味論に関しては何も知らないので詳しいことは分かりません">*1</a></p><p>親子関係としては</p>
+<pre class="code" data-lang="" data-unlink>Nothing &lt;: Int, Double, Boolean, ... &lt;: AnyVal &lt;: Any</pre><pre class="code" data-lang="" data-unlink>Nothing &lt;: Null &lt;: 任意のクラス &lt;: AnyRef &lt;: Any</pre><p>というようになります。</p>
+
+</div>
+<div class="section">
+    <h3>その他よく混同されるものたち</h3>
+    
+<div class="section">
+    <h4>Unit</h4>
+    <p>Unitは単一の値()を持つ型です。これは要<a class="keyword" href="http://d.hatena.ne.jp/keyword/%C1%C7%BF%F4">素数</a>0のタプルを意味します。</p>
+
+</div>
+<div class="section">
+    <h4><a class="keyword" href="http://d.hatena.ne.jp/keyword/Nil">Nil</a></h4>
+    <p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Nil">Nil</a>はList[T]の<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%B9%A5%BF%A5%F3%A5%B9">インスタンス</a>で、空リストを表します。</p>
+
+</div>
+<div class="section">
+    <h4>None</h4>
+    <p>NoneはOption[T]の<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%B9%A5%BF%A5%F3%A5%B9">インスタンス</a>で、これは値が無いことを意味します。<a class="keyword" href="http://d.hatena.ne.jp/keyword/Haskell">Haskell</a>でいうNothingですね。値が存在しないという状況があり得るかどうかを型レベルで指定するために存在しますが、nullの存在のためにゴミみたいなコードを書くと全く意味がなくなってしまいます。<br />
+Nullの存在はあくまで<a class="keyword" href="http://d.hatena.ne.jp/keyword/Java">Java</a>との互換性のためにある(と思っている)ので、<a class="keyword" href="http://d.hatena.ne.jp/keyword/Scala">Scala</a>でコードを書く場合はNullは使わずに、「値が無い」場合を考慮しないといけない場合は素直にOption[T]を使いましょう。</p><br />
+<p><div class="hatena-asin-detail"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/4844330845/cloudear-22/"><img src="http://ecx.images-amazon.com/images/I/415CsfYp64L._SL160_.jpg" class="hatena-asin-detail-image" alt="Scalaスケーラブルプログラミング第2版" title="Scalaスケーラブルプログラミング第2版"></a><div class="hatena-asin-detail-info"><p class="hatena-asin-detail-title"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/4844330845/cloudear-22/">Scalaスケーラブルプログラミング第2版</a></p><ul><li><span class="hatena-asin-detail-label">作者:</span> Martin Odersky,Lex Spoon,Bill Venners,羽生田栄一,水島宏太,長尾高弘</li><li><span class="hatena-asin-detail-label">出版社/メーカー:</span> <a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%D7%A5%EC%A5%B9%A5%B8%A5%E3%A5%D1%A5%F3">インプレスジャパン</a></li><li><span class="hatena-asin-detail-label">発売日:</span> 2011/09/27</li><li><span class="hatena-asin-detail-label">メディア:</span> 単行本（ソフトカバー）</li><li><span class="hatena-asin-detail-label">購入</span>: 12人 <span class="hatena-asin-detail-label">クリック</span>: 235回</li><li><a href="http://d.hatena.ne.jp/asin/4844330845/cloudear-22" target="_blank">この商品を含むブログ (46件) を見る</a></li></ul></div><div class="hatena-asin-detail-foot"></div></div><div class="hatena-asin-detail"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/4864874336/cloudear-22/"><img src="http://ecx.images-amazon.com/images/I/41DDsQk1JCL._SL160_.jpg" class="hatena-asin-detail-image" alt="関数型オブジェクト指向AI プログラミング―Scala による人工知能の実装" title="関数型オブジェクト指向AI プログラミング―Scala による人工知能の実装"></a><div class="hatena-asin-detail-info"><p class="hatena-asin-detail-title"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/4864874336/cloudear-22/">関数型オブジェクト指向AI プログラミング―Scala による人工知能の実装</a></p><ul><li><span class="hatena-asin-detail-label">作者:</span> 深井裕二</li><li><span class="hatena-asin-detail-label">出版社/メーカー:</span> 三恵社</li><li><span class="hatena-asin-detail-label">発売日:</span> 2015/11/02</li><li><span class="hatena-asin-detail-label">メディア:</span> 単行本（ソフトカバー）</li><li><a href="http://d.hatena.ne.jp/asin/4864874336/cloudear-22" target="_blank">この商品を含むブログを見る</a></li></ul></div><div class="hatena-asin-detail-foot"></div></div></p>
+
+</div>
+</div><div class="footnote">
+<p class="footnote"><a href="#fn-65e40183" name="f-65e40183" class="footnote-number">*1</a><span class="footnote-delimiter">:</span><span class="footnote-text">とは言っても、実際はエラーを発生させる可能性もあるので<a class="keyword" href="http://d.hatena.ne.jp/keyword/%B6%F5%BD%B8%B9%E7">空集合</a>ではなく{_|_}とかになるのかもしれませんが、意味論に関しては何も知らないので詳しいことは分かりません</span></p>
+</div>
+
+{% endraw %}

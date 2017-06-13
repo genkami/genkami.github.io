@@ -1,0 +1,139 @@
+---
+layout: post
+title: 正規表現エンジン制作入門(1)&#58; 正規表現とDFA
+tags:
+- Haskell
+
+---
+{% raw %}
+<p><a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a>の単位は落としそうですが、今日から数回に分けて<a class="keyword" href="http://d.hatena.ne.jp/keyword/Haskell">Haskell</a>で<a class="keyword" href="http://d.hatena.ne.jp/keyword/%C0%B5%B5%AC%C9%BD%B8%BD">正規表現</a>エンジンを自作していきたいと思います。</p>
+
+<div class="section">
+    <h3>完成図</h3>
+    <p>実は既に手元に完成品があるのですが、今回は<a class="keyword" href="http://d.hatena.ne.jp/keyword/Haskell">Haskell</a>で<a class="keyword" href="http://d.hatena.ne.jp/keyword/%C0%B5%B5%AC%C9%BD%B8%BD">正規表現</a>風<a class="keyword" href="http://d.hatena.ne.jp/keyword/DSL">DSL</a>を構築したいと思います。動作例は以下の通り。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synStatement">&gt;&gt;&gt;</span> str <span class="synConstant">&quot;hoge&quot;</span> <span class="synStatement">`matches`</span> <span class="synConstant">&quot;hoge&quot;</span>
+True
+<span class="synStatement">&gt;&gt;&gt;</span> str <span class="synConstant">&quot;hoge&quot;</span> <span class="synStatement">`matches`</span> <span class="synConstant">&quot;fuga&quot;</span>
+False
+<span class="synStatement">&gt;&gt;&gt;</span> ((str <span class="synConstant">&quot;hoge&quot;</span> <span class="synStatement">|:</span> str <span class="synConstant">&quot;fuga&quot;</span>) <span class="synStatement">*:</span>) <span class="synStatement">`matches`</span> <span class="synConstant">&quot;hogefugahogefuga&quot;</span>
+True
+<span class="synStatement">&gt;&gt;&gt;</span> ((str <span class="synConstant">&quot;hoge&quot;</span> <span class="synStatement">|:</span> str <span class="synConstant">&quot;fuga&quot;</span>) <span class="synStatement">*:</span>) <span class="synStatement">`matches`</span> <span class="synConstant">&quot;hogefugahogefugafoobar&quot;</span>
+False
+</pre><p>str "<a class="keyword" href="http://d.hatena.ne.jp/keyword/hoge">hoge</a>" が文字列 <a class="keyword" href="http://d.hatena.ne.jp/keyword/hoge">hoge</a>を、|:が<a class="keyword" href="http://d.hatena.ne.jp/keyword/%CF%C0%CD%FD%CF%C2">論理和</a>を、*:が任意回の繰り返しを表します。</p><p>完成品は以下の<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%EA%A5%DD%A5%B8%A5%C8%A5%EA">リポジトリ</a>に上げる(予定)です。</p><p><iframe src="//hatenablog-parts.com/embed?url=https%3A%2F%2Fgithub.com%2Fmonamonamonad%2FRegexDSL" title="monamonamonad/RegexDSL" class="embed-card embed-webcard" scrolling="no" frameborder="0" style="display: block; width: 100%; height: 155px; max-width: 500px; margin: 10px 0px;"></iframe><cite class="hatena-citation"><a href="https://github.com/monamonamonad/RegexDSL">github.com</a></cite><br />
+</p>
+
+</div>
+<div class="section">
+    <h3><a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a></h3>
+    <p><a class="keyword" href="http://d.hatena.ne.jp/keyword/%C0%B5%B5%AC%C9%BD%B8%BD">正規表現</a>エンジンを実装するには、まず<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a>を作る必要があります。<br />
+<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a>は理論上<a class="keyword" href="http://d.hatena.ne.jp/keyword/%C0%B5%B5%AC%C9%BD%B8%BD">正規表現</a>と等価な表現力を持っており、通常は<a class="keyword" href="http://d.hatena.ne.jp/keyword/%C0%B5%B5%AC%C9%BD%B8%BD">正規表現</a>をそのまま解析するのではなく、等価な<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a>に変換してから文字列のマッチなどの処理を行います(たぶん)。<br />
+<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a>は有限種類の状態からなり、入力文字によってその状態を変化させていく仮想的な機械です。文字列の各文字を先頭から順に入力していき、最終的に到達した状態の種類によって入力文字列が<a class="keyword" href="http://d.hatena.ne.jp/keyword/%C0%B5%B5%AC%C9%BD%B8%BD">正規表現</a>にマッチしたかどうかを判定します。</p><p><a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a>にも種類はいろいろありますが、基本的に以下のような形で表すことができます。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synComment">-- Automaton.hs</span>
+<span class="synType">module</span> Automaton <span class="synType">where</span>
+
+<span class="synComment">-- 以下2つは後でMapのキーにしたりするので、Ordのインスタンスになっています。</span>
+<span class="synType">type</span> Alphabet a <span class="synStatement">=</span> (Eq a, Ord a) <span class="synComment">-- アルファベット</span>
+<span class="synType">type</span> State s <span class="synStatement">=</span> (Eq s, Ord s) <span class="synComment">-- 状態</span>
+
+<span class="synComment">-- 後で使う</span>
+(<span class="synStatement">--&gt;</span>) <span class="synStatement">::</span> a <span class="synStatement">-&gt;</span> b <span class="synStatement">-&gt;</span> (a, b)
+a <span class="synStatement">--&gt;</span> b <span class="synStatement">=</span> (a, b)
+<span class="synPreProc">infix</span> <span class="synConstant">5</span> <span class="synStatement">--&gt;</span>
+
+<span class="synComment">-- オートマトン</span>
+<span class="synType">class</span> Automaton fa <span class="synType">where</span>
+  <span class="synType">type</span> F fa s <span class="synStatement">::</span> <span class="synStatement">*</span>
+  step <span class="synStatement">::</span> (State s, Alphabet a) <span class="synStatement">=&gt;</span> fa s a <span class="synStatement">-&gt;</span> F fa s <span class="synStatement">-&gt;</span> a <span class="synStatement">-&gt;</span> F fa s
+  initStates <span class="synStatement">::</span> (State s, Alphabet a) <span class="synStatement">=&gt;</span> fa s a <span class="synStatement">-&gt;</span> F fa s
+  isAcceptStates <span class="synStatement">::</span> (State s, Alphabet a) <span class="synStatement">=&gt;</span> fa s a <span class="synStatement">-&gt;</span> F fa s <span class="synStatement">-&gt;</span> Bool
+</pre><p>これが状態型sを持ち、文字aの列[a]を認識する<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a>fa s aの定義になります。<br />
+<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a>は初期状態と呼ばれる値initStatesと、受理状態と呼ばれる値isAcceptStates, 遷移関数と呼ばれる関数stepの3種類からなります。</p><p>それぞれの定義にはF fa sという謎の型が使われていますが、これはとりあえずs自体と同等だと思ってください。<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a>の種類によってはこのsが同時に複数存在したりする可能性があるので、抽象的な定義になっているだけです。</p><p>そうやってAutomatonの定義を読み替えると、以下のようになります。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synComment">-- 遷移関数</span>
+step <span class="synStatement">::</span> (State s, Alphabet a) <span class="synStatement">=&gt;</span> fa s a <span class="synStatement">-&gt;</span> s <span class="synStatement">-&gt;</span> a <span class="synStatement">-&gt;</span> s
+<span class="synComment">-- 初期状態</span>
+initStates <span class="synStatement">::</span> (State s, Alphabet a) <span class="synStatement">=&gt;</span> fa s a <span class="synStatement">-&gt;</span> s
+<span class="synComment">-- 受理状態</span>
+isAcceptStates <span class="synStatement">::</span> (State s, Alphabet a) <span class="synStatement">=&gt;</span> fa s a <span class="synStatement">-&gt;</span> s <span class="synStatement">-&gt;</span> Bool
+</pre><p>各<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a>faはそれぞれ自分の状態sを持っており、その状態で文字aが入力されると、次の状態が</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink>s' <span class="synStatement">=</span> step fa s a
+</pre><p>となるs'に移ります。<br />
+初期状態s0の<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a>faに文字列a0:a1:a2:..:an:[]を与えた時、<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a>は以下のように状態を遷移していきます。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink>s1 <span class="synStatement">=</span> step fa s0 a0
+s2 <span class="synStatement">=</span> step fa s1 a1
+<span class="synStatement">...</span>
+sn <span class="synStatement">=</span> step fa s(n<span class="synStatement">-</span><span class="synConstant">1</span>) a(n<span class="synStatement">-</span><span class="synConstant">1</span>)
+s(n<span class="synStatement">+</span><span class="synConstant">1</span>) <span class="synStatement">=</span> step fa sn an
+</pre><p>こうして最後にたどり着いた状態s(n+1)がisAcceptStatesを満たせば、その状態は受理状態であり、入力文字列は受理されたと言います。<br />
+最終的には、文字列が受理されることとその文字列が<a class="keyword" href="http://d.hatena.ne.jp/keyword/%C0%B5%B5%AC%C9%BD%B8%BD">正規表現</a>にマッチしていることが同値になるような<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a>を構成していくことになります。</p><p>今の説明に従って、<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a>が文字列を「受理」するかどうかを判定する関数を書いてみましょう。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synComment">-- Automaton.hs</span>
+run <span class="synStatement">::</span> (Automaton fa, State s, Alphabet a) <span class="synStatement">=&gt;</span> fa s a <span class="synStatement">-&gt;</span> F fa s <span class="synStatement">-&gt;</span> [a] <span class="synStatement">-&gt;</span> F fa s
+run fa ss [] <span class="synStatement">=</span> ss
+run fa ss (a<span class="synStatement">:</span>as) <span class="synStatement">=</span> run fa (step fa ss a) as
+
+<span class="synComment">-- dfa `accepts` str : dfa が列 str を受理すれば True, そうでなければ False</span>
+accepts <span class="synStatement">::</span> (Automaton fa, State s, Alphabet a) <span class="synStatement">=&gt;</span> fa s a <span class="synStatement">-&gt;</span> [a] <span class="synStatement">-&gt;</span> Bool
+fa <span class="synStatement">`accepts`</span> as <span class="synStatement">=</span> isAcceptStates fa (run fa (initStates fa) as)
+</pre><p>次に、<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a>の実際の実装例を一つ見てみましょう。以下のデータ型<a class="keyword" href="http://d.hatena.ne.jp/keyword/DFA">DFA</a>は、<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a>の中でも最も簡単なものである決定性有限<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a>(Deterministic Finite Automaton)と言われるものです<a href="#f-ccf829fd" name="fn-ccf829fd" title="DFA自体の厳密な定義についてはここでは触れません。気になる方はWikipediaとかに載っているので読んでみてください。
+[https://ja.wikipedia.org/wiki/%E6%B1%BA%E5%AE%9A%E6%80%A7%E6%9C%89%E9%99%90%E3%82%AA%E3%83%BC%E3%83%88%E3%83%9E%E3%83%88%E3%83%B3:title]">*1</a>。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synComment">-- Automaton/DFA.hs</span>
+<span class="synType">module</span> Automaton.DFA
+<span class="synPreProc">import</span> <span class="synPreProc">qualified</span> Data.Map <span class="synPreProc">as</span> M
+<span class="synPreProc">import</span> <span class="synPreProc">qualified</span> Data.Set <span class="synPreProc">as</span> S
+
+<span class="synType">data</span> DFA state alpha <span class="synStatement">=</span> DFA {
+    dfaTransTable <span class="synStatement">::</span> M.Map (state, alpha) state
+  , dfaStart <span class="synStatement">::</span> state
+  , dfaAccepts <span class="synStatement">::</span> S.Set state
+  } <span class="synType">deriving</span> (Show, Read)
+
+<span class="synType">instance</span> Automaton DFA <span class="synType">where</span>
+  <span class="synType">type</span> F DFA s <span class="synStatement">=</span> Maybe s
+  step _ Nothing _ <span class="synStatement">=</span> Nothing
+  step dfa (Just s) a <span class="synStatement">=</span> M.lookup (s, a) <span class="synStatement">$</span> dfaTransTable dfa
+  initStates dfa <span class="synStatement">=</span> Just (dfaStart dfa)
+  isAcceptStates _ Nothing <span class="synStatement">=</span> False
+  isAcceptStates dfa (Just s) <span class="synStatement">=</span> isAcceptState dfa s
+
+isAcceptState <span class="synStatement">::</span> (State s, Alphabet a) <span class="synStatement">=&gt;</span> DFA s a <span class="synStatement">-&gt;</span> s <span class="synStatement">-&gt;</span> Bool
+isAcceptState dfa s <span class="synStatement">=</span> S.member s <span class="synStatement">$</span> dfaAccepts dfa
+</pre><p><a class="keyword" href="http://d.hatena.ne.jp/keyword/DFA">DFA</a>は初期状態をdfaStart, 受理状態を集合dfaAcceptsで表しており、状態sと文字aが来た時に次に遷移する状態をMapの形で持っています。<br />
+<a class="keyword" href="http://d.hatena.ne.jp/keyword/DFA">DFA</a>の状態(F <a class="keyword" href="http://d.hatena.ne.jp/keyword/DFA">DFA</a> s)はMaybe s型で表され、Nothingは常に失敗となりますが、これは単にMapに遷移先が書かれていなかった場合に無条件で失敗にするための実装上の都合です。</p><p>これを使って、簡単な<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a>を作ってみましょう。<br />
+以下は"ab"の任意回の繰り返しを受理する<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%C8%A5%DE%A5%C8%A5%F3">オートマトン</a>です。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synComment">-- Example.hs</span>
+<span class="synSpecial">{-# LANGUAGE</span>
+<span class="synSpecial">    OverloadedLists #-}</span>
+<span class="synPreProc">import</span> Automaton
+<span class="synPreProc">import</span> Automaton.DFA (DFA(..))
+
+n_times_of_ab <span class="synStatement">::</span> DFA Int Char
+n_times_of_ab <span class="synStatement">=</span> DFA {
+    dfaTransTable <span class="synStatement">=</span> [
+        (s, <span class="synConstant">'a'</span>) <span class="synStatement">--&gt;</span> a
+      , (a, <span class="synConstant">'b'</span>) <span class="synStatement">--&gt;</span> b
+      , (b, <span class="synConstant">'a'</span>) <span class="synStatement">--&gt;</span> a
+      ]
+  , dfaStart <span class="synStatement">=</span> s
+  , dfaAccepts <span class="synStatement">=</span> [b]
+  } <span class="synType">where</span> s<span class="synStatement">:</span>a<span class="synStatement">:</span>b<span class="synStatement">:</span>_ <span class="synStatement">=</span> [<span class="synConstant">0</span><span class="synStatement">..</span>]
+</pre><p>OverloadedListsという<a class="keyword" href="http://d.hatena.ne.jp/keyword/GHC">GHC</a>拡張が使われていますが、これはMapやSet等<a href="#f-23078cbd" name="fn-23078cbd" title="GHC.Exts.IsListのインスタンスである任意の型">*2</a>をリスト<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%EA%A5%C6%A5%E9%A5%EB">リテラル</a>と同様の表記で書けるようにするための拡張です。</p><br />
+<p>s, a, bは状態です。区別できれば何でも良いので、s:a:b:_ = [0..]というように適当な数値を代入しています。</p><p>初期状態はsで、そこから入力文字'a'を受け取ると状態aになります。状態aから入力文字'b'を受け取ると状態bに移り、状態bから入力文字'c'を受け取ると状態aに戻ります。それ以外の場合は失敗(受理されない)です。</p><p><span itemscope itemtype="http://schema.org/Photograph"><img src="https://cdn-ak.f.st-hatena.com/images/fotolife/c/cloudear8/20170209/20170209170509.png" alt="f:id:cloudear8:20170209170509p:plain" title="f:id:cloudear8:20170209170509p:plain" class="hatena-fotolife" itemprop="image"></span></p><p>最終的に状態bにたどり着いていれば、その文字列は受理されたこととなります。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synStatement">&gt;&gt;&gt;</span> n_times_of_ab <span class="synStatement">`accepts`</span> <span class="synConstant">&quot;&quot;</span> <span class="synComment">-- 空文字列は受理しない</span>
+False
+<span class="synStatement">&gt;&gt;&gt;</span> n_times_of_ab <span class="synStatement">`accepts`</span> <span class="synConstant">&quot;ab&quot;</span> <span class="synComment">-- &quot;ab&quot; の1回の繰り返しなのでok</span>
+True
+<span class="synStatement">&gt;&gt;&gt;</span> n_times_of_ab <span class="synStatement">`accepts`</span> <span class="synConstant">&quot;abababab&quot;</span> <span class="synComment">-- &quot;ab&quot; の4回の繰り返しなのでok</span>
+True
+<span class="synStatement">&gt;&gt;&gt;</span> n_times_of_ab <span class="synStatement">`accepts`</span> <span class="synConstant">&quot;ababababa&quot;</span> <span class="synComment">-- aで終わってるのでダメ</span>
+False
+<span class="synStatement">&gt;&gt;&gt;</span> n_times_of_ab <span class="synStatement">`accepts`</span> <span class="synConstant">&quot;aababab&quot;</span> <span class="synComment">-- 先頭がaaとなっているのでダメ</span>
+False
+<span class="synStatement">&gt;&gt;&gt;</span> n_times_of_ab <span class="synStatement">`accepts`</span> <span class="synConstant">&quot;bababab&quot;</span> <span class="synComment">-- bから始まっているのでダメ</span>
+False
+</pre>
+</div><div class="footnote">
+<p class="footnote"><a href="#fn-ccf829fd" name="f-ccf829fd" class="footnote-number">*1</a><span class="footnote-delimiter">:</span><span class="footnote-text"><a class="keyword" href="http://d.hatena.ne.jp/keyword/DFA">DFA</a>自体の厳密な定義についてはここでは触れません。気になる方は<a class="keyword" href="http://d.hatena.ne.jp/keyword/Wikipedia">Wikipedia</a>とかに載っているので読んでみてください。
+<a href="https://ja.wikipedia.org/wiki/%E6%B1%BA%E5%AE%9A%E6%80%A7%E6%9C%89%E9%99%90%E3%82%AA%E3%83%BC%E3%83%88%E3%83%9E%E3%83%88%E3%83%B3">&#x6C7A;&#x5B9A;&#x6027;&#x6709;&#x9650;&#x30AA;&#x30FC;&#x30C8;&#x30DE;&#x30C8;&#x30F3; - Wikipedia</a></span></p>
+<p class="footnote"><a href="#fn-23078cbd" name="f-23078cbd" class="footnote-number">*2</a><span class="footnote-delimiter">:</span><span class="footnote-text"><a class="keyword" href="http://d.hatena.ne.jp/keyword/GHC">GHC</a>.Exts.IsListの<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%B9%A5%BF%A5%F3%A5%B9">インスタンス</a>である任意の型</span></p>
+</div>
+
+{% endraw %}

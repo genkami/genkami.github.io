@@ -1,0 +1,47 @@
+---
+layout: post
+title: Pythonでsealedクラス
+tags:
+- Python
+
+---
+{% raw %}
+<p>とくに意味も用途もないけど何となく思いついたので作ってみました。</p><p>sealedクラスとは<a class="keyword" href="http://d.hatena.ne.jp/keyword/Scala">Scala</a>の機能で、別モジュールからの継承をできなくさせる機能です。</p>
+<pre class="code lang-python" data-lang="python" data-unlink><span class="synComment"># sealed.py</span>
+
+<span class="synStatement">class</span> <span class="synIdentifier">SealedException</span>(<span class="synType">Exception</span>):
+    <span class="synStatement">pass</span>
+
+<span class="synStatement">class</span> <span class="synIdentifier">SealedMeta</span>(<span class="synIdentifier">type</span>):
+    <span class="synStatement">def</span> <span class="synIdentifier">__init__</span>(self, name, bases, methods):
+        <span class="synIdentifier">super</span>().__init__(name, bases, methods)
+
+        <span class="synStatement">for</span> parent <span class="synStatement">in</span> bases:
+            <span class="synStatement">try</span>:
+                <span class="synStatement">if</span> parent._SEALED_BASE_DEFINED_AT != self.__module__:
+                    <span class="synComment"># sealedなクラスを継承した子</span>
+                    <span class="synStatement">raise</span> SealedException(<span class="synConstant">'do not inherit %s'</span> % parent.__name__)
+            <span class="synStatement">except</span> <span class="synType">AttributeError</span>:
+                <span class="synComment"># _SEALED_BASE_DEFINED_AT が存在しない場合は無視</span>
+                <span class="synStatement">pass</span>
+        <span class="synComment"># ここまで辿り着く場合は、別モジュールで継承されたくない親クラス</span>
+        self._SEALED_BASE_DEFINED_AT = self.__module__
+
+<span class="synStatement">class</span> <span class="synIdentifier">Parent</span>(metaclass=SealedMeta):
+    <span class="synStatement">pass</span>
+
+<span class="synStatement">class</span> <span class="synIdentifier">Child1</span>(Parent): <span class="synComment"># 同じモジュール内なので継承できる</span>
+    <span class="synStatement">pass</span>
+</pre><p>使用例。sealed.pyをロードした<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%BF%A5%D7%A5%EA%A5%BF">インタプリタ</a>側からは、sealed.Parentを継承できなくなっています。</p>
+<pre class="code lang-python" data-lang="python" data-unlink>&gt;&gt;&gt; <span class="synPreProc">import</span> sealed
+&gt;&gt;&gt; <span class="synStatement">class</span> <span class="synIdentifier">Child2</span>(sealed.Parent): <span class="synComment">#</span>
+...   <span class="synStatement">pass</span>
+... 
+Traceback (most recent call last):
+  File <span class="synConstant">&quot;&lt;stdin&gt;&quot;</span>, line <span class="synConstant">1</span>, <span class="synStatement">in</span> &lt;module&gt;
+  File <span class="synConstant">&quot;/home/gobba/Program/gomicode/Python/sealed.py&quot;</span>, line <span class="synConstant">14</span>, <span class="synStatement">in</span> __init__
+    <span class="synStatement">raise</span> SealedException(<span class="synConstant">'do not inherit %s'</span> % parent.__name__)
+sealed.SealedException: do <span class="synStatement">not</span> inherit Parent
+</pre>
+
+{% endraw %}

@@ -1,0 +1,59 @@
+---
+layout: post
+title: Pythonで代数的データ型とパターンマッチ
+tags:
+- Python
+
+---
+{% raw %}
+<p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Python">Python</a>で<a class="keyword" href="http://d.hatena.ne.jp/keyword/Haskell">Haskell</a>っぽい代数的データ型とパターンマッチをできるようにするための<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%E1%A5%BF%A5%AF%A5%E9%A5%B9">メタクラス</a>です。<br />
+まあこれも余り用途はなさそうですけど。</p>
+<pre class="code lang-python" data-lang="python" data-unlink>
+<span class="synStatement">def</span> <span class="synIdentifier">AlgTypeMeta</span>(*names):
+    <span class="synStatement">class</span> <span class="synIdentifier">_AlgTypeMeta</span>(<span class="synIdentifier">type</span>):
+        <span class="synStatement">def</span> <span class="synIdentifier">__new__</span>(metacls, name, bases, methods):
+            <span class="synStatement">def</span> <span class="synIdentifier">init</span>(self, *args):
+                len_args = <span class="synIdentifier">len</span>(args)
+                len_names = <span class="synIdentifier">len</span>(names)
+                <span class="synStatement">if</span> len_args != len_names:
+                    <span class="synStatement">raise</span> <span class="synType">TypeError</span>(<span class="synConstant">'%s takes %d positional arguments but %d were given'</span>
+                                   % (name, len_names, len_args))
+                self._values = args
+                <span class="synStatement">for</span> prop, value <span class="synStatement">in</span> <span class="synIdentifier">zip</span>(names, args):
+                    <span class="synIdentifier">setattr</span>(self, prop, value)
+            methods[<span class="synConstant">'__init__'</span>] = init
+
+            <span class="synStatement">def</span> <span class="synIdentifier">get_values</span>(self):
+                <span class="synStatement">return</span> self._values
+            methods[<span class="synConstant">'get_values'</span>] = get_values
+
+            <span class="synStatement">return</span> <span class="synIdentifier">super</span>().__new__(metacls, name, bases, methods)
+    <span class="synStatement">return</span> _AlgTypeMeta
+
+<span class="synStatement">def</span> <span class="synIdentifier">match</span>(obj, pat):
+    <span class="synStatement">return</span> pat[obj.__class__](*obj.get_values())
+</pre><p>この<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%E1%A5%BF%A5%AF%A5%E9%A5%B9">メタクラス</a>を使うと、以下のように代数的データ型のようなクラスを定義することができます。</p>
+<pre class="code lang-python" data-lang="python" data-unlink><span class="synStatement">class</span> <span class="synIdentifier">Point2D</span>(metaclass=AlgTypeMeta(<span class="synConstant">'x'</span>, <span class="synConstant">'y'</span>)):
+    <span class="synStatement">pass</span>
+<span class="synStatement">class</span> <span class="synIdentifier">Point3D</span>(metaclass=AlgTypeMeta(<span class="synConstant">'x'</span>, <span class="synConstant">'y'</span>, <span class="synConstant">'z'</span>)):
+    <span class="synStatement">pass</span>
+</pre><p>AlgTypeMeta<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%E1%A5%BF%A5%AF%A5%E9%A5%B9">メタクラス</a>を利用することによって、Point2D.__init__(self, x, y), Point3D.__init__(self, x, y, z)が自動生成されます。</p>
+<pre class="code lang-python" data-lang="python" data-unlink>&gt;&gt;&gt; p = Point2D(<span class="synConstant">3</span>, <span class="synConstant">2</span>)
+&gt;&gt;&gt; p3 = Point3D(<span class="synConstant">1</span>, <span class="synConstant">3</span>, <span class="synConstant">5</span>)
+</pre><p>また、先ほどのソースの下の方で定義されているmatch関数を使うと、<a class="keyword" href="http://d.hatena.ne.jp/keyword/Haskell">Haskell</a>のパターンマッチのようなことを行うことができます。</p>
+<pre class="code lang-python" data-lang="python" data-unlink><span class="synPreProc">from</span> math <span class="synPreProc">import</span> sqrt
+
+<span class="synStatement">def</span> <span class="synIdentifier">norm</span>(p):
+    <span class="synStatement">return</span> match(p, {
+        Point2D: <span class="synStatement">lambda</span> x, y: sqrt(x**<span class="synConstant">2</span> + y**<span class="synConstant">2</span>),
+        Point3D: <span class="synStatement">lambda</span> x, y, z: sqrt(x**<span class="synConstant">2</span> + y**<span class="synConstant">2</span> + z**<span class="synConstant">2</span>)
+    })
+</pre><p>実行例:</p>
+<pre class="code lang-python" data-lang="python" data-unlink><span class="synStatement">def</span> <span class="synIdentifier">norm</span>(p):
+    <span class="synStatement">return</span> match(p, {
+        Point2D: <span class="synStatement">lambda</span> x, y: sqrt(x**<span class="synConstant">2</span> + y**<span class="synConstant">2</span>),
+        Point3D: <span class="synStatement">lambda</span> x, y, z: sqrt(x**<span class="synConstant">2</span> + y**<span class="synConstant">2</span> + z**<span class="synConstant">2</span>)
+    })
+</pre>
+
+{% endraw %}

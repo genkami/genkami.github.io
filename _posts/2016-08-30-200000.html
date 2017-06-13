@@ -1,0 +1,46 @@
+---
+layout: post
+title: Pythonにおける弱参照
+tags:
+- Python
+
+---
+{% raw %}
+<p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Python">Python</a>にも弱参照は存在するらしく、weakrefというモジュールで提供されています。</p>
+<pre class="code lang-python" data-lang="python" data-unlink>&gt;&gt;&gt; <span class="synPreProc">import</span> weakref
+&gt;&gt;&gt; <span class="synStatement">class</span> <span class="synIdentifier">A</span>(<span class="synIdentifier">object</span>): <span class="synStatement">pass</span>
+... 
+&gt;&gt;&gt; a = A()   <span class="synComment"># ... (*)</span>
+&gt;&gt;&gt; ptr = weakref.ref(a)
+&gt;&gt;&gt; ptr()
+&lt;__main__.A <span class="synIdentifier">object</span> at <span class="synConstant">0x7fd47bb929b0</span>&gt;
+&gt;&gt;&gt; <span class="synStatement">del</span> a
+
+... (しばらく色々な操作をして、GCが呼ばれるのを待つ) ...
+
+&gt;&gt;&gt; ptr() <span class="synStatement">is</span> <span class="synIdentifier">None</span>
+<span class="synIdentifier">True</span>
+</pre><p>このように、(*)で生成されたAの<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%B9%A5%BF%A5%F3%A5%B9">インスタンス</a>に対する(weakでない)参照の数が0となった時点で、この<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%B9%A5%BF%A5%F3%A5%B9">インスタンス</a>は<a class="keyword" href="http://d.hatena.ne.jp/keyword/GC">GC</a>により削除され、ptrも何の値も指さなくなります。</p><p>そう言われてみると<a class="keyword" href="http://d.hatena.ne.jp/keyword/Python">Python</a>の<a class="keyword" href="http://d.hatena.ne.jp/keyword/GC">GC</a>は参照カウント方式なので、次のように循環参照を持つオブジェクトを生成した場合、弱参照にしないと<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%E1%A5%E2%A5%EA%A5%EA%A1%BC%A5%AF">メモリリーク</a>が発生するのでしょうか？</p>
+<pre class="code lang-python" data-lang="python" data-unlink><span class="synStatement">class</span> <span class="synIdentifier">Loop</span>(<span class="synIdentifier">object</span>):
+    <span class="synStatement">def</span> <span class="synIdentifier">__init__</span>(self, ptr=<span class="synIdentifier">None</span>):
+        self.ptr = ptr
+
+    <span class="synStatement">def</span> <span class="synIdentifier">__del__</span>(self):
+        <span class="synIdentifier">print</span>(<span class="synConstant">'%s: deleted.'</span> % self)
+
+<span class="synStatement">class</span> <span class="synIdentifier">Leak</span>(<span class="synIdentifier">object</span>):
+    <span class="synStatement">def</span> <span class="synIdentifier">__init__</span>(self):
+        a = Loop()
+        b = Loop()
+        a.ptr = b
+        b.ptr = a
+        self.a = a
+        self.b = b
+
+<span class="synStatement">while</span> <span class="synIdentifier">True</span>:
+    hoge = Leak()
+    <span class="synIdentifier">print</span>(<span class="synConstant">'yeah'</span>)
+</pre><p>しかし、これを実行してみても<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%E1%A5%E2%A5%EA%A5%EA%A1%BC%A5%AF">メモリリーク</a>は起こりません。実際に出力を確認してみると、(環境にもよるのかもしれませんが)ループ数百回ごとに<a class="keyword" href="http://d.hatena.ne.jp/keyword/GC">GC</a>が呼ばれ、ループ内で生成されたLeakの<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%B9%A5%BF%A5%F3%A5%B9">インスタンス</a>が全消去されているのがわかります。</p><p>実は<a class="keyword" href="http://d.hatena.ne.jp/keyword/Python">Python</a>の<a class="keyword" href="http://d.hatena.ne.jp/keyword/GC">GC</a><a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A2%A5%EB%A5%B4%A5%EA%A5%BA%A5%E0">アルゴリズム</a>は少し賢いらしく、循環参照を検出することによって、循環の外からの参照のないオブジェクトを削除できるようになっているらしいです。</p><p>となると、よけいにweakptrの使い所がわかりません。何か他に<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%E1%A5%E2%A5%EA%A5%EA%A1%BC%A5%AF">メモリリーク</a>を起こしうるパターンがあるのでしょうか……。</p>
+
+
+{% endraw %}

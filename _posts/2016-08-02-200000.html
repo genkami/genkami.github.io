@@ -1,0 +1,50 @@
+---
+layout: post
+title: Gaucheでn-queen問題
+tags:
+- Gauche
+
+---
+{% raw %}
+<p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Gauche">Gauche</a>の練習。<br />
+任意のnに対してn-<a class="keyword" href="http://d.hatena.ne.jp/keyword/queen">queen</a>問題を総当りで解きます。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synComment">;; 横x, 縦yマス目の位置のクイーンを(x . y)で表す</span>
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>x queen<span class="synSpecial">)</span> <span class="synSpecial">(</span><span class="synIdentifier">car</span> queen<span class="synSpecial">))</span>
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>y queen<span class="synSpecial">)</span> <span class="synSpecial">(</span><span class="synIdentifier">cdr</span> queen<span class="synSpecial">))</span>
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>queen-at x y<span class="synSpecial">)</span> <span class="synSpecial">(</span><span class="synIdentifier">cons</span> x y<span class="synSpecial">))</span>
+
+<span class="synComment">;; queenがqueensのうち、1つでも取れるものがあれば#t</span>
+<span class="synComment">;; 1つも取れるコマがなければ#f</span>
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>can-take? queen queens<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span>any <span class="synSpecial">(</span>^<span class="synSpecial">(</span>enemy<span class="synSpecial">)</span>
+         <span class="synSpecial">(</span><span class="synStatement">or</span> <span class="synSpecial">(</span><span class="synIdentifier">=</span> <span class="synSpecial">(</span>x queen<span class="synSpecial">)</span> <span class="synSpecial">(</span>x enemy<span class="synSpecial">))</span>
+             <span class="synSpecial">(</span><span class="synIdentifier">=</span> <span class="synSpecial">(</span><span class="synIdentifier">abs</span> <span class="synSpecial">(</span><span class="synIdentifier">-</span> <span class="synSpecial">(</span>x queen<span class="synSpecial">)</span> <span class="synSpecial">(</span>x enemy<span class="synSpecial">)))</span>
+                <span class="synSpecial">(</span><span class="synIdentifier">abs</span> <span class="synSpecial">(</span><span class="synIdentifier">-</span> <span class="synSpecial">(</span>y queen<span class="synSpecial">)</span> <span class="synSpecial">(</span>y enemy<span class="synSpecial">))))))</span>
+       queens<span class="synSpecial">))</span>
+
+<span class="synComment">;; 幅がwidthの盤において、m行目におけるすべての位置を返す</span>
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>queens m width<span class="synSpecial">)</span> <span class="synSpecial">(</span><span class="synIdentifier">map</span> <span class="synSpecial">(</span>^<span class="synSpecial">(</span>i<span class="synSpecial">)</span> <span class="synSpecial">(</span>queen-at i m<span class="synSpecial">))</span> <span class="synSpecial">(</span>iota width <span class="synConstant">1</span><span class="synSpecial">)))</span>
+
+<span class="synComment">;; nクイーン問題を総当りで解く</span>
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>n-queen n :optional <span class="synSpecial">(</span>width n<span class="synSpecial">))</span>
+  <span class="synComment">;; 互いに取れないn-1-queensに対し、n行目クイーンを置いても</span>
+  <span class="synComment">;; それぞれ互いに取れないようなコマの置き方があるのならば、それを</span>
+  <span class="synComment">;; n-queens-listに追加したものを返す</span>
+  <span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>add-queen n-queens-list n-1-queens<span class="synSpecial">)</span>
+    <span class="synSpecial">(</span><span class="synIdentifier">fold-left</span>
+     <span class="synSpecial">(</span>^<span class="synSpecial">(</span>n-queens-list queen<span class="synSpecial">)</span>
+       <span class="synSpecial">(</span><span class="synStatement">if</span> <span class="synSpecial">(</span><span class="synIdentifier">not</span> <span class="synSpecial">(</span>can-take? queen n-1-queens<span class="synSpecial">))</span>
+           <span class="synSpecial">(</span><span class="synIdentifier">cons</span> <span class="synSpecial">(</span><span class="synIdentifier">cons</span> queen n-1-queens<span class="synSpecial">)</span> n-queens-list<span class="synSpecial">)</span>
+           n-queens-list<span class="synSpecial">))</span>
+     n-queens-list
+     <span class="synSpecial">(</span>queens n width<span class="synSpecial">)))</span>
+  <span class="synSpecial">(</span><span class="synStatement">if</span> <span class="synSpecial">(</span><span class="synIdentifier">=</span> n <span class="synConstant">1</span><span class="synSpecial">)</span>
+      <span class="synSpecial">(</span><span class="synIdentifier">map</span> <span class="synSpecial">(</span>^<span class="synSpecial">(</span>q<span class="synSpecial">)</span> <span class="synSpecial">(</span><span class="synIdentifier">list</span> q<span class="synSpecial">))</span> <span class="synSpecial">(</span>queens <span class="synConstant">1</span> width<span class="synSpecial">))</span>
+      <span class="synSpecial">(</span><span class="synStatement">let</span> <span class="synSpecial">((</span>valid-n-1-queens-list <span class="synSpecial">(</span>n-queen <span class="synSpecial">(</span><span class="synIdentifier">-</span> n <span class="synConstant">1</span><span class="synSpecial">)</span> width<span class="synSpecial">)))</span>
+        <span class="synSpecial">(</span><span class="synIdentifier">fold-left</span> add-queen <span class="synSpecial">'()</span> valid-n-1-queens-list<span class="synSpecial">))))</span>
+</pre><pre class="code lang-scheme" data-lang="scheme" data-unlink>gosh&gt; <span class="synSpecial">(</span><span class="synIdentifier">length</span> <span class="synSpecial">(</span>n-queen <span class="synConstant">8</span><span class="synSpecial">))</span>
+<span class="synConstant">92</span>
+</pre><p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Wikipedia">Wikipedia</a>の8-<a class="keyword" href="http://d.hatena.ne.jp/keyword/queen">queen</a>問題の解の個数と一致しているので、多分あってるはずです。</p>
+
+
+{% endraw %}

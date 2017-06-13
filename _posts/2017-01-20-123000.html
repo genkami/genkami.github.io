@@ -1,0 +1,37 @@
+---
+layout: post
+title: OCamlの値の比較について
+tags:
+- OCaml
+
+---
+{% raw %}
+<p><a class="keyword" href="http://d.hatena.ne.jp/keyword/OCaml">OCaml</a>には2種類の値の比較方法があります。</p>
+
+<div class="section">
+    <h3>==, !=</h3>
+    <p>これらの<a class="keyword" href="http://d.hatena.ne.jp/keyword/%B1%E9%BB%BB%BB%D2">演算子</a>は、右辺と左辺が全く同一のオブジェクトであるかを判定します。==という名前は大抵の言語で使われているので、つい癖で値の比較に使用してしまいそうですが、この<a class="keyword" href="http://d.hatena.ne.jp/keyword/%B1%E9%BB%BB%BB%D2">演算子</a>はむしろ<a class="keyword" href="http://d.hatena.ne.jp/keyword/Scheme">Scheme</a>のeq?, <a class="keyword" href="http://d.hatena.ne.jp/keyword/Python">Python</a>のisに近いものです。関数型らしいコードを書く上では使うことはほとんど無いでしょう。<a href="https://github.com/janestreet/core">&#x6D41;&#x6D3E;</a>によっては、</p>
+<pre class="code lang-ocaml" data-lang="ocaml" data-unlink><span class="synStatement">let</span> <span class="synStatement">(==)</span> <span class="synStatement">=</span> <span class="synConstant">`Consider_phys_equal</span>
+<span class="synStatement">let</span> <span class="synStatement">(!=)</span> <span class="synStatement">=</span> <span class="synConstant">`Consider_phys_equal</span>
+</pre><p>として、これらの<a class="keyword" href="http://d.hatena.ne.jp/keyword/%B1%E9%BB%BB%BB%D2">演算子</a>自体を使えなくしてしまうこともあるようです。</p>
+
+</div>
+<div class="section">
+    <h3>=, <></h3>
+    <p>こちらが値の比較です。ググッてこのページにたどり着いた人が求めている<a class="keyword" href="http://d.hatena.ne.jp/keyword/%B1%E9%BB%BB%BB%D2">演算子</a>はたぶんこちらでしょう。</p><p>2つの<a class="keyword" href="http://d.hatena.ne.jp/keyword/%B1%E9%BB%BB%BB%D2">演算子</a>の挙動の違いは、以下のコードを見ればわかると思います。</p>
+<pre class="code lang-ocaml" data-lang="ocaml" data-unlink><span class="synStatement">type</span> t <span class="synStatement">=</span> <span class="synConstant">T</span> <span class="synStatement">of</span> <span class="synType">string</span>
+<span class="synPreProc">#</span> <span class="synStatement">let</span> x <span class="synStatement">=</span> <span class="synConstant">T</span> <span class="synConstant">&quot;yeah&quot;</span><span class="synStatement">;;</span>
+<span class="synPreProc">#</span> <span class="synStatement">let</span> y <span class="synStatement">=</span> <span class="synConstant">T</span> <span class="synConstant">&quot;yeah&quot;</span><span class="synStatement">;;</span>
+<span class="synPreProc">#</span> x <span class="synStatement">=</span> y<span class="synStatement">;;</span> <span class="synComment">(* xとyは値としては等しい *)</span>
+- : <span class="synType">bool</span> <span class="synStatement">=</span> <span class="synConstant">true</span>
+<span class="synPreProc">#</span> x <span class="synStatement">&lt;&gt;</span> y<span class="synStatement">;;</span>
+- : <span class="synType">bool</span> <span class="synStatement">=</span> <span class="synConstant">false</span>
+
+<span class="synPreProc">#</span> x <span class="synStatement">==</span> y<span class="synStatement">;;</span> <span class="synComment">(* xとyは別なオブジェクト *)</span>
+- : <span class="synType">bool</span> <span class="synStatement">=</span> <span class="synConstant">false</span>
+<span class="synPreProc">#</span> x <span class="synStatement">!=</span> y<span class="synStatement">;;</span>
+- : <span class="synType">bool</span> <span class="synStatement">=</span> <span class="synConstant">true</span>
+</pre>
+</div>
+
+{% endraw %}

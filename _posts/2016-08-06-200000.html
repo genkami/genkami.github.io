@@ -1,0 +1,19 @@
+---
+layout: post
+title: Cabalで静的ファイルをパッケージに含める
+tags:
+- Haskell
+
+---
+{% raw %}
+<p>YourPackage.cabalに</p>
+<pre class="code" data-lang="" data-unlink>data-dir:
+    dirname
+data-files:
+    *.txt
+    img/*.png</pre><p>のように記述すると、dirname以下のdata-filesに指定したファイルがインストール時にコピーされます。</p><p>また、これらのファイルにアクセスするためのPaths_YourPackage という名前のモジュールが自動生成され、</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink>realpath <span class="synStatement">&lt;-</span> Paths_YourPackage.getDataFileName <span class="synConstant">&quot;img/hoge.png&quot;</span>
+</pre><p>というようにすることで実際のパスが得られます。</p>
+
+
+{% endraw %}

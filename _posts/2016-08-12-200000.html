@@ -1,0 +1,62 @@
+---
+layout: post
+title: Gaucheで関数の実行時間を測定する
+tags:
+- Gauche
+
+---
+{% raw %}
+<p><a class="keyword" href="http://d.hatena.ne.jp/keyword/gauche">gauche</a>.timeのtime-this関数を使うと、指定した関数の実行にどれくらい時間がかかるのかを測定することができます。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span>time-this <span class="synError">実行回数</span> <span class="synError">実行する関数</span><span class="synSpecial">)</span>
+</pre><p>例として、クラスを使った場合と、ベクタを適当にラップした型に対してアクセスするのとで、どの程度実行に差が出るのかを調べてみたいとします。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span>use data.random<span class="synSpecial">)</span>
+<span class="synSpecial">(</span>use gauche.time<span class="synSpecial">)</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define</span> random-gen <span class="synSpecial">(</span>integers$ <span class="synConstant">100000</span> <span class="synConstant">1</span><span class="synSpecial">))</span>
+
+<span class="synSpecial">(</span>define-class <span class="synConstant">&lt;hoge&gt;</span> <span class="synSpecial">()</span>
+  <span class="synSpecial">((</span>first :init-keyword :first :accessor first<span class="synSpecial">)</span>
+   <span class="synSpecial">(</span>second :init-keyword :second :accessor second<span class="synSpecial">)</span>
+   <span class="synSpecial">(</span>third :init-keyword :third :accessor third<span class="synSpecial">)))</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>&lt;hoge&gt;-bench<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span><span class="synStatement">define</span> hoge-instance <span class="synSpecial">(</span>make <span class="synConstant">&lt;hoge&gt;</span>
+                          :first <span class="synSpecial">(</span>random-gen<span class="synSpecial">)</span>
+                          :second <span class="synSpecial">(</span>random-gen<span class="synSpecial">)</span>
+                          :third <span class="synSpecial">(</span>random-gen<span class="synSpecial">)))</span>
+  <span class="synSpecial">(</span>first hoge-instance<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span>second hoge-instance<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span>third hoge-instance<span class="synSpecial">))</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>make-hoge first second third<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span><span class="synIdentifier">cons</span> <span class="synSpecial">'</span>hoge <span class="synSpecial">(</span><span class="synIdentifier">vector</span> first second third<span class="synSpecial">)))</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>hoge? hoge<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span><span class="synStatement">and</span> <span class="synSpecial">(</span><span class="synIdentifier">pair?</span> hoge<span class="synSpecial">)</span>
+       <span class="synSpecial">(</span><span class="synIdentifier">symbol?</span> <span class="synSpecial">(</span><span class="synIdentifier">car</span> hoge<span class="synSpecial">))</span>
+       <span class="synSpecial">(</span><span class="synIdentifier">eq?</span> <span class="synSpecial">'</span>hoge <span class="synSpecial">(</span><span class="synIdentifier">car</span> hoge<span class="synSpecial">))))</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>hoge-first hoge<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span><span class="synIdentifier">vector-ref</span> <span class="synSpecial">(</span><span class="synIdentifier">cdr</span> hoge<span class="synSpecial">)</span> <span class="synConstant">0</span><span class="synSpecial">))</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>hoge-second hoge<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span><span class="synIdentifier">vector-ref</span> <span class="synSpecial">(</span><span class="synIdentifier">cdr</span> hoge<span class="synSpecial">)</span> <span class="synConstant">1</span><span class="synSpecial">))</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>hoge-third hoge<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span><span class="synIdentifier">vector-ref</span> <span class="synSpecial">(</span><span class="synIdentifier">cdr</span> hoge<span class="synSpecial">)</span> <span class="synConstant">2</span><span class="synSpecial">))</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>hoge-bench<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span><span class="synStatement">define</span> hoge <span class="synSpecial">(</span>make-hoge <span class="synSpecial">(</span>random-gen<span class="synSpecial">)</span> <span class="synSpecial">(</span>random-gen<span class="synSpecial">)</span> <span class="synSpecial">(</span>random-gen<span class="synSpecial">)))</span>
+  <span class="synSpecial">(</span>hoge-first hoge<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span>hoge-second hoge<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span>hoge-third hoge<span class="synSpecial">))</span>
+</pre><p>この<hoge>-benchと<a class="keyword" href="http://d.hatena.ne.jp/keyword/hoge">hoge</a>-benchの実行速度を計測してみましょう。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span>time-this <span class="synConstant">100000</span> &lt;hoge&gt;-bench<span class="synSpecial">)</span>
+<span class="synComment">;; =&gt; #&lt;time-result 100000 times/  0.467 real/  0.730 user/  0.000 sys&gt;</span>
+
+<span class="synSpecial">(</span>time-this <span class="synConstant">100000</span> hoge-bench<span class="synSpecial">)</span>
+<span class="synComment">;; =&gt; #&lt;time-result 100000 times/  0.221 real/  0.290 user/  0.010 sys&gt;</span>
+</pre><p>クラスを使った場合のほうが、そうでない場合よりも倍程度時間がかかることが分かりました。</p><p>(ただし、<a class="keyword" href="http://d.hatena.ne.jp/keyword/Gauche">Gauche</a>の関数(特に総称関数)はクラスを利用することを前提としたものが多いため、必ずしも<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%D9%A5%F3%A5%C1%A5%DE%A1%BC%A5%AF">ベンチマーク</a>の結果がいいからといってクラスではなくベクタを使うのが正解とは限りません)</p>
+
+
+{% endraw %}

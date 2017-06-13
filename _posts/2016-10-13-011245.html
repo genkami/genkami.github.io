@@ -1,0 +1,49 @@
+---
+layout: post
+title: Gaucheで値の比較
+tags:
+- Gauche
+
+---
+{% raw %}
+<p>値の比較に使用する関数は通常eq?, eqv?, equal?の3種類あるのですが、それらの使い分けが曖昧だったのでまとめてみました。</p>
+
+<div class="section">
+    <h3>eq?</h3>
+    <p>(eq? x y) はxとyが全く同じオブジェクトであるか(=メモリ上の同じ位置にあるか)どうかを判定します。<a class="keyword" href="http://d.hatena.ne.jp/keyword/Python">Python</a>のisに近いやつですね。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink>gosh&gt; <span class="synSpecial">(</span><span class="synIdentifier">eq?</span> <span class="synConstant">1</span> <span class="synConstant">1</span><span class="synSpecial">)</span> <span class="synComment">; 数値の比較結果は処理系依存らしい。Gaucheでは#tになる？</span>
+<span class="synConstant">#t</span>
+gosh&gt; <span class="synSpecial">(</span><span class="synIdentifier">eq?</span> <span class="synConstant">&quot;hoge&quot;</span> <span class="synConstant">&quot;hoge&quot;</span><span class="synSpecial">)</span>
+<span class="synConstant">#f</span>
+gosh&gt; <span class="synSpecial">(</span><span class="synStatement">define</span> x <span class="synConstant">&quot;hoge&quot;</span><span class="synSpecial">)</span>
+x
+gosh&gt; <span class="synSpecial">(</span><span class="synIdentifier">eq?</span> x x<span class="synSpecial">)</span>
+<span class="synConstant">#t</span>
+gosh&gt; <span class="synSpecial">(</span><span class="synIdentifier">eq?</span> <span class="synConstant">3.14</span> <span class="synConstant">3.14</span><span class="synSpecial">)</span>
+<span class="synConstant">#f</span>
+</pre>
+</div>
+<div class="section">
+    <h3>eqv?</h3>
+    <p>(eqv? x y) はxとyの型と値が等しければ#tを返します。ただし、ここでいう「値の比較」はかなりプリミティブというかCよりのものであるので、複雑なデータ構造はたとえ同等の内容を表していても#fになります。たぶん<number>か<char>あたりは意図どおりに比較できるはずです。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink>gosh&gt; <span class="synSpecial">(</span><span class="synIdentifier">eqv?</span> <span class="synConstant">3.14</span> <span class="synConstant">3.14</span><span class="synSpecial">)</span>
+<span class="synConstant">#t</span>
+gosh&gt; <span class="synSpecial">(</span><span class="synIdentifier">eqv?</span> <span class="synConstant">#\A</span> <span class="synConstant">#\A</span><span class="synSpecial">)</span>
+<span class="synConstant">#t</span>
+gosh&gt; <span class="synSpecial">(</span><span class="synIdentifier">eqv?</span> <span class="synConstant">&quot;A&quot;</span> <span class="synConstant">&quot;A&quot;</span><span class="synSpecial">)</span>
+<span class="synConstant">#f</span>
+gosh&gt; <span class="synSpecial">(</span><span class="synIdentifier">eqv?</span> <span class="synSpecial">'(</span><span class="synConstant">3</span> <span class="synSpecial">.</span> <span class="synConstant">#\x</span><span class="synSpecial">)</span> <span class="synSpecial">'(</span><span class="synConstant">3</span> <span class="synSpecial">.</span> <span class="synConstant">#\x</span><span class="synSpecial">))</span>
+<span class="synConstant">#f</span>
+</pre>
+</div>
+<div class="section">
+    <h3>equal?</h3>
+    <p>equal? はユーザーがカスタマイズできる同値比較で、object-equal?メソッドをオーバーライドすることによって振る舞いを決定できます。多くのデータ型は意図したとおりに値の比較を行ってくれます。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink>gosh&gt; <span class="synSpecial">(</span><span class="synIdentifier">equal?</span> <span class="synSpecial">(</span><span class="synIdentifier">list</span> <span class="synConstant">3</span> <span class="synConstant">2</span> <span class="synConstant">1</span><span class="synSpecial">)</span> <span class="synSpecial">(</span>iota <span class="synConstant">3</span> <span class="synConstant">3</span> <span class="synConstant">-1</span><span class="synSpecial">))</span>
+<span class="synConstant">#t</span>
+gosh&gt; <span class="synSpecial">(</span><span class="synIdentifier">equal?</span> <span class="synConstant">&quot;hoge&quot;</span> <span class="synSpecial">(</span><span class="synIdentifier">string-append</span> <span class="synConstant">&quot;ho&quot;</span> <span class="synConstant">&quot;ge&quot;</span><span class="synSpecial">))</span>
+<span class="synConstant">#t</span>
+</pre>
+</div>
+
+{% endraw %}

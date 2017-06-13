@@ -1,0 +1,74 @@
+---
+layout: post
+title: 定数(に見えるもの)の定義いろいろ
+tags:
+- Scala
+
+---
+{% raw %}
+<p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Scala">Scala</a>では、例えばInt型の値xを定義するのにも次のような<a class="keyword" href="http://d.hatena.ne.jp/keyword/%CA%A3%BF%F4">複数</a>の方法があります</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink>scala&gt; <span class="synType">val</span> x: Int = <span class="synConstant">3</span>
+scala&gt; lazy <span class="synType">val</span> x: Int = <span class="synConstant">3</span>
+scala&gt;<span class="synIdentifier"> def</span> x: Int = <span class="synConstant">3</span>
+</pre><p>今回はこれらの違いについてメモしておきます。</p>
+
+<div class="section">
+    <h3>valでの定義</h3>
+    <p>これが一番一般的な定義の方法です。</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink><span class="synType">val</span> x: Int = <span class="synConstant">3</span>
+</pre><p>という文が表れた瞬間に右辺の値を評価し、左辺の変数に代入します。</p>
+
+</div>
+<div class="section">
+    <h3>lazy valでの定義</h3>
+    <p>lazy修飾子を付けると、値が必要になるまで評価が遅延されます。</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink>lazy <span class="synType">val</span> x: Int = <span class="synConstant">3</span>
+</pre><p>しかし、<a class="keyword" href="http://d.hatena.ne.jp/keyword/Haskell">Haskell</a>の遅延評価とは違い、本当に必要になる前に評価されてしまう場合があります。<br />
+関数の引数としてxが渡された場合、実際にはその関数の中でxが使われなかったとしても、xの中身は評価されてしまいます。</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink>scala&gt;<span class="synIdentifier"> def</span> k[T, U](x: T, y: U) = x
+scala&gt; lazy <span class="synType">val</span> x: Int = { println(<span class="synConstant">&quot;evaluated&quot;</span>); <span class="synConstant">3</span> }
+scala&gt; k(<span class="synConstant">0</span>, x)
+evaluated
+res1: Int = <span class="synConstant">0</span>
+</pre><p>なので、単にlazyとつけただけで<a class="keyword" href="http://d.hatena.ne.jp/keyword/Haskell">Haskell</a>のように無限リストが作れるというわけでもありません。注意が必要です。</p>
+
+</div>
+<div class="section">
+    <h3>defでの定義</h3>
+    <p>defで定義すると、引数なしの関数として扱われます。値は必要になる度に評価されることになります。</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink>scala&gt;<span class="synIdentifier"> def</span> x: Int = { println(<span class="synConstant">&quot;called&quot;</span>); <span class="synConstant">3</span> }
+scala&gt; x
+called
+res5: Int = <span class="synConstant">3</span>
+
+scala&gt; x
+called
+res6: Int = <span class="synConstant">3</span>
+
+scala&gt; k(<span class="synConstant">0</span>, x) <span class="synComment">// lazy valのときと同様に、この場合でもxの値は評価される。</span>
+called
+res7: Int = <span class="synConstant">0</span>
+</pre><p>ちなみに、関数だからと言って「()」を付けて呼ぶことはできません。</p>
+
+</div>
+<div class="section">
+    <h3>引数で受け取る場合</h3>
+    <p>関数の引数として値を受け取る場合は、「=> T」という形で型を指定することで、必要になり次第引数を評価することができるようになります。</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink>scala&gt;<span class="synIdentifier"> def</span> k_[T, U](x: T, y: =&gt; U): T = x <span class="synComment">// 先ほどのkの、第2引数を評価しないバージョン</span>
+k_: [T, U](x: T, y: =&gt; U)T
+scala&gt; lazy <span class="synType">val</span> x = { println(<span class="synConstant">&quot;evaluated&quot;</span>); <span class="synConstant">3</span> }
+x: Int = &lt;lazy&gt;
+scala&gt; k_(<span class="synConstant">0</span>, x)
+res10: Int = <span class="synConstant">0</span>
+</pre><p>注意しなければならないのは、「=> T」は意味的には「() => T」とほぼ同様のものなので、引数の扱いはdefで引数無しの関数を定義したときと同じようになります。</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink>scala&gt;<span class="synIdentifier"> def</span> twice(a: =&gt; Int) = a + a
+scala&gt;<span class="synIdentifier"> def</span> x: Int = { println(<span class="synConstant">&quot;called&quot;</span>); <span class="synConstant">3</span> }
+scala&gt; twice(x)
+called
+called
+res11: Int = <span class="synConstant">6</span>
+</pre><p><div class="hatena-asin-detail"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/4844330845/cloudear-22/"><img src="http://ecx.images-amazon.com/images/I/415CsfYp64L._SL160_.jpg" class="hatena-asin-detail-image" alt="Scalaスケーラブルプログラミング第2版" title="Scalaスケーラブルプログラミング第2版"></a><div class="hatena-asin-detail-info"><p class="hatena-asin-detail-title"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/4844330845/cloudear-22/">Scalaスケーラブルプログラミング第2版</a></p><ul><li><span class="hatena-asin-detail-label">作者:</span> Martin Odersky,Lex Spoon,Bill Venners,羽生田栄一,水島宏太,長尾高弘</li><li><span class="hatena-asin-detail-label">出版社/メーカー:</span> <a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%D7%A5%EC%A5%B9%A5%B8%A5%E3%A5%D1%A5%F3">インプレスジャパン</a></li><li><span class="hatena-asin-detail-label">発売日:</span> 2011/09/27</li><li><span class="hatena-asin-detail-label">メディア:</span> 単行本（ソフトカバー）</li><li><span class="hatena-asin-detail-label">購入</span>: 12人 <span class="hatena-asin-detail-label">クリック</span>: 235回</li><li><a href="http://d.hatena.ne.jp/asin/4844330845/cloudear-22" target="_blank">この商品を含むブログ (46件) を見る</a></li></ul></div><div class="hatena-asin-detail-foot"></div></div><div class="hatena-asin-detail"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/4844337769/cloudear-22/"><img src="http://ecx.images-amazon.com/images/I/51aLg4EvWzL._SL160_.jpg" class="hatena-asin-detail-image" alt="Scala関数型デザイン&プログラミング ―Scalazコントリビューターによる関数型徹底ガイド (impress top gear)" title="Scala関数型デザイン&プログラミング ―Scalazコントリビューターによる関数型徹底ガイド (impress top gear)"></a><div class="hatena-asin-detail-info"><p class="hatena-asin-detail-title"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/4844337769/cloudear-22/">Scala関数型デザイン&プログラミング ―Scalazコントリビューターによる関数型徹底ガイド (impress top gear)</a></p><ul><li><span class="hatena-asin-detail-label">作者:</span> Paul Chiusano,Rúnar Bjarnason,<a class="keyword" href="http://d.hatena.ne.jp/keyword/%B3%F4%BC%B0%B2%F1%BC%D2%A5%AF%A5%A4%A1%BC%A5%D7">株式会社クイープ</a></li><li><span class="hatena-asin-detail-label">出版社/メーカー:</span> <a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%D7%A5%EC%A5%B9">インプレス</a></li><li><span class="hatena-asin-detail-label">発売日:</span> 2015/03/20</li><li><span class="hatena-asin-detail-label">メディア:</span> 単行本（ソフトカバー）</li><li><a href="http://d.hatena.ne.jp/asin/4844337769/cloudear-22" target="_blank">この商品を含むブログ (7件) を見る</a></li></ul></div><div class="hatena-asin-detail-foot"></div></div></p>
+
+</div>
+
+{% endraw %}

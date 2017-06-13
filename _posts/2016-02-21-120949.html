@@ -1,0 +1,35 @@
+---
+layout: post
+title: Parse error&#58; parse error, expecting `','' or `';''
+tags:
+- PHP
+
+---
+{% raw %}
+<p>先ほど友人が引っかかってたエラーです。<br />
+エラーの内容自体は大したことないものですが、恐ろしくググラビリティが低そうなのでこちらに纏めておきます。</p><p>起きたエラーは以下の通り:</p>
+<pre class="code lang-php" data-lang="php" data-unlink>class MyClass {
+    private $hoge = 'abc' . 'def';
+    ...
+}
+</pre><p>実行しようとすると、</p>
+
+<pre>Parse <a class="keyword" href="http://d.hatena.ne.jp/keyword/error">error</a>: parse <a class="keyword" href="http://d.hatena.ne.jp/keyword/error">error</a>, expecting `','' or `';''
+</pre><p>と怒られてしまいます。<br />
+ちなみに、</p>
+<pre class="code lang-php" data-lang="php" data-unlink>class MyClass {
+    private $hoge = 'abcdef';
+}
+</pre><p>は普通に実行できます。文字列を連結しようとした場合のみエラーになっています。</p><p>似たようなエラーのバリエーションとして「数値を足そうとしたらエラー」「関数を呼び出そうとしたらエラー」「andやorを取ろうとしたらエラー」等が考えられます。</p><p>実際のところ、このエラーが発生する原因は、<a class="keyword" href="http://d.hatena.ne.jp/keyword/PHP">PHP</a>ではメンバ変数の初期化時に動的に値を生成することができないためです。<br />
+複雑な式を使って初期化したい場合は、素直に<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%B3%A5%F3%A5%B9%A5%C8%A5%E9%A5%AF%A5%BF">コンストラクタ</a>内でやりましょう。</p>
+<pre class="code lang-php" data-lang="php" data-unlink>class MyClass {
+    private $hoge;
+
+    function <span class="synStatement">__construct</span>() {
+        $this-<span class="synError">&gt;</span>hoge = 'abc' . 'def';
+    }
+}
+</pre><p>まあ、この言語仕様自体は納得できますし、それ自体に文句を言うつもりはありません。しかし、それにしてもエラーメッセージ不親切すぎやしませんかね……。</p><p><div class="hatena-asin-detail"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/4798121517/cloudear-22/"><img src="http://ecx.images-amazon.com/images/I/51f22zHg6%2BL._SL160_.jpg" class="hatena-asin-detail-image" alt="独習PHP 第2版" title="独習PHP 第2版"></a><div class="hatena-asin-detail-info"><p class="hatena-asin-detail-title"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/4798121517/cloudear-22/">独習PHP 第2版</a></p><ul><li><span class="hatena-asin-detail-label">作者:</span> 山田祥寛</li><li><span class="hatena-asin-detail-label">出版社/メーカー:</span> <a class="keyword" href="http://d.hatena.ne.jp/keyword/%E6%C6%B1%CB%BC%D2">翔泳社</a></li><li><span class="hatena-asin-detail-label">発売日:</span> 2010/04/13</li><li><span class="hatena-asin-detail-label">メディア:</span> 大型本</li><li><span class="hatena-asin-detail-label">購入</span>: 5人 <span class="hatena-asin-detail-label">クリック</span>: 42回</li><li><a href="http://d.hatena.ne.jp/asin/4798121517/cloudear-22" target="_blank">この商品を含むブログ (18件) を見る</a></li></ul></div><div class="hatena-asin-detail-foot"></div></div></p>
+
+
+{% endraw %}

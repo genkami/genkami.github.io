@@ -1,0 +1,216 @@
+---
+layout: post
+title: ID3アルゴリズムで決定木を生成する
+tags:
+- Haskell
+
+---
+{% raw %}
+<p><a class="keyword" href="http://d.hatena.ne.jp/keyword/%B5%A1%B3%A3%B3%D8%BD%AC">機械学習</a>の勉強として、ID3<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A2%A5%EB%A5%B4%A5%EA%A5%BA%A5%E0">アルゴリズム</a>により決定木を生成するプログラムを書いてみました。</p><p><a href="https://ja.wikipedia.org/wiki/ID3">ID3 - Wikipedia</a></p><p>ID3<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A2%A5%EB%A5%B4%A5%EA%A5%BA%A5%E0">アルゴリズム</a>について軽く説明します。例えば何らかの調査を行って得た以下のデータを分類したいとします。<br />
+<br />
+</p>
+
+<table>
+    <tr>
+    <th>名前</th>
+    <th>髪の色</th>
+    <th>身長</th>
+    <th>体重</th>
+    <th>ローションを使用したか</th>
+    <th>日焼けしたか</th>
+    </tr>
+    <tr>
+    <td>Sarah</td>
+    <td>ブロンド</td>
+    <td>平均</td>
+    <td>軽い</td>
+    <td>していない</td>
+    <td>した</td>
+    </tr>
+    <tr>
+    <td>Dana</td>
+    <td>ブロンド</td>
+    <td>高い</td>
+    <td>平均</td>
+    <td>した</td>
+    <td>していない</td>
+    </tr>
+    <tr>
+    <td>Alex</td>
+    <td>茶</td>
+    <td>低い</td>
+    <td>平均</td>
+    <td>した</td>
+    <td>していない</td>
+    </tr>
+    <tr>
+    <td>Annie</td>
+    <td>ブロンド</td>
+    <td>低い</td>
+    <td>平均</td>
+    <td>していない</td>
+    <td>した</td>
+    </tr>
+    <tr>
+    <td>Emily</td>
+    <td>赤</td>
+    <td>平均</td>
+    <td>重い</td>
+    <td>していない</td>
+    <td>した</td>
+    </tr>
+    <tr>
+    <td>Pete</td>
+    <td>茶</td>
+    <td>高い</td>
+    <td>重い</td>
+    <td>していない</td>
+    <td>していない</td>
+    </tr>
+    <tr>
+    <td>John</td>
+    <td>茶</td>
+    <td>平均</td>
+    <td>重い</td>
+    <td>していない</td>
+    <td>していない</td>
+    </tr>
+    <tr>
+    <td>Katie</td>
+    <td>ブロンド</td>
+    <td>低い</td>
+    <td>軽い</td>
+    <td>した</td>
+    <td>していない</td>
+    </tr>
+</table><p><br />
+これらのデータから、今回は「日焼けしたかどうか」を特定するための決定木を作ります。</p><p>決定木は<a class="keyword" href="http://d.hatena.ne.jp/keyword/%CC%DA%B9%BD%C2%A4">木構造</a>をしており、各ノードには質問が書かれており、それを辿っていくことで最終的な結果にたどり着くことができます。よくある「あなたにおすすめの○○」みたいな<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%D5%A5%ED%A1%BC%A5%C1%A5%E3%A1%BC%A5%C8">フローチャート</a>的なやつですね。</p><p>例えば、上のデータから人物を特定するには</p>
+
+<pre>髪の色は? -ブロンド-> 体重は? -軽い-> 身長は? -平均-> あなたはSarah!
+</pre><p>というような道筋をたどっていけばいいことがわかります。</p><br />
+<p>このときの質問の順番についてですが、どのように質問を選べば効率よく結果を特定できるかを考えるために、<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A8%A5%F3%A5%C8%A5%ED%A5%D4%A1%BC">エントロピー</a>という概念を用います。</p><p><img src="http://chart.apis.google.com/chart?cht=tx&chl=Entropy%28S%29%20%3A%3D%20-%5Csum_%7Bx%20%5Cin%20S%7Dxlog_2x" alt="Entropy(S) := -\sum_{x \in S}xlog_2x"/></p><p>この<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A8%A5%F3%A5%C8%A5%ED%A5%D4%A1%BC">エントロピー</a>を用いて、データの集合<img src="http://chart.apis.google.com/chart?cht=tx&chl=D" alt="D"/>を複数の互いに交わらない部分集合<img src="http://chart.apis.google.com/chart?cht=tx&chl=C_1%2C%20C_2%2C%20...%2C%20C_n" alt="C_1, C_2, ..., C_n"/>に分割(<img src="http://chart.apis.google.com/chart?cht=tx&chl=%5Cbigcup%20C_i%20%3D%20D" alt="\bigcup C_i = D"/>ということ)した際、この分割の乱雑さ(Disorder)を以下の式で決定します。</p><p><img src="http://chart.apis.google.com/chart?cht=tx&chl=Disorder%28D%2C%20C%29%20%3A%3D%20Entropy%28%5C%7B%5Cfrac%7B%7CC_i%7C%7D%7B%7CD%7C%7D%20%7C%20i%20%3D%201%2C%20...%2C%20n%20%5C%7D%29" alt="Disorder(D, C) := Entropy(\{\frac{|C_i|}{|D|} | i = 1, ..., n \})"/></p><p>以後、このような分割を「分類」と呼びます。ちょうど上で例示したデータを「髪の色」とか「ローションを使用したか」とかのパラメータごとに分類する感じですね。</p><p>ここで、各分類<img src="http://chart.apis.google.com/chart?cht=tx&chl=C_i" alt="C_i"/>をさらに最終的な結果として扱われるパラメータ(今回は「日焼けしたか」)で分類します。<br />
+結果となるパラメータがN種類の値を取れるとして、<img src="http://chart.apis.google.com/chart?cht=tx&chl=C%5Ei_j%20%28j%20%3D%201%2C%20...%2C%20N%29" alt="C^i_j (j = 1, ..., N)"/>を<img src="http://chart.apis.google.com/chart?cht=tx&chl=C_i" alt="C_i"/>をさらに結果となるパラメータで分類したものとします。</p><p>このとき、各<img src="http://chart.apis.google.com/chart?cht=tx&chl=C_i" alt="C_i"/>の乱雑さの平均を、以下のように求めます。</p><p><img src="http://chart.apis.google.com/chart?cht=tx&chl=AvgDisorder%28D%2C%20C%29%20%3A%3D%20%5Csum_%7Bi%20%3D%201%7D%5E%7Bn%7DDisorder%28C_i%2C%20C%5Ei%29%5Cfrac%7B%7CC_i%7C%7D%7B%7CD%7C%7D" alt="AvgDisorder(D, C) := \sum_{i = 1}^{n}Disorder(C_i, C^i)\frac{|C_i|}{|D|}"/></p><p>ID3<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A2%A5%EB%A5%B4%A5%EA%A5%BA%A5%E0">アルゴリズム</a>では、この値が小くなる分類ほどよい分類であるとします。</p><p>例えば、上のデータを髪の色で分類してみましょう。</p><p>髪の色で分類した結果がこちら</p>
+
+<table>
+    <tr>
+    <th>名前</th>
+    <th>髪の色</th>
+    <th>身長</th>
+    <th>体重</th>
+    <th>ローションを使用したか</th>
+    <th>日焼けしたか</th>
+    </tr>
+    <tr>
+    <td>Sarah</td>
+    <td>ブロンド</td>
+    <td>平均</td>
+    <td>軽い</td>
+    <td>していない</td>
+    <td>した</td>
+    </tr>
+    <tr>
+    <td>Annie</td>
+    <td>ブロンド</td>
+    <td>低い</td>
+    <td>平均</td>
+    <td>していない</td>
+    <td>した</td>
+    </tr>
+    <tr>
+    <td>Dana</td>
+    <td>ブロンド</td>
+    <td>高い</td>
+    <td>平均</td>
+    <td>した</td>
+    <td>していない</td>
+    </tr>
+    <tr>
+    <td>Katie</td>
+    <td>ブロンド</td>
+    <td>低い</td>
+    <td>軽い</td>
+    <td>した</td>
+    <td>していない</td>
+    </tr>
+    <tr>
+    <td>Alex</td>
+    <td>茶</td>
+    <td>低い</td>
+    <td>平均</td>
+    <td>した</td>
+    <td>していない</td>
+    </tr>
+    <tr>
+    <td>Pete</td>
+    <td>茶</td>
+    <td>高い</td>
+    <td>重い</td>
+    <td>していない</td>
+    <td>していない</td>
+    </tr>
+    <tr>
+    <td>John</td>
+    <td>茶</td>
+    <td>平均</td>
+    <td>重い</td>
+    <td>していない</td>
+    <td>していない</td>
+    </tr>
+    <tr>
+    <td>Emily</td>
+    <td>赤</td>
+    <td>平均</td>
+    <td>重い</td>
+    <td>していない</td>
+    <td>した</td>
+    </tr>
+</table><p><img src="http://chart.apis.google.com/chart?cht=tx&chl=C%5E%7B%E3%83%96%E3%83%AD%E3%83%B3%E3%83%89%7D_%7B%E3%81%97%E3%81%9F%7D%20%3D%20%5C%7BSarah%2C%20Annie%5C%7D" alt="C^{&#x30D6;&#x30ED;&#x30F3;&#x30C9;}_{&#x3057;&#x305F;} = \{Sarah, Annie\}"/><br />
+<img src="http://chart.apis.google.com/chart?cht=tx&chl=C%5E%7B%E3%83%96%E3%83%AD%E3%83%B3%E3%83%89%7D_%7B%E3%81%97%E3%81%A6%E3%81%84%E3%81%AA%E3%81%84%7D%20%3D%20%5C%7BDana%2C%20Katie%5C%7D" alt="C^{&#x30D6;&#x30ED;&#x30F3;&#x30C9;}_{&#x3057;&#x3066;&#x3044;&#x306A;&#x3044;} = \{Dana, Katie\}"/><br />
+<img src="http://chart.apis.google.com/chart?cht=tx&chl=C%5E%7B%E8%8C%B6%7D_%7B%E3%81%97%E3%81%9F%7D%20%3D%20%5C%7B%5C%7D" alt="C^{&#x8336;}_{&#x3057;&#x305F;} = \{\}"/><br />
+<img src="http://chart.apis.google.com/chart?cht=tx&chl=C%5E%7B%E8%8C%B6%7D_%7B%E3%81%97%E3%81%A6%E3%81%84%E3%81%AA%E3%81%84%7D%20%3D%20%5C%7BAlex%2C%20Pete%2C%20John%5C%7D" alt="C^{&#x8336;}_{&#x3057;&#x3066;&#x3044;&#x306A;&#x3044;} = \{Alex, Pete, John\}"/><br />
+<img src="http://chart.apis.google.com/chart?cht=tx&chl=C%5E%7B%E8%B5%A4%7D_%7B%E3%81%97%E3%81%9F%7D%20%3D%20%5C%7BEmily%5C%7D" alt="C^{&#x8D64;}_{&#x3057;&#x305F;} = \{Emily\}"/><br />
+<img src="http://chart.apis.google.com/chart?cht=tx&chl=C%5E%7B%E8%B5%A4%7D_%7B%E3%81%97%E3%81%A6%E3%81%84%E3%81%AA%E3%81%84%7D%20%3D%20%5C%7B%5C%7D" alt="C^{&#x8D64;}_{&#x3057;&#x3066;&#x3044;&#x306A;&#x3044;} = \{\}"/></p><p>それぞれの乱雑さは、<br />
+<img src="http://chart.apis.google.com/chart?cht=tx&chl=Disorder%28C_%7B%E3%83%96%E3%83%AD%E3%83%B3%E3%83%89%7D%2C%20C%5E%7B%E3%83%96%E3%83%AD%E3%83%B3%E3%83%89%7D%29%20%3D%20-%5Cfrac%7B2%7D%7B4%7Dlog_2%5Cfrac%7B2%7D%7B4%7D%20-%20%5Cfrac%7B2%7D%7B4%7Dlog_2%5Cfrac%7B2%7D%7B4%7D%20%3D%202" alt="Disorder(C_{&#x30D6;&#x30ED;&#x30F3;&#x30C9;}, C^{&#x30D6;&#x30ED;&#x30F3;&#x30C9;}) = -\frac{2}{4}log_2\frac{2}{4} - \frac{2}{4}log_2\frac{2}{4} = 2"/><br />
+<img src="http://chart.apis.google.com/chart?cht=tx&chl=Disorder%28C_%7B%E8%8C%B6%7D%2C%20C%5E%7B%E8%8C%B6%7D%29%20%3D%20-%5Cfrac%7B0%7D%7B3%7Dlog_2%5Cfrac%7B0%7D%7B3%7D%20-%20%5Cfrac%7B3%7D%7B3%7Dlog_2%5Cfrac%7B3%7D%7B3%7D%20%3D%200" alt="Disorder(C_{&#x8336;}, C^{&#x8336;}) = -\frac{0}{3}log_2\frac{0}{3} - \frac{3}{3}log_2\frac{3}{3} = 0"/><br />
+<img src="http://chart.apis.google.com/chart?cht=tx&chl=Disorder%28C_%7B%E8%B5%A4%7D%2C%20C%5E%7B%E8%B5%A4%7D%29%20%3D%20%5Cfrac%7B1%7D%7B1%7Dlog_2%5Cfrac%7B1%7D%7B1%7D%20-%20%5Cfrac%7B0%7D%7B1%7Dlog_2%5Cfrac%7B0%7D%7B1%7D%20%3D%200" alt="Disorder(C_{&#x8D64;}, C^{&#x8D64;}) = \frac{1}{1}log_2\frac{1}{1} - \frac{0}{1}log_2\frac{0}{1} = 0"/><br />
+<img src="http://chart.apis.google.com/chart?cht=tx&chl=%20log0" alt=" log0"/>は未定義ですが、0がかかっているのでとりあえず0として扱います。</p><p>したがって、髪の色による分類の平均の乱雑さは以下のようになります。</p><p><img src="http://chart.apis.google.com/chart?cht=tx&chl=%20AvgDisorder%28D%2C%20C%29%20%3D%20%5Cfrac%7B4%7D%7B8%7D%20%5Ctimes%202%20%2B%20%5Cfrac%7B3%7D%7B8%7D%20%5Ctimes%200%20%2B%20%5Cfrac%7B1%7D%7B8%7D%20%5Ctimes%200%20%3D%201" alt=" AvgDisorder(D, C) = \frac{4}{8} \times 2 + \frac{3}{8} \times 0 + \frac{1}{8} \times 0 = 1"/></p><p>同様に他のパラメータによる分類の平均の乱雑さも求めていきます。</p><p>このように平均の乱雑さを求めて行った結果、最終的に髪の色で分類すると最も平均の乱雑さが小さくなることがわかります。</p><p>そこで、日焼けしたかどうかを同定するための最初の質問を「髪の色」にします。</p><p>また、こうして出来た分類分け<img src="http://chart.apis.google.com/chart?cht=tx&chl=C_%7B%E3%83%96%E3%83%AD%E3%83%B3%E3%83%89%7D%2C%20C_%7B%E8%8C%B6%7D%2C%20C_%7B%E8%B5%A4%7D" alt="C_{&#x30D6;&#x30ED;&#x30F3;&#x30C9;}, C_{&#x8336;}, C_{&#x8D64;}"/>を、残りのパラメータを使って同様にさらに細かく分類していきます。</p><p>こうして、これ以上分類できない所まで分類しきったものが、求める決定木となります。</p><p>実際にID3<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A2%A5%EB%A5%B4%A5%EA%A5%BA%A5%E0">アルゴリズム</a>を用いて分類を行うプログラムを<a class="keyword" href="http://d.hatena.ne.jp/keyword/Haskell">Haskell</a>で書いてみました。</p><p><a href="https://github.com/monamonamonad/gomicode/blob/master/Haskell/DTree.hs">gomicode/DTree.hs at master &middot; monamonamonad/gomicode &middot; GitHub</a></p><p>先ほどのデータは上のコードの下に以下のように定義されています。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synType">data</span> SunBurn <span class="synStatement">=</span> SunBurn {
+    name <span class="synStatement">::</span> String
+  , hairColor <span class="synStatement">::</span> HairColor
+  , height <span class="synStatement">::</span> HML
+  , weight <span class="synStatement">::</span> HML
+  , lotionUsed <span class="synStatement">::</span> Bool
+  , sunBurned <span class="synStatement">::</span> Bool
+  } <span class="synType">deriving</span> (Eq, Show, Data, Typeable)
+
+<span class="synComment">-- 髪の色</span>
+<span class="synType">data</span> HairColor <span class="synStatement">=</span> Blonde <span class="synStatement">|</span> Brown <span class="synStatement">|</span> Red
+  <span class="synType">deriving</span> (Eq, Show, Ord, Data, Typeable)
+
+<span class="synComment">-- 3段階(High / Mid / Low)</span>
+<span class="synType">data</span> HML <span class="synStatement">=</span> High <span class="synStatement">|</span> Mid <span class="synStatement">|</span> Low
+  <span class="synType">deriving</span> (Eq, Show, Ord, Data, Typeable)
+
+example <span class="synStatement">=</span> [
+    SunBurn <span class="synConstant">&quot;Sarah&quot;</span> Blonde Mid  Low  False True
+  , SunBurn <span class="synConstant">&quot;Dana&quot;</span>  Blonde High Mid  True  False
+  , SunBurn <span class="synConstant">&quot;Alex&quot;</span>  Brown  Low  Mid  True  False
+  , SunBurn <span class="synConstant">&quot;Annie&quot;</span> Blonde Low  Mid  False True
+  , SunBurn <span class="synConstant">&quot;Emily&quot;</span> Red    Mid  High False True
+  , SunBurn <span class="synConstant">&quot;Pete&quot;</span>  Brown  High High False False
+  , SunBurn <span class="synConstant">&quot;John&quot;</span>  Brown  Mid  High False False
+  , SunBurn <span class="synConstant">&quot;Katie&quot;</span> Blonde Low  Low  True  False
+  ]
+
+<span class="synType">instance</span> FiniteFields SunBurn <span class="synType">where</span>
+  <span class="synType">type</span> FieldTypes SunBurn <span class="synStatement">=</span> [String, HairColor, HML, Bool] <span class="synComment">-- SunBurnのフィールドの型の候補</span>
+_name<span class="synStatement">:</span>_hairColor<span class="synStatement">:</span>_height<span class="synStatement">:</span>_weight<span class="synStatement">:</span>_lotionUsed<span class="synStatement">:</span>_sunBurned<span class="synStatement">:</span>_
+  <span class="synStatement">=</span> selectors <span class="synStatement">$</span> SunBurn u u u u u u <span class="synType">where</span> u <span class="synStatement">=</span> undefined
+</pre><p>下4行はSunBurn型を使って決定木を出力するために必要なものの定義です。<br />
+このコードはData.Typeable, Data.Dataを利用してかなり一般的に作られているため、ユーザの定義した独自の型についてもFieldTypes tにフィールドの型の<a class="keyword" href="http://d.hatena.ne.jp/keyword/%B8%F5%CA%E4">候補</a>を指定するだけで、自動的に各フィールドへのアクセサ(上でいう_name, _hairColor等)が生成され、決定木を構築できるようになっています。</p><p>build関数を実行すると、以下のような決定木が出力されます</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synStatement">&gt;&gt;&gt;</span> build [_hairColor, _height, _weight, _lotionUsed] _sunBurned example
+DTree (hairColor <span class="synStatement">::</span> HairColor) [(Blonde,DTree (lotionUsed <span class="synStatement">::</span> Bool) [(False,DLeaf [SunBurn {name <span class="synStatement">=</span> <span class="synConstant">&quot;Sarah&quot;</span>, hairColor <span class="synStatement">=</span> Blonde, height <span class="synStatement">=</span> Mid, weight <span class="synStatement">=</span> Low, lotionUsed <span class="synStatement">=</span> False, sunBurned <span class="synStatement">=</span> True},SunBurn {name <span class="synStatement">=</span> <span class="synConstant">&quot;Annie&quot;</span>, hairColor <span class="synStatement">=</span> Blonde, height <span class="synStatement">=</span> Low, weight <span class="synStatement">=</span> Mid, lotionUsed <span class="synStatement">=</span> False, sunBurned <span class="synStatement">=</span> True}]),(True,DLeaf [SunBurn {name <span class="synStatement">=</span> <span class="synConstant">&quot;Dana&quot;</span>, hairColor <span class="synStatement">=</span> Blonde, height <span class="synStatement">=</span> High, weight <span class="synStatement">=</span> Mid, lotionUsed <span class="synStatement">=</span> True, sunBurned <span class="synStatement">=</span> False},SunBurn {name <span class="synStatement">=</span> <span class="synConstant">&quot;Katie&quot;</span>, hairColor <span class="synStatement">=</span> Blonde, height <span class="synStatement">=</span> Low, weight <span class="synStatement">=</span> Low, lotionUsed <span class="synStatement">=</span> True, sunBurned <span class="synStatement">=</span> False}])]),(Brown,DLeaf [SunBurn {name <span class="synStatement">=</span> <span class="synConstant">&quot;Pete&quot;</span>, hairColor <span class="synStatement">=</span> Brown, height <span class="synStatement">=</span> High, weight <span class="synStatement">=</span> High, lotionUsed <span class="synStatement">=</span> False, sunBurned <span class="synStatement">=</span> False},SunBurn {name <span class="synStatement">=</span> <span class="synConstant">&quot;John&quot;</span>, hairColor <span class="synStatement">=</span> Brown, height <span class="synStatement">=</span> Mid, weight <span class="synStatement">=</span> High, lotionUsed <span class="synStatement">=</span> False, sunBurned <span class="synStatement">=</span> False},SunBurn {name <span class="synStatement">=</span> <span class="synConstant">&quot;Alex&quot;</span>, hairColor <span class="synStatement">=</span> Brown, height <span class="synStatement">=</span> Low, weight <span class="synStatement">=</span> Mid, lotionUsed <span class="synStatement">=</span> True, sunBurned <span class="synStatement">=</span> False}]),(Red,DLeaf [SunBurn {name <span class="synStatement">=</span> <span class="synConstant">&quot;Emily&quot;</span>, hairColor <span class="synStatement">=</span> Red, height <span class="synStatement">=</span> Mid, weight <span class="synStatement">=</span> High, lotionUsed <span class="synStatement">=</span> False, sunBurned <span class="synStatement">=</span> True}])]
+</pre><p>図にしてみると以下のような感じになります。</p><p><span itemscope itemtype="http://schema.org/Photograph"><img src="https://cdn-ak.f.st-hatena.com/images/fotolife/c/cloudear8/20160613/20160613204242.png" alt="f:id:cloudear8:20160613204242p:plain" title="f:id:cloudear8:20160613204242p:plain" class="hatena-fotolife" itemprop="image"></span></p>
+
+
+{% endraw %}

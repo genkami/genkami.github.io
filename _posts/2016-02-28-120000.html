@@ -1,0 +1,58 @@
+---
+layout: post
+title: 独自パターンマッチを定義する。
+tags:
+- Scala
+
+---
+{% raw %}
+<p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Scala">Scala</a>では、unapply, unapplySeq<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%E1%A5%BD%A5%C3%A5%C9">メソッド</a>を定義することによって、任意の型に対して独自で後付けのパターンマッチを定義することができます。</p>
+
+<div class="section">
+    <h3>unapply</h3>
+    <p>何らかの値Oに対して、O.unapply(x)はパターンマッチに成功したら Some( (x1, x2, x3, ..., xN) ) を返し、x match { case O(x1, x2, ..., xN) => ... } の形で受け取ることができるようになります。パターンマッチに失敗した場合はNoneを返します。このようなunapplyを定義することによって、独自のパターンマッチを追加することができます。</p><p>例えば、ペアをk -> vの形で定義できるのだからパターンマッチもk -> vの形で行いたい、という場合。</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink><span class="synType">object</span> -&gt; {
+<span class="synIdentifier">  def</span> unapply[T, U](p: (T, U)): Option[(T, U)] = Some(p)
+}
+</pre><p>このオブジェクト -> を定義すると、ペア(x, y)をcase ->(x, y)の形でパターンマッチすることができます。<br />
+このことと、パターンP(x, y)を(x P y)と書けるという構文により、ペアに対する(k -> v)の形でのパターンマッチを行うことができます。</p>
+
+<div class="section">
+    <h4>実行例</h4>
+    <pre class="code lang-scala" data-lang="scala" data-unlink>scala&gt; <span class="synType">val</span> m = Map(<span class="synConstant">&quot;pizza&quot;</span> -&gt; <span class="synConstant">2000</span>, <span class="synConstant">&quot;ramen&quot;</span> -&gt; <span class="synConstant">850</span>, <span class="synConstant">&quot;hamburger&quot;</span> -&gt; <span class="synConstant">550</span>)
+scala&gt; m.foreach { <span class="synType">case</span> (food -&gt; price) =&gt; println(food) }
+pizza
+ramen
+hamburger
+</pre>
+</div>
+</div>
+<div class="section">
+    <h3>unapplySeq</h3>
+    <p>パターン P(x0, x1, ...)の括弧の中の要<a class="keyword" href="http://d.hatena.ne.jp/keyword/%C1%C7%BF%F4">素数</a>が不定の場合は、unapplySeqを使います。例えば、文字列を単語毎に区切ってWords(w1, w2, ...)の形で受け取りたい場合、</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink><span class="synType">object</span> Words {
+<span class="synIdentifier">  def</span> unapplySeq(x: <span class="synConstant">String</span>): Option[List[<span class="synConstant">String</span>]] = Some(x.split(raw<span class="synConstant">&quot;\s+&quot;</span>).toList)
+}
+</pre><p>とすることによって、以下のように文字列を単語毎に受け取れるようになります。</p>
+
+<div class="section">
+    <h4>実行例</h4>
+    <pre class="code lang-scala" data-lang="scala" data-unlink>scala&gt; <span class="synConstant">&quot;this is a pen&quot;</span> match { <span class="synType">case</span> Words(head, rest@_*) =&gt; head }
+res1: <span class="synConstant">String</span> = <span class="synType">this</span>
+
+scala&gt; <span class="synConstant">&quot;this is a pen&quot;</span> match { <span class="synType">case</span> Words(<span class="synConstant">&quot;this&quot;</span>, <span class="synConstant">&quot;is&quot;</span>, <span class="synConstant">&quot;a&quot;</span>, what) =&gt; what }
+res2: <span class="synConstant">String</span> = pen
+</pre><p><br />
+もちろん、unapplyやunapplySeqを定義できるのはobject内だけではありません。例えば、<a class="keyword" href="http://d.hatena.ne.jp/keyword/scala">scala</a>.util.matching.<a class="keyword" href="http://d.hatena.ne.jp/keyword/Regex">Regex</a>では、<a class="keyword" href="http://d.hatena.ne.jp/keyword/%C0%B5%B5%AC%C9%BD%B8%BD">正規表現</a>内のグルーピングした部分に対してパターンマッチを行うことができるようなunapplyが定義されています。</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink>scala&gt; <span class="synType">val</span> mail = raw<span class="synConstant">&quot;([a-zA-Z0-9-]+)@([a-zA-Z0-9.]+)&quot;</span>.r <span class="synComment">// メールアドレス(あまり正確ではない)</span>
+mail: scala.util.matching.Regex = ([a-zA-Z0-<span class="synConstant">9</span>-]+)@([a-zA-Z0-<span class="synConstant">9.</span>]+)
+
+scala&gt; <span class="synConstant">&quot;the-name@example.com&quot;</span> match { <span class="synType">case</span> mail(user, host) =&gt; println(f<span class="synConstant">&quot;user: ${user}%s, host: ${host}%s&quot;</span>) }
+user: the-name, host: example.com
+</pre><p><br />
+<div class="hatena-asin-detail"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/4844330845/cloudear-22/"><img src="http://ecx.images-amazon.com/images/I/415CsfYp64L._SL160_.jpg" class="hatena-asin-detail-image" alt="Scalaスケーラブルプログラミング第2版" title="Scalaスケーラブルプログラミング第2版"></a><div class="hatena-asin-detail-info"><p class="hatena-asin-detail-title"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/4844330845/cloudear-22/">Scalaスケーラブルプログラミング第2版</a></p><ul><li><span class="hatena-asin-detail-label">作者:</span> Martin Odersky,Lex Spoon,Bill Venners,羽生田栄一,水島宏太,長尾高弘</li><li><span class="hatena-asin-detail-label">出版社/メーカー:</span> <a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%D7%A5%EC%A5%B9%A5%B8%A5%E3%A5%D1%A5%F3">インプレスジャパン</a></li><li><span class="hatena-asin-detail-label">発売日:</span> 2011/09/27</li><li><span class="hatena-asin-detail-label">メディア:</span> 単行本（ソフトカバー）</li><li><span class="hatena-asin-detail-label">購入</span>: 12人 <span class="hatena-asin-detail-label">クリック</span>: 235回</li><li><a href="http://d.hatena.ne.jp/asin/4844330845/cloudear-22" target="_blank">この商品を含むブログ (46件) を見る</a></li></ul></div><div class="hatena-asin-detail-foot"></div></div><div class="hatena-asin-detail"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/B00DIM65HE/cloudear-22/"><img src="http://ecx.images-amazon.com/images/I/513M0J2mfcL._SL160_.jpg" class="hatena-asin-detail-image" alt="Scala逆引きレシピ" title="Scala逆引きレシピ"></a><div class="hatena-asin-detail-info"><p class="hatena-asin-detail-title"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/B00DIM65HE/cloudear-22/">Scala逆引きレシピ</a></p><ul><li><span class="hatena-asin-detail-label">作者:</span> 竹添直樹,島本多可子</li><li><span class="hatena-asin-detail-label">出版社/メーカー:</span> <a class="keyword" href="http://d.hatena.ne.jp/keyword/%E6%C6%B1%CB%BC%D2">翔泳社</a></li><li><span class="hatena-asin-detail-label">発売日:</span> 2013/06/20</li><li><span class="hatena-asin-detail-label">メディア:</span> <a class="keyword" href="http://d.hatena.ne.jp/keyword/Kindle">Kindle</a>版</li><li><a href="http://d.hatena.ne.jp/asin/B00DIM65HE/cloudear-22" target="_blank">この商品を含むブログ (2件) を見る</a></li></ul></div><div class="hatena-asin-detail-foot"></div></div></p>
+
+</div>
+</div>
+
+{% endraw %}

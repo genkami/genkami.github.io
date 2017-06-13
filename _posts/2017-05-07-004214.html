@@ -1,0 +1,132 @@
+---
+layout: post
+title: docker + flask の環境でホスト上にポートが公開できない
+tags:
+- Python
+- Linux
+
+---
+{% raw %}
+
+<div class="section">
+    <h3>問題となったコード</h3>
+    <p>app.py</p>
+<pre class="code lang-python" data-lang="python" data-unlink><span class="synPreProc">from</span> flask <span class="synPreProc">import</span> Flask
+
+app = Flask(__name__)
+
+<span class="synPreProc">@</span><span class="synIdentifier">app.route</span>(<span class="synConstant">'/'</span>)
+<span class="synStatement">def</span> <span class="synIdentifier">hello</span>():
+    <span class="synStatement">return</span> <span class="synConstant">'hello world'</span>
+
+<span class="synStatement">if</span> __name__ == <span class="synConstant">'__main__'</span>:
+    app.run()
+</pre><p>Dockerfile</p>
+<pre class="code lang-sh" data-lang="sh" data-unlink>FROM ubuntu:xenial
+
+WORKDIR /flask
+
+ENV PYENV_ROOT /pyenv
+ENV PATH <span class="synPreProc">$PYENV_ROOT</span>/shims:<span class="synPreProc">$PYENV_ROOT</span>/bin:<span class="synPreProc">$PATH</span>
+
+RUN apt <span class="synSpecial">-y</span> update <span class="synConstant">2</span><span class="synStatement">&gt;</span>/dev/null
+RUN <span class="synIdentifier">BUILD_DEPS</span>=<span class="synStatement">&quot;</span><span class="synConstant"> \</span>
+<span class="synConstant">    git make build-essential libssl-dev zlib1g-dev libbz2-dev \</span>
+<span class="synConstant">    libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev \</span>
+<span class="synConstant">    xz-utils tk-dev</span><span class="synStatement">&quot;</span> <span class="synStatement">\</span>
+    &amp;&amp; apt <span class="synSpecial">-y</span> install <span class="synPreProc">$BUILD_DEPS</span> <span class="synStatement">\</span>
+    &amp;&amp; git clone https://github.com/yyuu/pyenv.git /pyenv <span class="synStatement">\</span>
+    &amp;&amp; pyenv install 3.5.3 <span class="synStatement">\</span>
+    &amp;&amp; pyenv <span class="synStatement">local</span> 3.5.3 <span class="synStatement">\</span>
+    &amp;&amp; pyenv rehash
+
+COPY<span class="synStatement"> . </span>/flask
+
+RUN pip install <span class="synSpecial">-r</span> requirements.txt
+
+RUN apt <span class="synSpecial">-y</span> autoremove
+</pre>
+</div>
+<div class="section">
+    <h3>症状</h3>
+    <pre class="code lang-sh" data-lang="sh" data-unlink>$ sudo docker build <span class="synSpecial">-t</span> cloudear8/flask .
+$ sudo docker run <span class="synSpecial">-p</span> <span class="synConstant">5000</span>:<span class="synConstant">5000</span> <span class="synSpecial">--name</span> flask_1 cloudear8/flask python app.py
+</pre><p>すると5000番ポートからflaskに繋がるはずが、何故か接続できません。<br />
+flask自体のログを見ても、リクエストすら届いていない模様。<br />
+というか、コンテナの5000番ポートに届かない……</p>
+<pre class="code lang-sh" data-lang="sh" data-unlink>$ sudo docker inspect flask_1 | <span class="synStatement">grep</span> IPAddress
+            <span class="synStatement">&quot;</span><span class="synConstant">SecondaryIPAddresses</span><span class="synStatement">&quot;</span>: null,
+            <span class="synStatement">&quot;</span><span class="synConstant">IPAddress</span><span class="synStatement">&quot;</span>: <span class="synStatement">&quot;</span><span class="synConstant">172.17.0.2</span><span class="synStatement">&quot;</span>,
+                    <span class="synStatement">&quot;</span><span class="synConstant">IPAddress</span><span class="synStatement">&quot;</span>: <span class="synStatement">&quot;</span><span class="synConstant">172.17.0.2</span><span class="synStatement">&quot;</span>,
+$ telnet 172.17.0.2 <span class="synConstant">5000</span>
+Trying 172.17.0.2...
+telnet: Unable to connect to remote host: Connection refused
+</pre>
+</div>
+<div class="section">
+    <h3>やったこと</h3>
+    <p>試しにnetcatで適当なポート番号をlistenしてみた所、そちらには繋がりました。</p>
+<pre class="code lang-sh" data-lang="sh" data-unlink>$ sudo docker <span class="synStatement">exec</span> <span class="synSpecial">-it</span> flask_1 /bin/bash
+root@dd93148cb513:/flask# apt install netcat
+root@dd93148cb513:/flask# nc <span class="synSpecial">-l</span> <span class="synSpecial">-p</span> <span class="synConstant">1234</span> <span class="synSpecial">-e</span> /bin/cat
+
+<span class="synPreProc">(</span><span class="synSpecial">別ホスト上</span><span class="synPreProc">)</span>
+
+$ telnet 172.17.0.2 <span class="synConstant">1234</span>
+Trying 172.17.0.2...
+Connected to 172.17.0.2.
+Escape character is <span class="synStatement">'</span><span class="synConstant">^]</span><span class="synStatement">'</span>.
+hello
+hello
+world
+world
+^<span class="synError">]</span>
+telnet<span class="synStatement">&gt;</span> Connection closed.
+</pre><p>また、コンテナ内からはflaskに繋がるようです。</p>
+<pre class="code lang-sh" data-lang="sh" data-unlink>root@dd93148cb513:/flask# nc localhost <span class="synConstant">5000</span>
+GET / HTTP/1.1
+
+HTTP/1.0 <span class="synConstant">200</span> OK
+Content-Type: text/html; <span class="synIdentifier">charset</span>=utf<span class="synConstant">-8</span>
+Content-Length: <span class="synConstant">11</span>
+Server: Werkzeug/0.12.1 Python/3.5.3
+Date: Sat, <span class="synConstant">06</span> May <span class="synConstant">2017</span> <span class="synConstant">15</span>:<span class="synConstant">19</span>:<span class="synConstant">40</span> GMT
+
+hello world
+</pre><p>というわけで、netcatをプロキシ代わりにして5000番に回すようにしてみたところ…</p>
+<pre class="code lang-sh" data-lang="sh" data-unlink>root@dd93148cb513:/flask# mkfifo pipe
+root@dd93148cb513:/flask# nc <span class="synSpecial">-l</span> <span class="synSpecial">-p</span> <span class="synConstant">1234</span> <span class="synStatement">&lt;</span>pipe | nc localhost <span class="synConstant">5000</span> <span class="synStatement">&gt;</span>pipe 
+
+<span class="synPreProc">(</span><span class="synSpecial">別ホスト上</span><span class="synPreProc">)</span>
+
+$ telnet 172.17.0.2 <span class="synConstant">1234</span>
+Trying 172.17.0.2...
+Connected to 172.17.0.2.
+Escape character is <span class="synStatement">'</span><span class="synConstant">^]</span><span class="synStatement">'</span>.
+GET / HTTP/1.1
+
+HTTP/1.0 <span class="synConstant">200</span> OK
+Content-Type: text/html; <span class="synIdentifier">charset</span>=utf<span class="synConstant">-8</span>
+Content-Length: <span class="synConstant">11</span>
+Server: Werkzeug/0.12.1 Python/3.5.3
+Date: Sat, <span class="synConstant">06</span> May <span class="synConstant">2017</span> <span class="synConstant">15</span>:<span class="synConstant">23</span>:<span class="synConstant">18</span> GMT
+
+hello worldConnection closed by foreign host.
+</pre><p>つながりました。ということはflask自体の問題？</p>
+
+</div>
+<div class="section">
+    <h3>解決策</h3>
+    <p>ここまで色々やってから気付いたのでアレなのですが、dockerとか関係なくflask自体の問題でした。</p><p><a href="http://flask.pocoo.org/docs/0.12/quickstart/">flask&#x306E;&#x516C;&#x5F0F;&#x30B5;&#x30A4;&#x30C8;</a>によると</p>
+
+    <blockquote>
+        <p>Externally Visible Server</p><p>If you run the server you will notice that the server is only accessible from your own computer, not from any other in <a class="keyword" href="http://d.hatena.ne.jp/keyword/the%20network">the network</a>. This is the default because in debugging mode a user of the application can execute arbitrary <a class="keyword" href="http://d.hatena.ne.jp/keyword/Python">Python</a> code on your computer.</p><p>If you have the debugger disabled or trust the users on your network, you can make the server publicly available simply by adding --host=0.0.0.0 to the command line:</p><p>flask run --host=0.0.0.0</p><p>This tells your operating system to listen on all public IPs.</p>
+
+    </blockquote>
+<p>というわけで、app.pyの最後の行を</p>
+<pre class="code lang-python" data-lang="python" data-unlink>    app.run(host=<span class="synConstant">'0.0.0.0'</span>)
+</pre><p>に書き換えると、外からでも見えるようになりました。</p><p>おわり</p>
+
+</div>
+
+{% endraw %}

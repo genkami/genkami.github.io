@@ -1,0 +1,166 @@
+---
+layout: post
+title: JavaでMapの初期化を行う方法いろいろ
+tags:
+- Java
+
+---
+{% raw %}
+<p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Java">Java</a>の面倒臭さの一つに、Map<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%EA%A5%C6%A5%E9%A5%EB">リテラル</a>が存在しないというものがあります。普通にMapを使おうとすると、</p>
+<pre class="code lang-java" data-lang="java" data-unlink><span class="synPreProc">import</span> java.util.*;
+
+<span class="synType">class</span> MapLiteralExample {
+    <span class="synType">public</span> <span class="synType">static</span> <span class="synType">void</span> main(String[] args) {
+        Map&lt;String, Integer&gt; hogeMap = <span class="synStatement">new</span> HashMap&lt;&gt;();
+        hogeMap.put(<span class="synConstant">&quot;hoge&quot;</span>, <span class="synConstant">3</span>);
+        hogeMap.put(<span class="synConstant">&quot;fuga&quot;</span>, <span class="synConstant">2</span>);
+        hogeMap.put(<span class="synConstant">&quot;piyo&quot;</span>, <span class="synConstant">5</span>);
+        <span class="synStatement">for</span> (Map.Entry&lt;String, Integer&gt; e : hogeMap.entrySet()) {
+            System.out.printf(<span class="synConstant">&quot;%s: %d</span><span class="synSpecial">\n</span><span class="synConstant">&quot;</span>, e.getKey(), e.getValue());
+        }
+    }
+}
+</pre><p>という感じになってしまい、キーの数が増えると非常に見にくい。<br />
+これを少しでも改善するために、色々な所で色々な人がtips的なものを書いています。<br />
+<br />
+</p>
+
+<div class="section">
+    <h3><a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%B9%A5%BF%A5%F3%A5%B9">インスタンス</a>初期化子でputする</h3>
+    <p>割とよくみる方法です。Mapの無名サブクラスを作り、<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%B9%A5%BF%A5%F3%A5%B9">インスタンス</a>初期化子でputをする方法です。</p>
+<pre class="code lang-java" data-lang="java" data-unlink><span class="synPreProc">import</span> java.util.*;
+
+<span class="synType">class</span> MapLiteralExample {
+    <span class="synType">public</span> <span class="synType">static</span> <span class="synType">void</span> main(String[] args) {
+        Map&lt;String, Integer&gt; hogeMap = <span class="synStatement">new</span> HashMap&lt;String, Integer&gt;() {{
+                put(<span class="synConstant">&quot;hoge&quot;</span>, <span class="synConstant">3</span>);
+                put(<span class="synConstant">&quot;fuga&quot;</span>, <span class="synConstant">2</span>);
+                put(<span class="synConstant">&quot;piyo&quot;</span>, <span class="synConstant">5</span>);
+            }};
+        <span class="synStatement">for</span> (Map.Entry&lt;String, Integer&gt; e : hogeMap.entrySet()) {
+            System.out.printf(<span class="synConstant">&quot;%s: %d</span><span class="synSpecial">\n</span><span class="synConstant">&quot;</span>, e.getKey(), e.getValue());
+        }
+    }
+}
+</pre><p>何度もhogeMapと書かなくてよくなったため、少しだけ楽になりました。<br />
+しかし、<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%D7%A5%ED%A5%B0%A5%E9%A5%DE%A1%BC">プログラマー</a>はどうも「Map<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%EA%A5%C6%A5%E9%A5%EB">リテラル</a>っぽさ」が無いと不安に感じてしまうようです。この方法では満足しない人も一定数存在するでしょう。</p>
+
+</div>
+<div class="section">
+    <h3>putを改名する</h3>
+    <p>先ほどのバージョンの進化版です。</p>
+<pre class="code lang-java" data-lang="java" data-unlink><span class="synPreProc">import</span> java.util.*;
+
+<span class="synType">class</span> MyMap&lt;K, V&gt; <span class="synType">extends</span> HashMap&lt;K, V&gt; {
+    <span class="synType">public</span> <span class="synType">void</span> _(K key, V val) {
+        put(key, val);
+    }
+}
+
+<span class="synType">class</span> MapLiteralExample {
+    <span class="synType">public</span> <span class="synType">static</span> <span class="synType">void</span> main(String[] args) {
+        Map&lt;String, Integer&gt; hogeMap = <span class="synStatement">new</span> MyMap&lt;String, Integer&gt;() {{
+                _(<span class="synConstant">&quot;hoge&quot;</span>, <span class="synConstant">3</span>); _(<span class="synConstant">&quot;fuga&quot;</span>, <span class="synConstant">2</span>); _(<span class="synConstant">&quot;piyo&quot;</span>, <span class="synConstant">5</span>);
+            }};
+        <span class="synStatement">for</span> (Map.Entry&lt;String, Integer&gt; e : hogeMap.entrySet()) {
+            System.out.printf(<span class="synConstant">&quot;%s: %d</span><span class="synSpecial">\n</span><span class="synConstant">&quot;</span>, e.getKey(), e.getValue());
+        }
+    }
+}
+</pre><p>putを目立たない名前に改名することによって、少しだけMap<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%EA%A5%C6%A5%E9%A5%EB">リテラル</a>っぽさが上昇しました。putの別名は_にするのが一般的なようです。<br />
+ちなみに、アンダースコア1つのみからなる名前は今後の<a class="keyword" href="http://d.hatena.ne.jp/keyword/Java">Java</a>では使用できなくなる可能性が高いので、使わないようにしましょう。</p>
+
+</div>
+<div class="section">
+    <h3>メソッドチェーンできるputを追加する</h3>
+    <p>こちらもput改造系のtipsです。putを_に改名した上で、最後にthisを返すことによって、少しだけMap<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%EA%A5%C6%A5%E9%A5%EB">リテラル</a>っぽく書くことができるようになります。<br />
+<a class="keyword" href="http://d.hatena.ne.jp/keyword/Java">Java</a>ではないですが、<a class="keyword" href="http://d.hatena.ne.jp/keyword/C%2B%2B">C++</a>でこのようなことをやっているコードを見たことがあります。</p>
+<pre class="code lang-java" data-lang="java" data-unlink><span class="synPreProc">import</span> java.util.*;
+
+<span class="synType">class</span> MyMap2&lt;K, V&gt; <span class="synType">extends</span> HashMap&lt;K, V&gt; {
+    <span class="synType">public</span> MyMap2&lt;K, V&gt; _(K key, V val) {
+        put(key, val);
+        <span class="synStatement">return</span> <span class="synType">this</span>;
+    }
+}
+
+<span class="synType">class</span> MapLiteralExample {
+    <span class="synType">public</span> <span class="synType">static</span> <span class="synType">void</span> main(String[] args) {
+        Map&lt;String, Integer&gt; hogeMap = <span class="synStatement">new</span> MyMap2&lt;String, Integer&gt;()
+            ._(<span class="synConstant">&quot;hoge&quot;</span>, <span class="synConstant">3</span>)
+            ._(<span class="synConstant">&quot;fuga&quot;</span>, <span class="synConstant">2</span>)
+            ._(<span class="synConstant">&quot;piyo&quot;</span>, <span class="synConstant">5</span>);
+        <span class="synStatement">for</span> (Map.Entry&lt;String, Integer&gt; e : hogeMap.entrySet()) {
+            System.out.printf(<span class="synConstant">&quot;%s: %d</span><span class="synSpecial">\n</span><span class="synConstant">&quot;</span>, e.getKey(), e.getValue());
+        }
+    }
+}
+</pre>
+</div>
+<div class="section">
+    <h3>Builder的なものを作る</h3>
+    <p>先ほどの2つの方法の弱点は、単一のMapのサブクラスにしか利用できないことです。上の実装はすべてHashMapで行いましたが、TreeMapでも同じことをやりたい場合、MyTreeMapのようなクラスを作らなければならなくなります。<br />
+こちらの方法はその欠点を解消しています。</p>
+<pre class="code lang-java" data-lang="java" data-unlink><span class="synPreProc">import</span> java.util.*;
+<span class="synPreProc">import</span> java.util.function.*;
+
+<span class="synType">class</span> Pair&lt;A, B&gt; {
+    <span class="synType">private</span> A first;
+    <span class="synType">private</span> B second;
+    <span class="synType">public</span> Pair(A a, B b) {
+        first = a;
+        second = b;
+    }
+    <span class="synType">public</span> A getFirst() {
+        <span class="synStatement">return</span> first;
+    }
+    <span class="synType">public</span> B getSecond() {
+        <span class="synStatement">return</span> second;
+    }
+}
+
+<span class="synType">class</span> MapBuilder&lt;K, V&gt; {
+    <span class="synType">private</span> List&lt;Pair&lt;K, V&gt;&gt; entries;
+    <span class="synType">public</span> MapBuilder() {
+        entries = <span class="synStatement">new</span> LinkedList&lt;Pair&lt;K, V&gt;&gt;();
+    }
+    <span class="synType">public</span> MapBuilder&lt;K, V&gt; _(K key, V value) {
+        entries.add(<span class="synStatement">new</span> Pair&lt;&gt;(key, value));
+        <span class="synStatement">return</span> <span class="synType">this</span>;
+    }
+    <span class="synType">public</span> Map&lt;K, V&gt; build(Supplier&lt;Map&lt;K, V&gt;&gt; new_) {
+        Map&lt;K, V&gt; m = new_.get();
+        <span class="synStatement">for</span> (Pair&lt;K, V&gt; e : entries) {
+            m.put(e.getFirst(), e.getSecond());
+        }
+        <span class="synStatement">return</span> m;
+    }
+}
+<span class="synType">class</span> MapLiteralExample {
+    <span class="synType">public</span> <span class="synType">static</span> <span class="synType">void</span> main(String[] args) {
+        Map&lt;String, Integer&gt; hogeMap = <span class="synStatement">new</span> MapBuilder&lt;String, Integer&gt;()
+            ._(<span class="synConstant">&quot;hoge&quot;</span>, <span class="synConstant">3</span>)
+            ._(<span class="synConstant">&quot;fuga&quot;</span>, <span class="synConstant">2</span>)
+            ._(<span class="synConstant">&quot;piyo&quot;</span>, <span class="synConstant">5</span>)
+            .build(HashMap&lt;String, Integer&gt;::<span class="synStatement">new</span>);
+        <span class="synStatement">for</span> (Map.Entry&lt;String, Integer&gt; e : hogeMap.entrySet()) {
+            System.out.printf(<span class="synConstant">&quot;%s: %d</span><span class="synSpecial">\n</span><span class="synConstant">&quot;</span>, e.getKey(), e.getValue());
+        }
+    }
+}
+</pre><p>インターフェースがコンストラクタを持てないことを解決するための苦肉の策です。<br />
+すこしコードは長くなってしまいましたが、これで任意のMapに対応することができるようになりました。<br />
+欠点は、一度キーと値のリストを持ってしまっているので、無駄にコストがかかるということでしょうか。</p>
+
+</div>
+<div class="section">
+    <h3>ちなみに</h3>
+    <p><iframe src="//hatenablog-parts.com/embed?url=https%3A%2F%2Fgithub.com%2Fbenjiman%2Flambda-type-references%2Fblob%2Fmaster%2Fsrc%2Ftest%2Fjava%2Fcom%2Fbenjiweber%2FPuppetExample.java" title="benjiman/lambda-type-references" class="embed-card embed-webcard" scrolling="no" frameborder="0" style="display: block; width: 100%; height: 155px; max-width: 500px; margin: 10px 0px;"></iframe><cite class="hatena-citation"><a href="https://github.com/benjiman/lambda-type-references/blob/master/src/test/java/com/benjiweber/PuppetExample.java">github.com</a></cite><br />
+リフレクションにより<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%E9%A5%E0%A5%C0%BC%B0">ラムダ式</a>の名前を参照することによって、擬似的に</p>
+<pre class="code lang-java" data-lang="java" data-unlink>key1<span class="synError"> -&gt;</span> value1, key2<span class="synError"> -&gt;</span> value2, <span class="synIdentifier">...</span>
+</pre><p>形式のハッシュテーブルを再現することもできます。<br />
+まあ、あくまで曲芸的なものでしかありませんが……。</p>
+
+</div>
+
+{% endraw %}

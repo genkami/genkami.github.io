@@ -1,0 +1,120 @@
+---
+layout: post
+title: Coqで「…かつ…」、「…または…」を扱う
+tags:
+- Coq
+
+---
+{% raw %}
+<p>連言「かつ」、選言「または」を表すandとorは、Coqでは次のようなデータ構造として定義されています。</p>
+<pre class="code" data-lang="" data-unlink>Inductive and (A B:Prop) : Prop :=
+  conj : A -&gt; B -&gt; A /\ B
+
+where &#34;A /\ B&#34; := (and A B) : type_scope.
+
+Inductive or (A B:Prop) : Prop :=
+  | or_introl : A -&gt; A \/ B
+  | or_intror : B -&gt; A \/ B
+
+where &#34;A \/ B&#34; := (or A B) : type_scope.</pre>
+<div class="section">
+    <h3>AとBからA /\ Bを導く</h3>
+    <p>conjはAとBを引数にとり、A /\ Bを生成するコンストラクタですが、見方を変えれば「A -> B -> A /\ B」という定理になります。</p>
+<pre class="code" data-lang="" data-unlink>Goal forall P Q : Prop, P -&gt; Q -&gt; P /\ Q.
+Proof.
+  intros. (* P : Prop, Q : Prop, H : P, H0 : Q *)
+  apply conj.
+  - (* P の証明 *)
+    assumption.
+  - (* Q の証明 *)
+    assumption.
+Qed.</pre><p>apply conjと同等のことを行うタクティックとして、splitというものが用意されています。</p>
+<pre class="code" data-lang="" data-unlink>Goal forall P Q : Prop, P -&gt; Q -&gt; P /\ Q.
+Proof.
+  intros. (* P : Prop, Q : Prop, H : P, H0 : Q *)
+  split.
+  - assumption.
+  - assumption.
+Qed.</pre>
+</div>
+<div class="section">
+    <h3>A /\ B から A, Bを導く</h3>
+    <p>A /\ Bはただのデータ構造なので、destructすればAとBを取り出すことができます。</p>
+<pre class="code" data-lang="" data-unlink>Goal forall P Q : Prop, P /\ Q -&gt; P.
+Proof.
+  intros P Q H. (* H : P /\ Q *)
+  destruct H. (* H : P, H0 : Q *)
+  assumption.
+Qed.
+
+Goal forall P Q : Prop, P /\ Q -&gt; Q.
+Proof.
+  intros P Q H. (* H : P /\ Q *)
+  destruct H. (* H : P, H0 : Q *)
+  assumption.
+Qed.</pre>
+</div>
+<div class="section">
+    <h3>A, Bから A \/ Bを導く</h3>
+    <p>andと同様に、orもコンストラクタor_introl, or_introrを用いれば導くことができます。</p>
+<pre class="code" data-lang="" data-unlink>Goal forall P Q : Prop, P -&gt; P \/ Q.
+Proof.
+  intros P Q H. (* H : P *)
+  apply or_introl.
+  - (* P の証明 *)
+    assumption.
+Qed.
+
+Goal forall P Q : Prop, Q -&gt; P \/ Q.
+Proof.
+  intros P Q H.
+  apply or_intror.
+  assumption.
+Qed.</pre><p>また、apply or_introl, apply or_introrと同等のことを行うタクティックとして、left, rightが用意されています。</p>
+<pre class="code" data-lang="" data-unlink>Goal forall P Q : Prop, P -&gt; P \/ Q.
+Proof.
+  intros.
+  left.
+  assumption.
+Qed.
+
+Goal forall P Q : Prop, Q -&gt; P \/ Q.
+Proof.
+  intros.
+  right.
+  assumption.
+Qed.</pre>
+</div>
+<div class="section">
+    <h3>P \/ QからPが成立する場合とQが成立する場合について場合分けを行う</h3>
+    <p>こちらもandと同様に、destructを用いることで場合分けが行えます。</p>
+<pre class="code" data-lang="" data-unlink>Goal forall P Q R: Prop,
+       P \/ Q -&gt; (P -&gt; R) -&gt; (Q -&gt; R) -&gt; R.
+Proof.
+  intros. (* H : P \/ Q, H0 : P -&gt; R, H1 : Q -&gt; R *)
+  destruct H.
+  - (* P が成り立つ場合。*)
+    (* H : P *)
+    apply H0 in H. (* H : R *)
+    assumption.
+  - (* Q が成り立つ場合 *)
+    (* H : Q *)
+    apply H1 in H. (* H : R *)
+    assumption.
+Qed.</pre><p>ちなみに、and, orどころかCoqの任意の命題はただのデータ型なので、上の定理は次のような「証明」を行うこともできます。</p>
+<pre class="code" data-lang="" data-unlink>Definition hoge (P Q R : Prop) :
+  P \/ Q -&gt; (P -&gt; R) -&gt; (Q -&gt; R) -&gt; R :=
+  fun PorQ PthenR QthenR =&gt;
+    match PorQ with
+      | or_introl p =&gt; PthenR p
+      | or_intror q =&gt; QthenR q
+    end.
+
+Check hoge.
+(*
+ * hoge
+ *     : forall P Q R : Prop, P \/ Q -&gt; (P -&gt; R) -&gt; (Q -&gt; R) -&gt; R
+ *)</pre>
+</div>
+
+{% endraw %}

@@ -1,0 +1,158 @@
+---
+layout: post
+title: Prologでしょぼい型推論器みたいなものを作る
+tags:
+- Prolog
+
+---
+{% raw %}
+<p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Prolog">Prolog</a>の練習です。<br />
+以下で定義される簡単な式の型を推論し、その値を評価します。</p>
+<pre class="code" data-lang="" data-unlink>* 数値はint型
+* t, nilはbool型
+* XがT型、YがU型のとき、ペアX &amp; YはT &amp; U型
+* FがT -&gt; U型、XがT型のとき、関数適用F $ XはU型</pre><p>組み込み関数はadd, eq, and, neg, car, cdr, identity, applyの8種類を用意しました。</p><p>変数とかは使えないただの<a class="keyword" href="http://d.hatena.ne.jp/keyword/%B7%BF%BF%E4%CF%C0">型推論</a>器もどきのようなものですが、この程度であれば<a class="keyword" href="http://d.hatena.ne.jp/keyword/Prolog">Prolog</a>なら非常に簡単に作ることができます。</p><p>実際に実行してみると、以下のような感じで式の型と実行結果を評価することができます。</p>
+<pre class="code lang-prolog" data-lang="prolog" data-unlink><span class="synPreProc">?- [types].</span>
+<span class="synStatement">true</span>.
+
+<span class="synPreProc">?- eval(</span><span class="synConstant">3</span><span class="synPreProc">, T, R).</span> <span class="synComment">% eval(式, 型, 評価結果)</span>
+T <span class="synStatement">=</span> int,
+R <span class="synStatement">=</span> <span class="synConstant">3</span>.
+
+<span class="synPreProc">?- eval(car $ </span><span class="synConstant">3</span><span class="synPreProc"> &amp; t, T, R).</span>
+T <span class="synStatement">=</span> int,
+R <span class="synStatement">=</span> <span class="synConstant">3</span>.
+
+<span class="synPreProc">?- add $ </span><span class="synConstant">2</span><span class="synPreProc"> :: T.</span>
+T <span class="synStatement">=</span> int-<span class="synStatement">&gt;</span>int.
+
+<span class="synPreProc">?- (add $ </span><span class="synConstant">2</span><span class="synPreProc">) $ </span><span class="synConstant">3</span><span class="synPreProc"> :: T.</span>
+T <span class="synStatement">=</span> int.
+
+<span class="synPreProc">?- eval((add $ </span><span class="synConstant">2</span><span class="synPreProc">) $ </span><span class="synConstant">3</span><span class="synPreProc">, T, R).</span>
+T <span class="synStatement">=</span> int,
+R <span class="synStatement">=</span> <span class="synConstant">5</span>.
+</pre><p>以下<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%BD%A1%BC%A5%B9%A5%B3%A1%BC%A5%C9">ソースコード</a></p>
+<pre class="code lang-prolog" data-lang="prolog" data-unlink><span class="synComment">% types.pl</span>
+
+<span class="synSpecial">:-</span> <span class="synStatement">op</span>(<span class="synConstant">400</span>, xfy, [&amp;]).
+<span class="synSpecial">:-</span> <span class="synStatement">op</span>(<span class="synConstant">500</span>, xfy, [$]).
+<span class="synSpecial">:-</span> <span class="synStatement">op</span>(<span class="synConstant">600</span>, xfy, [-<span class="synStatement">&gt;</span>]).
+<span class="synSpecial">:-</span> <span class="synStatement">op</span>(<span class="synConstant">900</span>, xfx, [::]).
+
+<span class="synComment">% type(T): T は型である</span>
+<span class="synComment">% プリミティブな型は int, bool のみ</span>
+<span class="synConstant">type</span>(int).
+<span class="synConstant">type</span>(bool).
+<span class="synComment">% T &amp; U で T と U の直積を表す</span>
+<span class="synConstant">type</span>(T &amp; U) <span class="synSpecial">:-</span>
+    type(T),
+    type(U).
+<span class="synComment">% T -&gt; U で T を取って U を返す関数を表す</span>
+<span class="synConstant">type</span>(T -<span class="synStatement">&gt;</span> U) <span class="synSpecial">:-</span>
+    type(T),
+    type(U).
+
+<span class="synComment">% 式の型</span>
+<span class="synSpecial">:-</span> discontiguous (::)/<span class="synConstant">2</span>.
+<span class="synComment">% 数値は int 型</span>
+X :: int <span class="synSpecial">:-</span>
+<span class="synConstant">    number</span>(X).
+<span class="synComment">% t, nil は bool 型</span>
+<span class="synConstant">t</span> :: bool.
+<span class="synConstant">nil</span> :: bool.
+<span class="synComment">% F :: T -&gt; U と X :: T について、関数適用 F $ X は U 型</span>
+F $ X :: U <span class="synSpecial">:-</span>
+    F :: T -<span class="synStatement">&gt;</span> U,
+              X :: T.
+<span class="synComment">% X :: T と Y :: U について、ペア X &amp; Y は T &amp; U 型</span>
+X &amp; Y :: T &amp; U <span class="synSpecial">:-</span>
+    X :: T,
+    Y :: U.
+
+<span class="synComment">% 式の評価</span>
+<span class="synConstant">eval</span>(E, T, Res) <span class="synSpecial">:-</span>
+    E :: T,
+    eval_(E, Res),
+    <span class="synSpecial">!</span>.
+
+<span class="synSpecial">:-</span> discontiguous eval_/<span class="synConstant">2</span>.
+
+<span class="synComment">% プリミティブな値の評価</span>
+<span class="synConstant">eval_</span>(X, Res) <span class="synSpecial">:-</span>
+    <span class="synStatement">number</span>(X),
+    Res <span class="synStatement">is</span> X.
+<span class="synConstant">eval_</span>(t, t).
+
+<span class="synComment">% ペア</span>
+<span class="synConstant">eval_</span>(nil, nil).
+<span class="synConstant">eval_</span>(X &amp; Y, Res) <span class="synSpecial">:-</span>
+    eval_(X, XRes),
+    eval_(Y, YRes),
+    Res <span class="synStatement">=</span> XRes &amp; YRes.
+
+<span class="synComment">% 関数適用の評価方法は後で</span>
+
+<span class="synComment">% 関数</span>
+<span class="synConstant">add</span> :: int -<span class="synStatement">&gt;</span> int -<span class="synStatement">&gt;</span> int.
+<span class="synConstant">eval_</span>((add $ X) $ Y, Res) <span class="synSpecial">:-</span>
+    eval_(X, XRes),
+    eval_(Y, YRes),
+    Res <span class="synStatement">is</span> XRes + YRes.
+
+<span class="synConstant">eq</span> :: T -<span class="synStatement">&gt;</span> T -<span class="synStatement">&gt;</span> bool <span class="synSpecial">:-</span>
+    comparable(T).
+<span class="synComment">% comparable(T): T は同値比較可能な型である。</span>
+<span class="synConstant">comparable</span>(int).
+<span class="synConstant">comparable</span>(bool).
+<span class="synConstant">comparable</span>(T &amp; U) <span class="synSpecial">:-</span>
+    comparable(T),
+    comparable(U).
+<span class="synConstant">eval_</span>((eq $ X) $ Y, Res) <span class="synSpecial">:-</span>
+    eval_(X, XRes),
+    eval_(Y, YRes),
+    eq_value(XRes, YRes, Res).
+<span class="synConstant">eq_value</span>(X, Y, t) <span class="synSpecial">:-</span>
+    <span class="synStatement">number</span>(X),
+    <span class="synStatement">number</span>(Y),
+    X <span class="synStatement">is</span> Y,
+    <span class="synSpecial">!</span>.
+<span class="synConstant">eq_value</span>(t, t, t) <span class="synSpecial">:-</span> <span class="synSpecial">!</span>.
+<span class="synConstant">eq_value</span>(nil, nil, t) <span class="synSpecial">:-</span> <span class="synSpecial">!</span>.
+<span class="synConstant">eq_value</span>(X &amp; Y, A &amp; B, t) <span class="synSpecial">:-</span>
+    eq_value(X, A),
+    eq_value(Y, B),
+    <span class="synSpecial">!</span>.
+<span class="synConstant">eq_value</span>(_, _, nil) <span class="synSpecial">:-</span> <span class="synSpecial">!</span>.
+
+<span class="synConstant">and</span> :: bool -<span class="synStatement">&gt;</span> bool -<span class="synStatement">&gt;</span> bool.
+<span class="synConstant">eval_</span>((and $ X) $ Y, t) <span class="synSpecial">:-</span>
+    eval_(X, t),
+    eval_(Y, t).
+<span class="synConstant">eval_</span>((and $ X) $ Y, nil) <span class="synSpecial">:-</span>
+    not(eval_((and $ X) $ Y, t)).
+
+<span class="synConstant">neg</span> :: bool -<span class="synStatement">&gt;</span> bool.
+<span class="synConstant">eval_</span>(neg $ t, nil).
+<span class="synConstant">eval_</span>(neg $ nil, t).
+
+<span class="synConstant">car</span> :: T &amp; U -<span class="synStatement">&gt;</span> T.
+<span class="synConstant">eval_</span>(car $ X &amp; _, Res) <span class="synSpecial">:-</span>
+    eval_(X, Res).
+
+<span class="synConstant">cdr</span> :: T &amp; U -<span class="synStatement">&gt;</span> U.
+<span class="synConstant">eval_</span>(cdr $ _ &amp; Y, Res) <span class="synSpecial">:-</span>
+    eval_(Y, Res).
+
+<span class="synConstant">identity</span> :: T -<span class="synStatement">&gt;</span> T.
+<span class="synConstant">eval_</span>(identity $ X, Res) <span class="synSpecial">:-</span>
+    eval_(X, Res).
+
+<span class="synConstant">apply</span> :: (T -<span class="synStatement">&gt;</span> U) -<span class="synStatement">&gt;</span> T -<span class="synStatement">&gt;</span> U.
+<span class="synConstant">eval_</span>((apply $ F) $ X, Res) <span class="synSpecial">:-</span>
+    eval_(F, FRes),
+    eval_(X, XRes),
+    eval_(FRes $ XRes, Res).
+</pre>
+
+{% endraw %}

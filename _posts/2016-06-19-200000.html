@@ -1,0 +1,77 @@
+---
+layout: post
+title: 独自のkindを定義する
+tags:
+- Haskell
+
+---
+{% raw %}
+<p>DataKinds拡張を有効にすると、独自のkindを定義することができるようになります。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synType">data</span> Nat <span class="synStatement">=</span> Z <span class="synStatement">|</span> S Nat
+</pre><p>通常これは「値コンストラクタZとSからなる型Nat」が定義されますが、DataKinds拡張が有効になっている場合、この型Natと値コンストラクタZ, Sが、それぞれkindと型コンストラクタに「昇格」します。すなわち、型Zと型S (n :: Nat)からなる新たなkind Natが定義されます。</p><p>例えば、長さつきリストを定義したい場合、上で定義したkind Natを利用して、以下のように書くことができます。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synType">data</span> List (n <span class="synStatement">::</span> Nat) a <span class="synType">where</span>
+  Nil <span class="synStatement">::</span> List Z a
+  (<span class="synStatement">:&gt;</span>) <span class="synStatement">::</span> a <span class="synStatement">-&gt;</span> List n a <span class="synStatement">-&gt;</span> List (S n) a
+
+<span class="synType">deriving</span> <span class="synType">instance</span> Show a <span class="synStatement">=&gt;</span> Show (List n a)
+<span class="synPreProc">infixr</span> <span class="synConstant">5</span> <span class="synStatement">:&gt;</span>
+</pre><p>DataKindsが無い場合、Listの定義は以下のようになるでしょう。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synType">data</span> Z'
+<span class="synType">data</span> S' n
+
+<span class="synType">data</span> List' n a <span class="synType">where</span>
+  Nil' <span class="synStatement">::</span> List' Z' a
+  (<span class="synStatement">::&gt;</span>) <span class="synStatement">::</span> a <span class="synStatement">-&gt;</span> List' n a <span class="synStatement">-&gt;</span> List' (S' n) a
+
+<span class="synType">deriving</span> <span class="synType">instance</span> Show a <span class="synStatement">=&gt;</span> Show (List' n a)
+<span class="synPreProc">infixr</span> <span class="synConstant">5</span> <span class="synStatement">::&gt;</span>
+</pre><p>これでもある程度は機能しますが、nの型が限定されていないため、以下のような関数も<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%B3%A5%F3%A5%D1%A5%A4%A5%EB">コンパイル</a>を通ってしまいます。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink>hoge <span class="synStatement">::</span> List' (Maybe Int) a <span class="synStatement">-&gt;</span> List' (Maybe Int) a
+hoge x <span class="synStatement">=</span> x
+</pre><p>ところが、nのkindをNatに限定することによって、このような無意味な関数は<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%B3%A5%F3%A5%D1%A5%A4%A5%EB">コンパイル</a>時に弾くことができるようになります。<br />
+実際にこの<a class="keyword" href="http://d.hatena.ne.jp/keyword/hoge">hoge</a>関数と同様なものをList'ではなくListについて定義してみましょう。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink>fuga <span class="synStatement">::</span> List (Maybe Int) a <span class="synStatement">-&gt;</span> List (Maybe Int) a
+fuga x <span class="synStatement">=</span> x
+</pre><p>これを<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%B3%A5%F3%A5%D1%A5%A4%A5%EB">コンパイル</a>しようとすると、以下のようにエラーとなります。</p>
+
+<pre>    The first argument of ‘List’ should have kind ‘Nat’,
+      but ‘Maybe Int’ has kind ‘*’
+    In the type signature for ‘fuga’:
+      fuga :: List (Maybe Int) a -> List (Maybe Int) a
+Failed, modules loaded: none.
+</pre><p>このような長さ付きリストを作ることにより、以下のような型安全なheadを書くこともできるようになります。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink>safeHead <span class="synStatement">::</span> List (S n) a <span class="synStatement">-&gt;</span> a
+safeHead (x <span class="synStatement">:&gt;</span> _) <span class="synStatement">=</span> x
+</pre><p>これを実行してみると、以下のようになります。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synStatement">&gt;&gt;&gt;</span> safeHead <span class="synStatement">$</span> <span class="synConstant">3</span> <span class="synStatement">:&gt;</span> <span class="synConstant">4</span> <span class="synStatement">:&gt;</span> <span class="synConstant">5</span> <span class="synStatement">:&gt;</span> Nil
+<span class="synConstant">3</span>
+<span class="synStatement">&gt;&gt;&gt;</span> safeHead Nil
+
+<span class="synStatement">&lt;</span>interactive<span class="synStatement">&gt;:</span><span class="synConstant">77</span><span class="synStatement">:</span><span class="synConstant">10</span><span class="synStatement">:</span>
+    Couldn't match <span class="synType">type</span> ‘'Z’ with ‘'S n0’
+    Expected <span class="synType">type</span><span class="synStatement">:</span> List ('S n0) a
+      Actual <span class="synType">type</span><span class="synStatement">:</span> List 'Z a
+    In the first argument <span class="synStatement">of</span> ‘safeHead’, namely ‘Nil’
+    In the expression<span class="synStatement">:</span> safeHead Nil
+</pre><p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Nil">Nil</a>に対してsafeHeadを呼ぼうとした場合、エラーになっていることが分かります。</p><p>ところで、このエラーメッセージに登場する型名をよく見てみましょう。kindがNatである型の頭に、「'」が付いていることが分かりますか？<br />
+これはDataKindsによる構文の拡張で、DataKindsによりkindと型に「昇格」した型と値コンストラクタを、昇格なしで元から存在していたkindや型と区別するためにつけられるものです。</p><p>例えば、以下のコードを見てみましょう。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synType">data</span> P <span class="synStatement">=</span> MkP String
+<span class="synType">data</span> A <span class="synStatement">=</span> P
+</pre><p>DataKindsが有効になっている状態で型Pを指定した場合、このPは「値コンストラクタMkPからなる型P」を指しているのか、「kindがAであるような唯一の型P」を指しているのかが分からなくなります。そのため、こういった場合には後者の頭に「'」をつけることによって、両者を区別することができます。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synStatement">&gt;&gt;&gt;</span> <span class="synStatement">:</span>set <span class="synStatement">-</span>XDataKinds
+<span class="synStatement">&gt;&gt;&gt;</span> <span class="synStatement">:</span>m <span class="synStatement">+</span>Data.Data
+<span class="synStatement">&gt;&gt;&gt;</span> Proxy <span class="synStatement">::</span> Proxy P    <span class="synComment">-- 前者のP</span>
+Proxy
+<span class="synStatement">&gt;&gt;&gt;</span> Proxy <span class="synStatement">::</span> Proxy 'P   <span class="synComment">-- 後者のP</span>
+Proxy
+</pre><p>もちろん、名前の被る可能性がない場合は後者のPも「P」の名前でアクセスすることができます。</p><br />
+<br />
+<p>しかし、ここで問題点が1つ。<br />
+以下のような型が存在したとします。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synType">data</span> X' <span class="synStatement">=</span> X <span class="synStatement">|</span> X'
+</pre><p>このとき、型に昇格したほうの「X'」は元々型である「X'」と名前が被っているため、アクセスするためには頭に「'」をつける必要があります。<br />
+しかし、「'X'」と書くとパーサには文字<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%EA%A5%C6%A5%E9%A5%EB">リテラル</a>と解釈されてしまうため、<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%B3%A5%F3%A5%D1%A5%A4%A5%EB">コンパイル</a>が通りません。<br />
+そのため、こういった場合は型に昇格したほうのX'にアクセスすることはできなくなってしまいます。</p><p>あとTemplateHaskellの構文とも重複している気がするけど、これも大丈夫なのかな……？？</p>
+
+
+{% endraw %}

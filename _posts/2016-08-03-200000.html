@@ -1,0 +1,37 @@
+---
+layout: post
+title: Gaucheにおけるモナド的パターン
+tags:
+- Gauche
+
+---
+{% raw %}
+<p>Maybe<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%E2%A5%CA%A5%C9">モナド</a>的なパターンはand-let*を使うことで処理することができます。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>maybe-add maybe-a maybe-b<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span>and-let* <span class="synSpecial">((</span>a maybe-a<span class="synSpecial">)</span>
+             <span class="synSpecial">(</span>b maybe-b<span class="synSpecial">))</span>
+           <span class="synSpecial">(</span><span class="synIdentifier">+</span> a b<span class="synSpecial">)))</span>
+
+<span class="synSpecial">(</span>maybe-add <span class="synConstant">3</span> <span class="synConstant">2</span><span class="synSpecial">)</span>   <span class="synComment">; =&gt; 5</span>
+<span class="synSpecial">(</span>maybe-add <span class="synConstant">#f</span> <span class="synConstant">5</span><span class="synSpecial">)</span>  <span class="synComment">; =&gt; #f</span>
+<span class="synSpecial">(</span>maybe-add <span class="synConstant">0</span> <span class="synConstant">#f</span><span class="synSpecial">)</span>  <span class="synComment">; =&gt; #f</span>
+<span class="synSpecial">(</span>maybe-add <span class="synConstant">#f</span> <span class="synConstant">#f</span><span class="synSpecial">)</span> <span class="synComment">; =&gt; #f</span>
+</pre><p><a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%EA%A5%B9%A5%C8%A5%E2">リストモ</a>ナドにおける<-のようなletの亜種は無いのかな、と思って探してみたところ、<a class="keyword" href="http://d.hatena.ne.jp/keyword/gauche">gauche</a>.generatorにglet*というものがありました。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>add-all gxs gys gzs<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span>generate
+   <span class="synSpecial">(</span>^<span class="synSpecial">(</span>yield<span class="synSpecial">)</span>
+     <span class="synSpecial">(</span>glet* <span class="synSpecial">((</span>x <span class="synSpecial">(</span>gxs<span class="synSpecial">))</span>
+             <span class="synSpecial">(</span>y <span class="synSpecial">(</span>gys<span class="synSpecial">))</span>
+             <span class="synSpecial">(</span>z <span class="synSpecial">(</span>gzs<span class="synSpecial">)))</span>
+       <span class="synSpecial">(</span>yield <span class="synSpecial">(</span><span class="synIdentifier">+</span> x y z<span class="synSpecial">))))))</span>
+</pre><p>これを実行すると次のようになります。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span>generator-&gt;list
+ <span class="synSpecial">(</span>add-all <span class="synSpecial">(</span>list-&gt;generator <span class="synSpecial">'(</span><span class="synConstant">1</span> <span class="synConstant">2</span> <span class="synConstant">3</span><span class="synSpecial">))</span>
+          <span class="synSpecial">(</span>list-&gt;generator <span class="synSpecial">'(</span><span class="synConstant">0</span> <span class="synConstant">2</span> <span class="synConstant">4</span><span class="synSpecial">))</span>
+          <span class="synSpecial">(</span>list-&gt;generator <span class="synSpecial">'(</span><span class="synConstant">5</span> <span class="synConstant">6</span> <span class="synConstant">7</span><span class="synSpecial">))))</span>
+<span class="synComment">;; =&gt; (6)</span>
+</pre><p>…？？</p><p>どうも、glet*はジェネレーターの先頭の要素を取り出して、その要素に対して処理を行い、eofが来た場合はそのまま終了するというだけの構文のようです。</p><br />
+<p>do-generatorというdolistの仲間のようなものもありましたが、これも一番内側のジェネレーターがeofに達した時点で終了してしまいます。</p><p><a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%EA%A5%B9%A5%C8%A5%E2">リストモ</a>ナド的なことをしたい場合は、自分でどうにかするしかなさそうですね……。</p>
+
+
+{% endraw %}

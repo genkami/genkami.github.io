@@ -1,0 +1,85 @@
+---
+layout: post
+title: Scala的な型クラスをHaskellで作る
+tags:
+- Haskell
+
+---
+{% raw %}
+<p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Scala">Scala</a>の型クラスは<a class="keyword" href="http://d.hatena.ne.jp/keyword/Haskell">Haskell</a>の型クラスとは全くの別物ですが、<a class="keyword" href="http://d.hatena.ne.jp/keyword/Haskell">Haskell</a>でもImplicitParams拡張を使うことによって<a class="keyword" href="http://d.hatena.ne.jp/keyword/Scala">Scala</a>の型クラスのようなものを利用できるようになります。</p>
+
+<div class="section">
+    <h4>ImplicitParams</h4>
+    <p>このマイナーな拡張を有効化すると、関数に対して暗黙的に引数を渡すことができるようになります。<br />
+暗黙引数を受け取る関数は以下のように定義します。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synComment">-- sortBy :: (a -&gt; a -&gt; Ordering) -&gt; [a] -&gt; [a]</span>
+sort' <span class="synStatement">::</span> (<span class="synStatement">?</span>compare <span class="synStatement">::</span> a <span class="synStatement">-&gt;</span> a <span class="synStatement">-&gt;</span> Ordering) <span class="synStatement">=&gt;</span> [a] <span class="synStatement">-&gt;</span> [a]
+sort' xs <span class="synStatement">=</span> sortBy <span class="synStatement">?</span>compare xs
+</pre><p>この定義のうち、</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synStatement">?</span>compare <span class="synStatement">::</span> a <span class="synStatement">-&gt;</span> a <span class="synStatement">-&gt;</span> Ordering
+</pre><p>の部分で暗黙引数を要求しています。<br />
+暗黙引数は?で始まる名前を持ち、関数を呼び出した位置のスコープに同名で型の一致する変数が存在した場合、明示的に関数に渡さなくてもその値を呼び出した関数側から参照することができます。</p><p>実行例:</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synStatement">&gt;&gt;&gt;</span> <span class="synStatement">:</span>m <span class="synStatement">+</span>Data.List Data.Function
+<span class="synStatement">&gt;&gt;&gt;</span> <span class="synStatement">let</span> xs <span class="synStatement">=</span> [(<span class="synConstant">&quot;hoge&quot;</span>, <span class="synConstant">5</span>), (<span class="synConstant">&quot;fuag&quot;</span>, <span class="synConstant">10</span>), (<span class="synConstant">&quot;piyo&quot;</span>, <span class="synConstant">1</span>), (<span class="synConstant">&quot;foo&quot;</span>, <span class="synConstant">7</span>)] <span class="synStatement">::</span> [(String, Int)]
+<span class="synStatement">&gt;&gt;&gt;</span> <span class="synStatement">let</span> <span class="synStatement">?</span>compare <span class="synStatement">=</span> flip (compare <span class="synStatement">`on`</span> snd) <span class="synStatement">in</span> sort' xs
+[(<span class="synConstant">&quot;fuag&quot;</span>,<span class="synConstant">10</span>),(<span class="synConstant">&quot;foo&quot;</span>,<span class="synConstant">7</span>),(<span class="synConstant">&quot;hoge&quot;</span>,<span class="synConstant">5</span>),(<span class="synConstant">&quot;piyo&quot;</span>,<span class="synConstant">1</span>)]
+</pre><p>2番目の要素について降順に並べられていることがわかります。</p>
+
+</div>
+<div class="section">
+    <h4><a class="keyword" href="http://d.hatena.ne.jp/keyword/Scala">Scala</a>的な型クラス</h4>
+    <p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Scala">Scala</a>には<a class="keyword" href="http://d.hatena.ne.jp/keyword/Haskell">Haskell</a>で言うところの型クラスは存在しません。それでどうやって型クラスを実現しているのかというと、型クラスのメソッドに対応する関数をまとめたデータ型を作り、それを暗黙引数として受け渡すことによって型クラスに対する処理を行っています。</p><p>例えば、<a class="keyword" href="http://d.hatena.ne.jp/keyword/Scala">Scala</a>的な方法でApplicativeを作りたい場合、Applicative型クラスを作るのではなく、次のようなデータ型を定義します。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synType">data</span> Applicative f <span class="synStatement">=</span> Applicative {
+    point <span class="synStatement">::</span> forall a<span class="synStatement">.</span> a <span class="synStatement">-&gt;</span> f a                     <span class="synComment">-- pureの代わり</span>
+  , apply <span class="synStatement">::</span> forall a b<span class="synStatement">.</span> f (a <span class="synStatement">-&gt;</span> b) <span class="synStatement">-&gt;</span> f a <span class="synStatement">-&gt;</span> f b   <span class="synComment">-- apの代わり</span>
+  }
+</pre><p>ついでに、Applicative fを暗黙的に受け取るような関数も用意してみましょう。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink>pure <span class="synStatement">::</span> (<span class="synStatement">?</span>app <span class="synStatement">::</span> Applicative f) <span class="synStatement">=&gt;</span> a <span class="synStatement">-&gt;</span> f a
+pure <span class="synStatement">=</span> point <span class="synStatement">?</span>app
+
+(<span class="synStatement">&lt;*&gt;</span>) <span class="synStatement">::</span> (<span class="synStatement">?</span>app <span class="synStatement">::</span> Applicative f) <span class="synStatement">=&gt;</span> f (a <span class="synStatement">-&gt;</span> b) <span class="synStatement">-&gt;</span> f a <span class="synStatement">-&gt;</span> f b
+(<span class="synStatement">&lt;*&gt;</span>) <span class="synStatement">=</span> apply <span class="synStatement">?</span>app
+
+<span class="synPreProc">infixl</span> <span class="synConstant">4</span> <span class="synStatement">&lt;*&gt;</span>
+</pre><p>ghciでロードすると「Control.Applicativeのやつと名前被ってる」と怒られますが、とりあえず無視。</p><p>さらにこのApplicativeに対する"<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%B9%A5%BF%A5%F3%A5%B9">インスタンス</a>宣言"を行います。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink>appIO <span class="synStatement">::</span> Applicative IO
+appIO <span class="synStatement">=</span> Applicative {
+    point <span class="synStatement">=</span> return
+  , apply <span class="synStatement">=</span> <span class="synStatement">\</span>mf mx <span class="synStatement">-&gt;</span> mf <span class="synStatement">&gt;&gt;=</span> <span class="synStatement">\</span>f <span class="synStatement">-&gt;</span> mx <span class="synStatement">&gt;&gt;=</span> <span class="synStatement">\</span>x <span class="synStatement">-&gt;</span> return (f x)
+  }
+</pre><p>実際に使用してみましょう。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synStatement">&gt;&gt;&gt;</span> <span class="synStatement">let</span> addTwo <span class="synStatement">=</span> return (<span class="synStatement">+</span> <span class="synConstant">2</span>) <span class="synStatement">::</span> IO (Int <span class="synStatement">-&gt;</span> Int)
+<span class="synStatement">&gt;&gt;&gt;</span> <span class="synStatement">let</span> <span class="synStatement">?</span>app <span class="synStatement">=</span> appIO <span class="synStatement">in</span> addTwo <span class="synStatement">&lt;*&gt;</span> readLn
+<span class="synConstant">5</span>
+<span class="synConstant">7</span>
+</pre><p>この方法でも、十分型クラスに近い動作が行えていることがわかります。</p><br />
+<p>この方法のメリットは、1つの型について2種類以上の<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%B9%A5%BF%A5%F3%A5%B9">インスタンス</a>定義を行うことができることです。<br />
+例えば[]をApplicativeの<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%B9%A5%BF%A5%F3%A5%B9">インスタンス</a>にする方法は、以下の2通りが考えられます。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink>[f, g, h] <span class="synStatement">&lt;*&gt;</span> [a, b, c] <span class="synStatement">=</span> [f a, f b, f c, g a, g b, g c, h a, h b, h c]
+[f, g, h] <span class="synStatement">&lt;*&gt;</span> [a, b, c] <span class="synStatement">=</span> [f a, g b, h c]
+</pre><p>実際は前者の方法でApplicativeの<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%B9%A5%BF%A5%F3%A5%B9">インスタンス</a>となっています。<br />
+後者の操作を行うためにはZipListという<a class="keyword" href="http://d.hatena.ne.jp/keyword/newtype">newtype</a>が用意されており、リストをZipListに包んでから<*>に適用することによって、期待通りの動作を行うことができます。</p><p>一方後者では、Applicative []を複数作っておいて、必要に応じて使い分けることで対応できます。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink>appList <span class="synStatement">::</span> Applicative []
+appList <span class="synStatement">=</span> Applicative {
+    point <span class="synStatement">=</span> (<span class="synStatement">:</span>[])
+  , apply <span class="synStatement">=</span> <span class="synStatement">\</span>fs xs <span class="synStatement">-&gt;</span> [f x <span class="synStatement">|</span> f <span class="synStatement">&lt;-</span> fs, x <span class="synStatement">&lt;-</span> xs]
+  }
+
+appZipList <span class="synStatement">::</span> Applicative []
+appZipList <span class="synStatement">=</span> Applicative {
+    point <span class="synStatement">=</span> (<span class="synStatement">:</span>[])
+  , apply <span class="synStatement">=</span> zipWith (<span class="synStatement">$</span>)
+}
+
+applyAll <span class="synStatement">::</span> (<span class="synStatement">?</span>app <span class="synStatement">::</span> Applicative []) <span class="synStatement">=&gt;</span> [Int]
+applyAll <span class="synStatement">=</span> [(<span class="synStatement">+</span> <span class="synConstant">3</span>), (<span class="synStatement">*</span> <span class="synConstant">20</span>), (<span class="synStatement">`div`</span> <span class="synConstant">5</span>)] <span class="synStatement">&lt;*&gt;</span> [<span class="synConstant">4</span>, <span class="synConstant">9</span>, <span class="synConstant">12</span>]
+</pre><p>2つのApplicativeを使ってapplyAllを実行してみましょう。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synStatement">&gt;&gt;&gt;</span> <span class="synStatement">let</span> <span class="synStatement">?</span>app <span class="synStatement">=</span> appList <span class="synStatement">in</span> applyAll
+[<span class="synConstant">7</span>,<span class="synConstant">12</span>,<span class="synConstant">15</span>,<span class="synConstant">80</span>,<span class="synConstant">180</span>,<span class="synConstant">240</span>,<span class="synConstant">0</span>,<span class="synConstant">1</span>,<span class="synConstant">2</span>]
+<span class="synStatement">&gt;&gt;&gt;</span> <span class="synStatement">let</span> <span class="synStatement">?</span>app <span class="synStatement">=</span> appZipList <span class="synStatement">in</span> applyAll
+[<span class="synConstant">7</span>,<span class="synConstant">180</span>,<span class="synConstant">2</span>]
+</pre><p><div class="hatena-asin-detail"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/427406896X/cloudear-22/"><img src="http://ecx.images-amazon.com/images/I/41DBju8o5%2BL._SL160_.jpg" class="hatena-asin-detail-image" alt="関数プログラミング入門 ―Haskellで学ぶ原理と技法―" title="関数プログラミング入門 ―Haskellで学ぶ原理と技法―"></a><div class="hatena-asin-detail-info"><p class="hatena-asin-detail-title"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/427406896X/cloudear-22/">関数プログラミング入門 ―Haskellで学ぶ原理と技法―</a></p><ul><li><span class="hatena-asin-detail-label">作者:</span> Richard Bird,山下伸夫</li><li><span class="hatena-asin-detail-label">出版社/メーカー:</span> <a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%E0%BC%D2">オーム社</a></li><li><span class="hatena-asin-detail-label">発売日:</span> 2012/10/26</li><li><span class="hatena-asin-detail-label">メディア:</span> 単行本（ソフトカバー）</li><li><span class="hatena-asin-detail-label">購入</span>: 3人 <span class="hatena-asin-detail-label">クリック</span>: 28回</li><li><a href="http://d.hatena.ne.jp/asin/427406896X/cloudear-22" target="_blank">この商品を含むブログ (5件) を見る</a></li></ul></div><div class="hatena-asin-detail-foot"></div></div></p>
+
+</div>
+
+{% endraw %}

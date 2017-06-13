@@ -1,0 +1,55 @@
+---
+layout: post
+title: Quineの書き方
+tags:
+- Others
+
+---
+{% raw %}
+<p><iframe src="http://inkar-us-i.hatenablog.com/embed/2017/01/06/074757" title="書き初めQuineを書きました - きくらげ観察日記" class="embed-card embed-blogcard" scrolling="no" frameborder="0" style="display: block; width: 100%; height: 190px; max-width: 500px; margin: 10px 0px;"></iframe><cite class="hatena-citation"><a href="/2017/01/06/074757.html">inkar-us-i.hatenablog.com</a></cite></p><p>前回の記事で書き初めと称してQuineを書きましたが、実は僕自身Quineを書くのは初めてでした。<br />
+書き始める前はQuineは何をやってるかわからない黒魔術にしか見えませんでしたが、実際に書いてみると意外と楽にできることがわかったので、そのコツのようなものをメモしていきたいと思います。</p><p>Quineには、大きく分けて2種類が存在します。</p>
+
+<ol>
+<li>evalを使用しないもの</li>
+<li>evalを使用するもの</li>
+</ol><p>どちらも微妙な書き方の差はありますが、そこまで大きな違いはありません。難易度的にもそれほど差は無いでしょう。</p>
+
+<div class="section">
+    <h3>evalを使用しないQuine</h3>
+    <p>これが最も基本的なQuineであり、どのような言語でもこういったQuineを書くことができます。<br />
+evalを使用しないQuineの基本的な書き方は、以下のようなものになります。</p>
+<pre class="code lang-javascript" data-lang="javascript" data-unlink>x=<span class="synConstant">&quot;x=...;(コードの残りの部分);&quot;</span>;(コードの残りの部分);
+</pre><p>...の部分は適当な<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%D7%A5%EC%A1%BC%A5%B9%A5%DB%A5%EB%A5%C0">プレースホルダ</a>にしておき、xの中身そのものは書きません(もしそうしようとした場合、x="x="x=".....と<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%BD%A1%BC%A5%B9%A5%B3%A1%BC%A5%C9">ソースコード</a>が無限に入れ子状態になってしまいます)。<br />
+(コードの残りの部分)では、xの中身の「...」の部分を実際のxの値(をエスケープしたもの)で置き換え、それを出力します。<br />
+すると出力の形が</p>
+<pre class="code" data-lang="" data-unlink>x=&#34;(xの中身)&#34;;(コードの残りの部分);</pre><p>という形になるため、自分自身を出力することができるようになります。</p>
+
+<div class="section">
+    <h4>サンプルコード</h4>
+    <p>上に書いていることをそのまま<a class="keyword" href="http://d.hatena.ne.jp/keyword/JavaScript">JavaScript</a>にしてみると以下のようになります。</p>
+<pre class="code lang-javascript" data-lang="javascript" data-unlink>x=<span class="synConstant">&quot;x=@?@;console.log(x.split(String.fromCharCode(64)).join(String.fromCharCode(34)).replace(String.fromCharCode(63), x))&quot;</span>;console.log(x.split(<span class="synType">String</span>.fromCharCode(64)).join(<span class="synType">String</span>.fromCharCode(34)).replace(<span class="synType">String</span>.fromCharCode(63), x))
+</pre><p>String.fromCharCode(34)は'"'で、String.fromCharCode(64)は'@'です。<br />
+このコードでは...の部分を@?@と書き、後で@を"、?をxの中身に置き換えています。</p><p>ちなみに、xの値は文字列でなくてもかまいません。例えば<a class="keyword" href="http://d.hatena.ne.jp/keyword/Lisp">Lisp</a>系の言語なら、xの値をS式にしたほうが楽だったりします。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span>let1 x <span class="synSpecial">'(</span>let1 x ? <span class="synSpecial">(</span>write <span class="synSpecial">(</span>cons <span class="synSpecial">(</span>car x<span class="synSpecial">)</span> <span class="synSpecial">(</span>cons <span class="synSpecial">(</span>cadr x<span class="synSpecial">)</span> <span class="synSpecial">(</span>cons <span class="synSpecial">(</span>list <span class="synSpecial">'</span>quote x<span class="synSpecial">)</span> <span class="synSpecial">(</span>cdddr x<span class="synSpecial">)))))</span> <span class="synSpecial">(</span>newline<span class="synSpecial">))</span> <span class="synSpecial">(</span><span class="synIdentifier">write</span> <span class="synSpecial">(</span><span class="synIdentifier">cons</span> <span class="synSpecial">(</span><span class="synIdentifier">car</span> x<span class="synSpecial">)</span> <span class="synSpecial">(</span><span class="synIdentifier">cons</span> <span class="synSpecial">(</span><span class="synIdentifier">cadr</span> x<span class="synSpecial">)</span> <span class="synSpecial">(</span><span class="synIdentifier">cons</span> <span class="synSpecial">(</span><span class="synIdentifier">list</span> <span class="synSpecial">'</span>quote x<span class="synSpecial">)</span> <span class="synSpecial">(</span><span class="synIdentifier">cdddr</span> x<span class="synSpecial">)))))</span> <span class="synSpecial">(</span><span class="synIdentifier">newline</span><span class="synSpecial">))</span>
+</pre>
+</div>
+</div>
+<div class="section">
+    <h3>evalを使用するQuine</h3>
+    <p><a class="keyword" href="http://d.hatena.ne.jp/keyword/JavaScript">JavaScript</a>や<a class="keyword" href="http://d.hatena.ne.jp/keyword/Ruby">Ruby</a>などのevalがある言語では、evalを用いたQuineを書くことができます。基本的な書き方は以下のようになります。</p>
+<pre class="code lang-javascript" data-lang="javascript" data-unlink>x=<span class="synConstant">&quot;(任意のコード)&quot;</span>;eval(x);
+</pre><p>最初にx="..."でコード本体を代入しているため、eval(x);の実行中はxという名前でコード本体にアクセスすることができるようになります。そのため、"(任意のコード)"の中では</p>
+<pre class="code" data-lang="" data-unlink>&#34;x=\&#34;(xをエスケープした値)\&#34;;eval(x);&#34;</pre><p>という文字列を作って、それを出力してしまえば完成です。こちらの方法は前者に比べて比較的簡単に書くことができ、同じコードを2回書かなくて良くなるためコード量も短くなります。また、コードの大半が文字列になるため、コード自体を整形してAAにするといったようなことが簡単にできます。</p>
+
+<div class="section">
+    <h4>サンプルコード</h4>
+    <pre class="code lang-javascript" data-lang="javascript" data-unlink>x=<span class="synConstant">&quot;q=String.fromCharCode(34);console.log('x='+q+x+q+';eval(x);');&quot;</span>;eval(x);
+</pre><p>String.fromCharCode(34)は'"'です。</p><p>もちろんこちらも文字列ではなくS式で書いたりすることもできます。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synStatement">define</span> x <span class="synSpecial">'(</span>begin <span class="synSpecial">(</span>write <span class="synSpecial">`(</span>define x <span class="synSpecial">,(</span><span class="synIdentifier">list</span> <span class="synSpecial">'</span>quote x<span class="synSpecial">)))</span> <span class="synSpecial">(</span>write <span class="synSpecial">'(</span>eval x <span class="synSpecial">(</span>interaction-environment<span class="synSpecial">)))</span> <span class="synSpecial">(</span>newline<span class="synSpecial">)))(</span><span class="synIdentifier">eval</span> x <span class="synSpecial">(</span><span class="synIdentifier">interaction-environment</span><span class="synSpecial">))</span>
+</pre><p>これで基本的なQuineの書き方は理解いただけたかと思います。<br />
+世の中には<a href="http://d.hatena.ne.jp/ku-ma-me/20141225/p1">100&#x8A00;&#x8A9E;Quine&#x30EA;&#x30EC;&#x30FC;</a>のような意味のわからないものもありますが、それらも全て方法としては今書いたことと全く同じことを行っています。上に書いた方法さえあればあとは根気だけでなんとかなるはずなので、正月の暇なときにでもぜひ皆さんQuineに挑戦してみてください。</p>
+
+</div>
+</div>
+
+{% endraw %}

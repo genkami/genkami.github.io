@@ -1,0 +1,22 @@
+---
+layout: post
+title: さよならインクルードガード
+tags:
+- C
+
+---
+{% raw %}
+<p>タイトルは嘘です。</p><p>ある程度経験のあるC<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%D7%A5%ED%A5%B0%A5%E9%A5%DE%A1%BC">プログラマー</a>なら、</p>
+<pre class="code lang-c" data-lang="c" data-unlink><span class="synPreProc">#ifndef HOGEHOGE_H</span>
+<span class="synPreProc">#define HOGEHOGE_H</span>
+
+....
+
+<span class="synPreProc">#endif</span> <span class="synComment">/* HOGEHOGE_H */</span>
+</pre><p>といった定型文をおそらく数百回は書いたことがあるでしょう。<br />
+これらを省略するため[要出典]に、#pragma onceというディレクティブが各処理系により提供されています。#pragma onceが書かれたファイルを処理系が見つけた場合、処理系はそのファイルと同じファイルを2回以上読み込むことはありません。<br />
+このディレクティブを利用することによって、この無駄に長い三行を省略することができるようになります。</p><p>以下の記事のように、強硬派の人たちはすでに#ifndefによるインクルードガードを「してはいけません」とまで言っています。<br />
+<iframe src="//hatenablog-parts.com/embed?url=http%3A%2F%2Fpostd.cc%2Fhow-to-c-in-2016-2%2F" title="2016年、C言語はどう書くべきか (後編) | プログラミング | POSTD" class="embed-card embed-webcard" scrolling="no" frameborder="0" style="display: block; width: 100%; height: 155px; max-width: 500px; margin: 10px 0px;"></iframe><cite class="hatena-citation"><a href="http://postd.cc/how-to-c-in-2016-2/">postd.cc</a></cite></p><p>しかし、ほぼ事実上の標準とは言え、言語仕様にない機能をほいほい使ってしまっていいものなのでしょうか？</p><p>また、そもそもの「同じファイル」というのは何かという問題もあります。通常は同じパスをもつファイルを同一のものとみなせば事足りるかもしれませんが、<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%B7%A5%F3%A5%DC%A5%EA%A5%C3%A5%AF%A5%EA%A5%F3%A5%AF">シンボリックリンク</a>やハードリンクが貼ってあった場合、それらと元ファイルも同一であると考えるほうが自然です。しかし、そういった同一性を調べる方法は環境依存のものしかなく、しかも場合によってはその判定が行えない場合もあります。</p><p><a href="http://www.cplusplus.com/forum/beginner/7877/">#pragma once versus #ifndef - C++ Forum</a></p><p>上のサイトにはファイルの同一性判定ができない状況の実例が書かれています。SMBは使ったことがないので詳しくはわかりませんが、SMB上ではinodeのようなファイルの同一性を判定する方法が存在しないようです。</p><p>上のような状況になることはまずないとは思いますが、どんな状況でも確実に動く手段ではない以上、#pragma onceを使うのは危険なのではないでしょうか……？</p><p>というわけで、僕はこれからも#ifndefを使い続けます。</p>
+
+
+{% endraw %}

@@ -1,0 +1,70 @@
+---
+layout: post
+title: PHPの文字列が無駄にお節介を焼きすぎて怖いという話
+tags:
+- PHP
+
+---
+{% raw %}
+<p>最近必要に迫られて<a class="keyword" href="http://d.hatena.ne.jp/keyword/PHP">PHP</a>を触りはじめました。ゆくゆくは<a class="keyword" href="http://d.hatena.ne.jp/keyword/WordPress">WordPress</a><a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%D7%A5%E9%A5%B0%A5%A4%A5%F3">プラグイン</a>とか作れるようになりたいですね。</p><p>本題。</p>
+
+<div class="section">
+    <h3>1</h3>
+    <pre class="code lang-php" data-lang="php" data-unlink>if (&quot;1&quot; == 1) {
+    echo &quot;ほげ&quot; . PHP_EOL;
+} else {
+    echo &quot;ふが&quot; . PHP_EOL;
+}
+</pre><p>実行すると、「ほげ」と出力されます。</p><p>まあ、この程度であればよくある話ですよね。文字列と数値を比較したとき、勝手に文字列が数値に変換されるというのはよくある話です。<a class="keyword" href="http://d.hatena.ne.jp/keyword/JavaScript">JavaScript</a>とかもこういった仕様ですしね。<br />
+というか、そもそも文字列と数値を比較しないといけなくなるようなコードを書いてる時点で設計が間違ってますし。この部分が問題になることは少ないでしょう。<br />
+しかし、本当に怖いのはこれから。</p>
+
+</div>
+<div class="section">
+    <h3>2</h3>
+    <pre class="code lang-php" data-lang="php" data-unlink>if (&quot;1&quot; == &quot;01&quot;) {
+    echo &quot;ほげ&quot; . PHP_EOL;
+} else {
+    echo &quot;ふが&quot; . PHP_EOL;
+}
+</pre><p>これも実行すると「ほげ」と出力されます。</p><p>……<br />
+いや、お節介にも程があるだろ、この機能。<br />
+文字列と文字列の比較してるのに、何故か勝手に両辺を数値に変換してくれています。何というありがた迷惑……。</p>
+
+</div>
+<div class="section">
+    <h3>3</h3>
+    <pre class="code lang-php" data-lang="php" data-unlink>if (&quot;10&quot; == &quot;010&quot;) {
+    echo &quot;ほげ&quot; . PHP_EOL;
+} else {
+    echo &quot;ふが&quot; . PHP_EOL;
+}
+</pre><p>これも実行すると「ほげ」と出力されます。</p><p>一見、さっきのコードと変わらないように見えます。<br />
+しかし、同じことを文字列ではなく数値でやってみましょう。</p>
+<pre class="code lang-php" data-lang="php" data-unlink>if (10 == 010) {
+    echo &quot;ほげ&quot; . PHP_EOL;
+} else {
+    echo &quot;ふが&quot; . PHP_EOL;
+}
+</pre><p>こちらは実行すると「ふが」と出力されます。</p><p>うんうん。頭に0つけると8進数に変換されるから、010 == 8 != 10なのは当たり前ですよね。これも他の言語でもよくある仕様です。<br />
+文字列の場合は基数変換されずに10進数でそのまま解釈されるようです。まあ、このあたりはギリギリ許容範囲かな?</p>
+
+</div>
+<div class="section">
+    <h3>4</h3>
+    <pre class="code lang-php" data-lang="php" data-unlink>if (&quot;0x10&quot; == &quot;16&quot;) {
+    echo &quot;ほげ&quot; . PHP_EOL;
+} else {
+    echo &quot;ふが&quot; . PHP_EOL;
+}
+</pre><p>実行結果: 「ほげ」</p><p>いやお前、さっきは基数変換しなかっただろ……?<br />
+何で16進数になった途端、待ってましたとばかりに基数変換してくるんだ……8進数でもやれよ……</p>
+
+</div>
+<div class="section">
+    <h3>結論</h3>
+    <p>==<a class="keyword" href="http://d.hatena.ne.jp/keyword/%B1%E9%BB%BB%BB%D2">演算子</a>は使うな。</p>
+
+</div>
+
+{% endraw %}

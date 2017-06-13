@@ -1,0 +1,66 @@
+---
+layout: post
+title: 継続でモナド
+tags:
+- Gauche
+
+---
+{% raw %}
+<p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Haskell">Haskell</a>の>>=は実質継続渡しみたいなものなので、継続をうまいこと使えば<a class="keyword" href="http://d.hatena.ne.jp/keyword/Scheme">Scheme</a>にも<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%E2%A5%CA%A5%C9">モナド</a>が実装できるはず(？）</p><p>とりあえずMaybe<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%E2%A5%CA%A5%C9">モナド</a>を実装してみました。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>empty-stack<span class="synSpecial">)</span> <span class="synSpecial">'())</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>empty-stack? stack<span class="synSpecial">)</span> <span class="synSpecial">(</span><span class="synIdentifier">null?</span> stack<span class="synSpecial">))</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define-syntax</span> push!
+  <span class="synSpecial">(</span><span class="synStatement">syntax-rules</span> <span class="synSpecial">()</span>
+    <span class="synSpecial">((</span>_ x stack<span class="synSpecial">)</span>
+     <span class="synSpecial">(</span><span class="synStatement">set!</span> stack <span class="synSpecial">(</span><span class="synIdentifier">cons</span> x stack<span class="synSpecial">)))))</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define-syntax</span> pop!
+  <span class="synSpecial">(</span><span class="synStatement">syntax-rules</span> <span class="synSpecial">()</span>
+    <span class="synSpecial">((</span>_ stack<span class="synSpecial">)</span>
+     <span class="synSpecial">(</span><span class="synStatement">begin</span>
+       <span class="synSpecial">(</span><span class="synStatement">let</span> <span class="synSpecial">((</span>head <span class="synSpecial">(</span><span class="synIdentifier">car</span> stack<span class="synSpecial">)))</span>
+         <span class="synSpecial">(</span><span class="synStatement">set!</span> stack <span class="synSpecial">(</span><span class="synIdentifier">cdr</span> stack<span class="synSpecial">))</span>
+         head<span class="synSpecial">)))))</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>just x<span class="synSpecial">)</span> <span class="synSpecial">(</span><span class="synIdentifier">cons</span> <span class="synSpecial">'</span>just x<span class="synSpecial">))</span>
+<span class="synSpecial">(</span><span class="synStatement">define</span> nothing <span class="synSpecial">(</span><span class="synIdentifier">cons</span> <span class="synSpecial">'</span>nothing <span class="synConstant">#f</span><span class="synSpecial">))</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>just? x<span class="synSpecial">)</span> <span class="synSpecial">(</span>symbol=? <span class="synSpecial">'</span>just <span class="synSpecial">(</span><span class="synIdentifier">car</span> x<span class="synSpecial">)))</span>
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>nothing? x<span class="synSpecial">)</span> <span class="synSpecial">(</span>symbol=? <span class="synSpecial">'</span>nothing <span class="synSpecial">(</span><span class="synIdentifier">car</span> x<span class="synSpecial">)))</span>
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>maybe-value x<span class="synSpecial">)</span> <span class="synSpecial">(</span><span class="synIdentifier">cdr</span> x<span class="synSpecial">))</span>
+
+
+<span class="synSpecial">(</span><span class="synStatement">define</span> maybe-do-start-stack <span class="synSpecial">(</span>empty-stack<span class="synSpecial">))</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define-syntax</span> maybe-do
+  <span class="synSpecial">(</span><span class="synStatement">syntax-rules</span> <span class="synSpecial">()</span>
+    <span class="synSpecial">((</span>_ action ...<span class="synSpecial">)</span>
+     <span class="synSpecial">(</span><span class="synIdentifier">call/cc</span>
+      <span class="synSpecial">(</span><span class="synStatement">lambda</span> <span class="synSpecial">(</span>cont<span class="synSpecial">)</span>
+        <span class="synSpecial">(</span>push! cont maybe-do-start-stack<span class="synSpecial">)</span>
+        <span class="synSpecial">(</span><span class="synStatement">let</span> <span class="synSpecial">((</span>result <span class="synSpecial">((</span><span class="synStatement">lambda</span> <span class="synSpecial">()</span> action ...<span class="synSpecial">))))</span>
+          <span class="synSpecial">(</span>pop! maybe-do-start-stack<span class="synSpecial">)</span>
+          result<span class="synSpecial">))))))</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>maybe-bind x<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span><span class="synIdentifier">call/cc</span> <span class="synSpecial">(</span><span class="synStatement">lambda</span> <span class="synSpecial">(</span>cont<span class="synSpecial">)</span>
+             <span class="synSpecial">(</span><span class="synStatement">if</span> <span class="synSpecial">(</span>just? x<span class="synSpecial">)</span>
+                 <span class="synSpecial">(</span>cont <span class="synSpecial">(</span>maybe-value x<span class="synSpecial">))</span>
+                 <span class="synSpecial">((</span>pop! maybe-do-start-stack<span class="synSpecial">)</span> nothing<span class="synSpecial">)))))</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>maybe-return x<span class="synSpecial">)</span> <span class="synSpecial">(</span>just x<span class="synSpecial">))</span>
+</pre><p>>>=と違ってcall/ccでは継続を呼び出さなくても実質contの位置に戻ってきてしまうので、nothingが発生した場合用に最終的な計算結果を受け取るべき位置の部分の継続をmaybe-do-start-stackに保存しています。</p><p>使い方は以下の通りです。<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%E2%A5%CA%A5%C9">モナド</a>から値を取り出したいときにmaybe-bindを使います。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>maybe-example<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span>maybe-do
+   <span class="synSpecial">(</span><span class="synStatement">let</span> <span class="synSpecial">((</span>hoge <span class="synSpecial">(</span>maybe-bind <span class="synSpecial">(</span>just <span class="synConstant">3</span><span class="synSpecial">)))</span>
+         <span class="synSpecial">(</span>fuga <span class="synSpecial">(</span>maybe-bind <span class="synSpecial">(</span>just <span class="synConstant">4</span><span class="synSpecial">))))</span>
+     <span class="synSpecial">(</span>maybe-return <span class="synSpecial">(</span><span class="synIdentifier">+</span> hoge fuga<span class="synSpecial">)))))</span>
+
+<span class="synSpecial">(</span>maybe-example<span class="synSpecial">)</span> <span class="synComment">;; =&gt; (just 7)</span>
+</pre><p>継続自体は大学の講義でやった気がするのですが、遊び呆けていたためなにも覚えておらず。<br />
+ちゃんと勉強しておけばよかった……。</p>
+
+
+{% endraw %}
