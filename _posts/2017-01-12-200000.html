@@ -1,0 +1,13 @@
+---
+layout: post
+title: Ubuntuで最新のnode.jsを使う
+tags:
+- JavaScript
+
+---
+{% raw %}
+<p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Ubuntu">Ubuntu</a>の標準の<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%EA%A5%DD%A5%B8%A5%C8%A5%EA">リポジトリ</a>に入っているnode.jsがバージョン4.1くらいなので、新しめの文法を使おうとすると割とつらいものがあります。</p><p><iframe src="//hatenablog-parts.com/embed?url=https%3A%2F%2Fgithub.com%2Fnodesource%2Fdistributions" title="nodesource/distributions" class="embed-card embed-webcard" scrolling="no" frameborder="0" style="display: block; width: 100%; height: 155px; max-width: 500px; margin: 10px 0px;"></iframe><cite class="hatena-citation"><a href="https://github.com/nodesource/distributions">github.com</a></cite></p><p>NodeSourceという便利なものをどこかの誰かが用意してくれているので、これを使いましょう。これを使うと各ディストリで好きなバージョンのnode.jsが使えるようになります。</p>
+<pre class="code" data-lang="" data-unlink>$ sudo curl -sL https://deb.nodesource.com/setup_6.x | sudo bash -</pre><p>これでok。あとはapt install nodejsするだけです。7.x系が使いたい人はURLをsetup_7.xにしてください。それ以外にも複数のバージョンに対応している他、<a class="keyword" href="http://d.hatena.ne.jp/keyword/deb">deb</a>系以外のディストリにも対応しています。詳しくはドキュメントを見てみてください。</p>
+
+
+{% endraw %}

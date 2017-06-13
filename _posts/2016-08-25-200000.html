@@ -1,0 +1,69 @@
+---
+layout: post
+title: CPSとSSA
+tags:
+- Gauche
+
+---
+{% raw %}
+<p><a class="keyword" href="http://d.hatena.ne.jp/keyword/SSA">SSA</a>(Static Single Assignment form, <a class="keyword" href="http://d.hatena.ne.jp/keyword/%C0%C5%C5%AA%C3%B1%B0%EC%C2%E5%C6%FE">静的単一代入</a>)とは、一つの変数についての代入文がプログラム中で一度しか現れないような書き方のことを指します。<br />
+<a class="keyword" href="http://d.hatena.ne.jp/keyword/Scala">Scala</a>でいうと、すべての変数がvalになっているようなものですね。</p><p>プログラムをこの形式に変換することによって、データフロー解析がやりやすくなるらしいです。<br />
+実は、少し前までちょっとした言語処理系を書いていたので(これについてはそのうち記事を書きます)、もう少し早く<a class="keyword" href="http://d.hatena.ne.jp/keyword/SSA">SSA</a>の存在を知っていればよかった……。</p><p>この<a class="keyword" href="http://d.hatena.ne.jp/keyword/SSA">SSA</a>、実は<a class="keyword" href="http://d.hatena.ne.jp/keyword/CPS">CPS</a>と(ある意味で)同じものとして捉えられるそうです。</p><p>確かに、以下の3つのプログラムは、どれも書き方の違いのみで、本質的には同じものとみなせそうです。</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink><span class="synPreProc">import</span> scala.math._
+
+<span class="synComment">// 元々のコード</span>
+<span class="synType">object</span> Simple <span class="synType">extends</span> App {
+  <span class="synType">val</span> x = <span class="synConstant">1</span>
+  <span class="synType">val</span> y = <span class="synConstant">1</span>
+  println(sqrt(pow(x, <span class="synConstant">2</span>) + pow(y, <span class="synConstant">2</span>)))
+}
+
+<span class="synComment">// 静的単一代入形式</span>
+<span class="synType">object</span> SSA <span class="synType">extends</span> App {
+  <span class="synType">val</span> x0 = <span class="synConstant">1</span>
+  <span class="synType">val</span> y0 = <span class="synConstant">1</span>
+  <span class="synType">val</span> x1 = pow(x0, <span class="synConstant">2</span>)
+  <span class="synType">val</span> y1 = pow(y0, <span class="synConstant">2</span>)
+  <span class="synType">val</span> n0 = x1 + y1
+  <span class="synType">val</span> n1 = sqrt(n0)
+  println(n1)
+}
+
+<span class="synComment">// 純粋関数型っぽいやつ</span>
+<span class="synType">object</span> PF <span class="synType">extends</span> App {
+  ((x0: Int, y0: Int) =&gt;
+    ((x1: Double) =&gt;
+      ((y1: Double) =&gt;
+        ((n0: Double) =&gt;
+          ((n1: Double) =&gt; {
+            println(n1)
+          })(sqrt(n0))
+        )(x1 + y1)
+      )(pow(y0, <span class="synConstant">2</span>))
+    )(pow(x0, <span class="synConstant">2</span>))
+  )(<span class="synConstant">1</span>, <span class="synConstant">1</span>)
+}
+
+<span class="synComment">// さらにCPSにしてみたバージョン</span>
+<span class="synType">object</span> CPS <span class="synType">extends</span> App {
+<span class="synIdentifier">  def</span> add_CPS(x: Double, y: Double, cont: Double =&gt; Unit) = cont(x + y)
+<span class="synIdentifier">  def</span> pow_CPS(x: Int, y: Int, cont: Double =&gt; Unit) = cont(pow(x, y))
+<span class="synIdentifier">  def</span> sqrt_CPS(x: Double, cont: Double =&gt; Unit) = cont(sqrt(x))
+
+  ((x0: Int, y0: Int) =&gt;
+    pow_CPS(x0, <span class="synConstant">2</span>, (x1: Double) =&gt; {
+      pow_CPS(y0, <span class="synConstant">2</span>, (y1: Double) =&gt; {
+        add_CPS(x1, y1, (n0: Double) =&gt; {
+          sqrt_CPS(n0, (n1: Double) =&gt; {
+            println(n1)
+          })
+        })
+      })
+    })
+  )(<span class="synConstant">1</span>, <span class="synConstant">1</span>)
+}
+</pre><p>これらの間の相互変換も、うまくやればいけそうなはず…？</p><p>確かに、<a class="keyword" href="http://d.hatena.ne.jp/keyword/Scala">Scala</a>でなく<a class="keyword" href="http://d.hatena.ne.jp/keyword/Lisp">Lisp</a>で考えてみると、上の<a class="keyword" href="http://d.hatena.ne.jp/keyword/SSA">SSA</a>はすべての変数についてletしたもの、PFはletマクロを剥がした後の形、そして<a class="keyword" href="http://d.hatena.ne.jp/keyword/CPS">CPS</a>は継続を明示的に渡すようにしたものと考えてみると、これらの間には関連がありそうです。</p><p>そのうち詳しく勉強しておきたいです。</p><p>詳しくは以下の論文(有名なものらしいです)を参照してください:</p><p><a href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.34.3282">Andrew W. Appel (April 1998). &ldquo;SSA is Functional Programming&rdquo;</a><br />
+<a href="https://www.cs.purdue.edu/homes/suresh/502-Fall2008/papers/kelsey-ssa-cps.pdf">Richard A. Kelsey (March 1995). &ldquo;A Correspondence between Continuation Passing Style and Static Single Assignment Form&rdquo;</a></p><p>まだざっくりと概要を追っただけなので、暇な時にでもしっかりと読んでおきたいです。</p>
+
+
+{% endraw %}

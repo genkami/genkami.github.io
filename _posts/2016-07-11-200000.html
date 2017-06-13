@@ -1,0 +1,25 @@
+---
+layout: post
+title: Emacs24.4以降でmulti-term.elを動かす
+tags:
+- Emacs
+
+---
+{% raw %}
+<p>そろそろシェルも<a class="keyword" href="http://d.hatena.ne.jp/keyword/Emacs">Emacs</a>上で動かそうかなと思い立ったのでmulti-term.elをインストールしてみましたが、実行すると以下のようなエラーが発生して動きませんでした。</p>
+
+<pre>Symbol's function definition is void: ad-advised-definition-p
+</pre><p>どうやらad-advised-definition-pはEmacs24.4で廃止されたらしいので、自前で定義してやる必要があります。</p><p>以下のサイトを参考に、ad-advised-definition-pを<a class="keyword" href="http://d.hatena.ne.jp/keyword/.emacs">.emacs</a>.elで定義してやれば動くようになります。</p><p><a href="http://sakito.jp/emacs/emacs24.html#ad-advised-definition-p">Emacs24 &#x306E;&#x30A4;&#x30F3;&#x30B9;&#x30C8;&#x30FC;&#x30EB;&#x3068;&#x65B0;&#x6A5F;&#x80FD; : &#x7D39;&#x4ECB;&#x30DE;&#x30CB;&#x30A2;</a><br />
+</p>
+<pre class="code lang-lisp" data-lang="lisp" data-unlink><span class="synSpecial">(</span><span class="synStatement">if</span> <span class="synSpecial">(</span><span class="synStatement">not</span> <span class="synSpecial">(</span><span class="synStatement">fboundp</span> <span class="synSpecial">'</span><span class="synIdentifier">ad-advised-definition-p</span><span class="synSpecial">))</span>
+ <span class="synSpecial">(</span><span class="synStatement">defun</span> ad-advised-definition-p <span class="synSpecial">(</span>definition<span class="synSpecial">)</span>
+   <span class="synConstant">&quot;Return non-nil if DEFINITION was generated from advice information.&quot;</span>
+   <span class="synSpecial">(</span><span class="synStatement">if</span> <span class="synSpecial">(</span><span class="synStatement">or</span> <span class="synSpecial">(</span>ad-lambda-p definition<span class="synSpecial">)</span>
+           <span class="synSpecial">(</span>macrop definition<span class="synSpecial">)</span>
+           <span class="synSpecial">(</span>ad-compiled-p definition<span class="synSpecial">))</span>
+       <span class="synSpecial">(</span><span class="synStatement">let</span> <span class="synSpecial">((</span>docstring <span class="synSpecial">(</span>ad-docstring definition<span class="synSpecial">)))</span>
+         <span class="synSpecial">(</span><span class="synStatement">and</span> <span class="synSpecial">(</span><span class="synStatement">stringp</span> docstring<span class="synSpecial">)</span>
+              <span class="synSpecial">(</span>get-text-property <span class="synConstant">0</span> <span class="synSpecial">'</span><span class="synIdentifier">dynamic-docstring-function</span> docstring<span class="synSpecial">))))))</span>
+</pre>
+
+{% endraw %}

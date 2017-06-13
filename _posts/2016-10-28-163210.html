@@ -1,0 +1,28 @@
+---
+layout: post
+title: Gaucheで#<eof>を返す
+tags:
+- Gauche
+
+---
+{% raw %}
+<p>ジェネレーターを自作する場合なんかに#&lt;eof&gt;を返したくなる場合がありますが、以外とググッても方法が出てきません。</p><p><a class="keyword" href="http://d.hatena.ne.jp/keyword/R6RS">R6RS</a>の(eof-object)を使えば簡単に生成できます。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synComment">;; 1からnまでの数を返すgeneratorを返す</span>
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>gen n<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span><span class="synStatement">define</span> i <span class="synConstant">0</span><span class="synSpecial">)</span>
+  <span class="synSpecial">(</span>^<span class="synSpecial">()</span> <span class="synSpecial">(</span><span class="synStatement">if</span> <span class="synSpecial">(</span><span class="synIdentifier">&lt;=</span> n i<span class="synSpecial">)</span>
+           <span class="synSpecial">(</span>eof-object<span class="synSpecial">)</span>
+           <span class="synSpecial">(</span><span class="synStatement">begin</span>
+             <span class="synSpecial">(</span>inc! i<span class="synSpecial">)</span>
+             i<span class="synSpecial">))))</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define</span> g <span class="synSpecial">(</span>gen <span class="synConstant">2</span><span class="synSpecial">))</span>
+<span class="synSpecial">(</span>g<span class="synSpecial">)</span> <span class="synComment">; =&gt; 1</span>
+<span class="synSpecial">(</span>g<span class="synSpecial">)</span> <span class="synComment">; =&gt; 2</span>
+<span class="synSpecial">(</span>g<span class="synSpecial">)</span> <span class="synComment">; =&gt; #&lt;eof&gt;</span>
+
+<span class="synSpecial">(</span>generator-&gt;list <span class="synSpecial">(</span>gen <span class="synConstant">5</span><span class="synSpecial">))</span>
+<span class="synComment">;; =&gt; (1 2 3 4 5)</span>
+</pre>
+
+{% endraw %}

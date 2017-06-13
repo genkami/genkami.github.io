@@ -1,0 +1,33 @@
+---
+layout: post
+title: ようやくstackを使い始めた話
+tags:
+- Haskell
+
+---
+{% raw %}
+<p>レポートの提出期限間際にcabalの依存関係がぶっ壊れて大変な思いをしたので、ようやく重い腰を上げてstackを使い始めてみることにしました。</p>
+
+<div class="section">
+    <h4>インストール</h4>
+    <p>インストール方法とかはだいたいこの辺を参照しました。</p><p><a href="https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md">stack/install_and_upgrade.md at master &middot; commercialhaskell/stack &middot; GitHub</a><br />
+</p>
+<pre class="code lang-sh" data-lang="sh" data-unlink>$ wget <span class="synSpecial">-qO-</span> https://get.haskellstack.org/ | sh
+...
+$ which stack
+/usr/bin/stack
+</pre><p>stackが用意してくれた<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%B9%A5%AF%A5%EA%A5%D7%A5%C8">スクリプト</a>を実行するだけでだいたいどの環境でもインストールしてくれます。</p>
+
+</div>
+<div class="section">
+    <h4>使い方</h4>
+    <p><iframe src="//hatenablog-parts.com/embed?url=http%3A%2F%2Fqiita.com%2Ftanakh%2Fitems%2F6866d0f570d0547df026" title="Haskellのビルドツール&quot;stack&quot;の紹介 - Qiita" class="embed-card embed-webcard" scrolling="no" frameborder="0" style="display: block; width: 100%; height: 155px; max-width: 500px; margin: 10px 0px;"></iframe><cite class="hatena-citation"><a href="http://qiita.com/tanakh/items/6866d0f570d0547df026">qiita.com</a></cite></p><p>これ見たらだいたい分かります。</p>
+<pre class="code lang-sh" data-lang="sh" data-unlink>$ stack init      <span class="synComment"># カレントディレクトリ下の.cabalの依存関係を全部満たすようなstack.yamlが作られる</span>
+$ stack setup     <span class="synComment"># 必要なGHCのバージョンのインストール</span>
+$ stack build     <span class="synComment"># ビルド</span>
+$ stack <span class="synStatement">exec</span> hoge <span class="synComment"># ビルドしたバイナリの実行</span>
+$ stack <span class="synStatement">test</span>      <span class="synComment"># テストの実行</span>
+</pre>
+</div>
+
+{% endraw %}

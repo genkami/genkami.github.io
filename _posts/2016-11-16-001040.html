@@ -1,0 +1,110 @@
+---
+layout: post
+title: Coqでデータ型に対して条件分岐を行う
+tags:
+- Coq
+
+---
+{% raw %}
+<p>証明中にデータ型に対して条件分岐を行うためには、case, case_eq, destruct等を使います。</p>
+
+<div class="section">
+    <h3>とりあえず普通に条件分岐をする</h3>
+    <p>caseは普通の条件分岐です。例えばb : boolに対してcase b.とすると、b = trueである場合とb = falseである場合の2つに分かれ、それぞれの場合に対して証明を行うことで証明終了となります。</p>
+<pre class="code" data-lang="" data-unlink>(* negb は bool の not *)
+Goal forall b : bool, negb (negb b) = b.
+Proof.
+  intros b.
+  case b. (* b についての場合分けを行う。 *)
+  - (* b = true の場合 *)
+    reflexivity.
+  - (* b = false の場合 *)
+    reflexivity.
+Qed.</pre><p>フィールドを持つ値の場合は、フィールドの名前はCoqが勝手に決めてくれます。</p>
+<pre class="code" data-lang="" data-unlink>Require Import Coq.Init.Datatypes.
+
+Inductive singleton : Type := single : singleton.
+
+Definition option_to_sum (T : Type) (opt : option T) : sum T singleton :=
+  match opt with
+    | Some x =&gt; inl x
+    | None =&gt; inr single
+  end.
+
+Definition sum_to_option (T : Type) (s : sum T singleton) : option T :=
+  match s with
+    | inl x =&gt; Some x
+    | inr single =&gt; None
+  end.
+
+Theorem option_to_sum_iso:
+  forall (T : Type) (x : option T),
+    sum_to_option T (option_to_sum T x) = x.
+Proof.
+  intros T x.
+  case x.
+  - (* x = Some t *)
+    (* Goal: forall t : T, sum_to_option T (option_to_sum (Some t)) = Some t *)
+    (* Some t の t は Coq によって勝手に命名された *)
+    intros t.
+    reflexivity.
+  - (* x = None *)
+    (* Goal: sum_to_option T (option_to_sum T None) = None *)
+    reflexivity.
+Qed.</pre>
+</div>
+<div class="section">
+    <h3>フィールド名を自分で指定して条件分岐をする。</h3>
+    <p>destructタクティックを使用すると、先ほどの証明に出てきた"Some t"の"t"の部分に、自分で好きなように名前をつけることができます。<br />
+destructタクティックの使い方は以下の通りです。</p>
+<pre class="code" data-lang="" data-unlink>Inductive hoge : Type :=
+| foo : hoge -&gt; hoge
+| bar : hoge -&gt; hoge -&gt; hoge
+| baz : hoge.
+
+(* 上のような型 hoge の値 h に対して destruct したい場合 *)
+  destruct h as [x | a b |].
+  - (* h = foo x *)
+    ...
+  - (* h = bar a b *)
+    ...
+  - (* h = baz *)</pre><p>as以下で指定している"|"で区切られた名前の列がフィールド名になります。<br />
+先ほどのoption_to_sum_isoをdestructを使って書きなおしてみると、以下のようになります。</p>
+<pre class="code" data-lang="" data-unlink>Theorem option_to_sum_iso2:
+  forall (T : Type) (x : option T),
+    sum_to_option T (option_to_sum T x) = x.
+Proof.
+  intros T x.
+  destruct x as [x&#39; |].
+  - (* x = Some x&#39; *)
+    reflexivity.
+  - (* x = None *)
+    reflexivity.
+Qed.</pre>
+</div>
+<div class="section">
+    <h3>場合分けの等式を前提に追加する</h3>
+    <p>前提の部分にない複雑な式などについて場合分けを行いたい場合、場合分けの式(先ほどの例で言えばx = Some x', x = None等)が前提に入ってくれると嬉しいことがあります。<br />
+そういった場合にはcase_eqを使います。これはcaseとほとんど同じですが、場合分けの式を前提に追加してくれることだけが異なります。</p>
+<pre class="code" data-lang="" data-unlink>Require Import Coq.Arith.EqNat.
+
+Goal forall n m : nat,
+       n = m \/ n &lt;&gt; m.
+Proof.
+  intros n m.
+  (* beq_nat n m = true | false で場合分けを行えば証明できそう *)
+  case_eq (beq_nat n m).
+  - (* beq_nat n m = true *)
+    intros H. (* H : beq_nat n m = true *)
+    apply beq_nat_true in H. (* beq_nat_true: beq_nat n m = true -&gt; n = m *)
+    left.
+    apply H.
+  - (* beq_nat n m = false *)
+    intros H. (* H : beq_nat n m = false *)
+    apply beq_nat_false in H. (* beq_nat_false: beq_nat n m = false -&gt; n &lt;&gt; m *)
+    right.
+    apply H.
+Qed.</pre>
+</div>
+
+{% endraw %}

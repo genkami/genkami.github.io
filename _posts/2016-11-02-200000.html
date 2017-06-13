@@ -1,0 +1,22 @@
+---
+layout: post
+title: Basic認証の方法を理解する
+tags:
+- Algorithm
+- Gauche
+
+---
+{% raw %}
+<p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Basic%C7%A7%BE%DA">Basic認証</a>は数あるHTTPの認証方法の中でも最も簡単なものです。</p><p>認証方法は、ユーザー名とパスワードをコロンで繋いだものを<a class="keyword" href="http://d.hatena.ne.jp/keyword/base64">base64</a>で<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A8%A5%F3%A5%B3%A1%BC%A5%C9">エンコード</a>し、Authorizationヘッダの値に"Basic (先ほど作った文字列)"をセットするだけです。</p><p>アホみたいに簡単なので、不慣れな<a class="keyword" href="http://d.hatena.ne.jp/keyword/Gauche">Gauche</a>でも2分くらいで実装することができました。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>basic-auth user password<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span><span class="synStatement">define</span> encoded <span class="synSpecial">(</span>base64-encode-string
+                   <span class="synSpecial">(</span><span class="synIdentifier">string-append</span> user <span class="synConstant">&quot;:&quot;</span> password<span class="synSpecial">)))</span>
+  <span class="synSpecial">(</span>format <span class="synConstant">#f</span> <span class="synConstant">&quot;Basic ~a&quot;</span> encoded<span class="synSpecial">))</span>
+
+<span class="synSpecial">(</span>http-get <span class="synConstant">&quot;example.com&quot;</span>
+          <span class="synConstant">&quot;/path/to/protected/resource&quot;</span>
+          :Authorization <span class="synSpecial">(</span>basic-auth <span class="synConstant">&quot;username&quot;</span> <span class="synConstant">&quot;password&quot;</span><span class="synSpecial">))</span>
+<span class="synComment">;; =&gt; 認証に成功すればページの内容が返ってくる</span>
+</pre>
+
+{% endraw %}

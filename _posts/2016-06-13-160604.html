@@ -1,0 +1,54 @@
+---
+layout: post
+title: Typeableを使ってみる
+tags:
+- Haskell
+
+---
+{% raw %}
+<p>Data.Typeable.Typeableを使うと、TemplateHaskell無しでも非常に一般的な関数を書くことができるようになります。</p><p>型クラスData.Typeableの<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%B9%A5%BF%A5%F3%A5%B9">インスタンス</a>は、typeOfという関数を使うことによって型情報を取得することができます。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synStatement">&gt;&gt;&gt;</span> <span class="synStatement">:</span>m <span class="synStatement">+</span>Data.Typeable
+<span class="synStatement">&gt;&gt;&gt;</span> typeOf (<span class="synConstant">3</span> <span class="synStatement">::</span> Int)
+Int
+<span class="synStatement">&gt;&gt;&gt;</span> typeOf <span class="synConstant">'a'</span>
+Char
+<span class="synStatement">&gt;&gt;&gt;</span> typeOf (Just <span class="synConstant">&quot;hoge&quot;</span>, ())
+((Maybe [Char]),())
+</pre><p>また、自前の型に対しても、DeriveDataTypeable拡張を有効にすることでTypeableの<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%B9%A5%BF%A5%F3%A5%B9">インスタンス</a>をderiveすることができます(というか、derive以外でのTypeableの<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%B9%A5%BF%A5%F3%A5%B9">インスタンス</a>の定義は現在の<a class="keyword" href="http://d.hatena.ne.jp/keyword/GHC">GHC</a>では禁止されています)。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synStatement">&gt;&gt;&gt;</span> <span class="synType">data</span> Hoge <span class="synStatement">=</span> Hoge Int <span class="synStatement">|</span> Fuga String <span class="synType">deriving</span> (Eq, Show, Typeable)
+<span class="synStatement">&gt;&gt;&gt;</span> typeOf <span class="synStatement">$</span> Fuga <span class="synConstant">&quot;foo&quot;</span>
+Hoge
+</pre><p>この型情報はTypeRepという型になっており、これを使うことで型情報の比較ができるようになります。<br />
+これがあるとどのように便利かというと、例えば何らかの理由で複数の型を含むことができるような変数を作らなければならなくなった場合、TypeRepを保存しておくことによって元の型情報を保持することができます。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synPreProc">import</span> Data.Typeable
+<span class="synPreProc">import</span> Unsafe.Coerce
+
+<span class="synType">data</span> Value <span class="synStatement">=</span> IntVal Int
+           <span class="synStatement">|</span> StrVal String
+           <span class="synStatement">|</span> DoubleVal Double
+           <span class="synType">deriving</span> (Eq, Show)
+
+n <span class="synStatement">::</span> Int
+n <span class="synStatement">=</span> <span class="synConstant">3</span>
+
+<span class="synComment">-- 型情報の削除された値</span>
+x <span class="synStatement">::</span> a
+x <span class="synStatement">=</span> unsafeCoerce n
+
+<span class="synComment">-- xの型情報</span>
+t <span class="synStatement">::</span> TypeRep
+t <span class="synStatement">=</span> typeOf n
+
+<span class="synComment">-- 型情報を元に復元する</span>
+toValue <span class="synStatement">::</span> TypeRep <span class="synStatement">-&gt;</span> (forall a<span class="synStatement">.</span> a) <span class="synStatement">-&gt;</span> Value
+toValue rep x
+  <span class="synStatement">|</span> rep <span class="synStatement">==</span> typeRep (Proxy <span class="synStatement">::</span> Proxy Int) <span class="synStatement">=</span> IntVal x
+  <span class="synStatement">|</span> rep <span class="synStatement">==</span> typeRep (Proxy <span class="synStatement">::</span> Proxy String) <span class="synStatement">=</span> StrVal x
+  <span class="synStatement">|</span> rep <span class="synStatement">==</span> typeRep (Proxy <span class="synStatement">::</span> Proxy Double) <span class="synStatement">=</span> DoubleVal x
+</pre><p>実行結果:</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synStatement">&gt;&gt;&gt;</span> toValue t x
+IntVal <span class="synConstant">3</span>
+</pre><p>このように、保存していた型情報tからxの型を復元し、Intに戻すことができました。</p>
+
+
+{% endraw %}

@@ -1,0 +1,59 @@
+---
+layout: post
+title: Coqで前提や定理を適用して証明する
+tags:
+- Coq
+
+---
+{% raw %}
+<p>ゴールが前提や既にある定理そのものである場合が、証明の一番簡単なパターンです。</p>
+
+<div class="section">
+    <h3>前提がゴールそのものである場合</h3>
+    <p>assumptionを使うと、前提にあるゴールと全く同じ命題をそのまま適用してくれます。</p>
+<pre class="code" data-lang="" data-unlink>Goal forall P : Prop, P -&gt; P.
+Proof.
+  intros. (* P : Prop, H : P *)
+  assumption.
+Qed.</pre>
+</div>
+<div class="section">
+    <h3>外部の定理がゴールそのものである場合</h3>
+    <p>前提や定理Tに対してapply Tを使うと、ゴールにTを適用できます。</p>
+<pre class="code" data-lang="" data-unlink>Theorem Sn_is_not_O: forall n : nat, S n &lt;&gt; O.
+Proof.
+  congruence.
+Qed.
+
+Goal forall n : nat, S n &lt;&gt; O. (* Sn_is_not_O と全く同じ *)
+Proof.
+  apply Sn_is_not_O.
+Qed.</pre><p>また、この場合はapplyではなくexactも使うことができます。</p>
+<pre class="code" data-lang="" data-unlink>Goal forall n : nat, S n &lt;&gt; O.
+Proof.
+  exact Sn_is_not_O.
+Qed.</pre>
+</div>
+<div class="section">
+    <h3>前提や定理にP, P -> Qがあり、ゴールがQである場合</h3>
+    <p>ゴールが「…ならば…」の結論部分である場合も、applyが使えます。</p>
+<pre class="code" data-lang="" data-unlink>Goal forall P Q : Prop, P -&gt; (P -&gt; Q) -&gt; Q.
+Proof.
+  intros P Q H1 H2. (* H1 : P, H2 : P -&gt; Q *)
+  (* Goal: Q *)
+  apply H2 in H1. (* H1 : Q に変わる *)
+  assumption.
+Qed.</pre>
+</div>
+<div class="section">
+    <h3>前提がforall x, P xの形であり、ゴールがP aである場合</h3>
+    <p>この場合でもapplyが使えます。</p>
+<pre class="code" data-lang="" data-unlink>Goal forall P : nat -&gt; Prop,
+       (forall n : nat, P n) -&gt; P 5.
+Proof.
+  intros P H. (* H : forall n : nat, P n *)
+  apply H.
+Qed.</pre>
+</div>
+
+{% endraw %}

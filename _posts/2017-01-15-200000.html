@@ -1,0 +1,39 @@
+---
+layout: post
+title: Coqで代数的データ型の各要素についての等式を得る
+tags:
+- Coq
+
+---
+{% raw %}
+<p>前提 C x y z = C x' y' z から x = x', y = y', z = z' を導くためのタクティックが用意されています。</p>
+
+<div class="section">
+    <h3>injection</h3>
+    <p>等式 H : C x y z = C x' y' z' についてinjection Hをすると、ゴールをx = x' -> y = y' -> z = z' -> (元のゴール)という形に書き換えてくれます。</p>
+<pre class="code" data-lang="" data-unlink>Goal forall n m : nat, S n = S m -&gt; n = m.
+Proof.
+  intros n m H. (* H : S n = S m *)
+  injection H.
+  (* Goal: n = m -&gt; n = m *)
+  intros. assumption.
+Qed.</pre>
+</div>
+<div class="section">
+    <h3>inversion</h3>
+    <p>injectionの進化版です。injectionをした後introsをし、さらに得られた等式を使ってゴールを書き換えてくれます。</p>
+<pre class="code" data-lang="" data-unlink>Goal forall n m : nat, S n = S m -&gt; n = m.
+Proof.
+  intros n m H. (* H : S n = S m *)
+  inversion H. (* H1 : n = m *)
+  (* Goal: m = m *)
+  reflexivity.
+Qed.</pre><p>ちなみに、明らかに異なる等式に対してinversionをすると、そこで矛盾が導けて即座に証明終了になります。</p>
+<pre class="code" data-lang="" data-unlink>Goal forall (P : Prop) (n : nat), 0 = S n -&gt; P.
+Proof.
+  intros P n H. (* H : 0 = S n *)
+  inversion H.
+Qed.</pre>
+</div>
+
+{% endraw %}

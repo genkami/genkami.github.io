@@ -1,0 +1,67 @@
+---
+layout: post
+title: Gaucheのコメントいろいろ
+tags:
+- Gauche
+
+---
+{% raw %}
+<p>なんか今更な気もしますが……。</p>
+
+<div class="section">
+    <h4>行コメント</h4>
+    <p>セミコロン(;)から行末まではコメントとみなされます。セミコロンの数にも作法があるみたいです。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synComment">;;; モジュール自体の説明とか、大きなコードブロックの説明</span>
+<span class="synComment">;;;</span>
+<span class="synComment">;;; このモジュールはフィボナッチ数を生成するジェネレーターを提供するなんやかんやです。</span>
+
+<span class="synSpecial">(</span>use gauche.generator<span class="synSpecial">)</span>
+
+<span class="synComment">;; 次にくる同じインデントレベルのコードの説明</span>
+<span class="synComment">;; フィボナッチ数を順番に返すジェネレーターを返す関数</span>
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>fib<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span>generate <span class="synComment">; セミコロン1つはその行の処理の説明</span>
+   <span class="synSpecial">(</span>^<span class="synSpecial">(</span>yield<span class="synSpecial">)</span>
+     <span class="synComment">;; メインループ。firstが現在の、secondが次のフィボナッチ数を表す</span>
+     <span class="synSpecial">(</span><span class="synStatement">let</span> loop <span class="synSpecial">((</span>first <span class="synConstant">1</span><span class="synSpecial">)</span>
+                <span class="synSpecial">(</span>second <span class="synConstant">1</span><span class="synSpecial">))</span>
+       <span class="synSpecial">(</span>yield first<span class="synSpecial">)</span> <span class="synComment">; n番目のフィボナッチ数をyieldする</span>
+       <span class="synSpecial">(</span>loop second <span class="synSpecial">(</span><span class="synIdentifier">+</span> first second<span class="synSpecial">))))))</span>
+</pre>
+</div>
+<div class="section">
+    <h4>ブロックコメント</h4>
+    <p>#| ... |# の間は改行とか関係なくすべてコメントになります。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>fib<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span>generate
+   <span class="synSpecial">(</span>^<span class="synSpecial">(</span>yield<span class="synSpecial">)</span>
+     <span class="synError">#|</span>
+        <span class="synError">なんと、</span>
+        <span class="synError">ここでは</span>
+        <span class="synError">#|</span>
+           <span class="synError">フィボナッチ数を生成しています!!!</span>
+        <span class="synError">|#</span>
+        <span class="synError">コメントはネストできる</span>
+     <span class="synError">|#</span>
+     <span class="synSpecial">(</span><span class="synStatement">let</span> loop <span class="synSpecial">((</span>first <span class="synConstant">1</span><span class="synSpecial">)</span>
+                <span class="synSpecial">(</span>second <span class="synConstant">1</span><span class="synSpecial">))</span>
+       <span class="synSpecial">(</span>yield first<span class="synSpecial">)</span>
+       <span class="synSpecial">(</span>loop second <span class="synSpecial">(</span><span class="synIdentifier">+</span> first second<span class="synSpecial">))))))</span>
+</pre>
+</div>
+<div class="section">
+    <h4>S式コメント</h4>
+    <p>#;は直後のS式を1つ<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%B3%A5%E1%A5%F3%A5%C8%A5%A2%A5%A6%A5%C8">コメントアウト</a>します。<br />
+式単位で<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%B3%A5%E1%A5%F3%A5%C8%A5%A2%A5%A6%A5%C8">コメントアウト</a>できるのは面白い機能ですね。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>fib<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span>generate
+   <span class="synSpecial">(</span>^<span class="synSpecial">(</span>yield<span class="synSpecial">)</span>
+     <span class="synSpecial">(</span><span class="synStatement">let</span> loop <span class="synSpecial">((</span>first <span class="synConstant">1</span><span class="synSpecial">)</span>
+                <span class="synSpecial">(</span>second <span class="synConstant">1</span><span class="synSpecial">)</span>
+                #<span class="synComment">;(third 1)) ; 3番目の数とかいらんかった</span>
+       <span class="synSpecial">(</span>yield first<span class="synSpecial">)</span>      <span class="synComment">;↑ここの閉じ括弧はコメントアウトされない!!</span>
+       <span class="synSpecial">(</span>loop second <span class="synSpecial">(</span><span class="synIdentifier">+</span> first second<span class="synSpecial">))))))</span>
+</pre>
+</div>
+
+{% endraw %}

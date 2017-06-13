@@ -1,0 +1,32 @@
+---
+layout: post
+title: Gaucheで多値を受け取る
+tags:
+- Gauche
+
+---
+{% raw %}
+<p>複数の値を返す場合、それらの値をリストやペアにしてもよいのですが、通常、<a class="keyword" href="http://d.hatena.ne.jp/keyword/Scheme">Scheme</a>では多値というものを利用します。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink>gosh&gt; <span class="synSpecial">(</span>min&amp;max <span class="synConstant">2</span> <span class="synConstant">4</span> <span class="synConstant">3</span> <span class="synConstant">1</span> <span class="synConstant">5</span><span class="synSpecial">)</span>
+<span class="synConstant">1</span>
+<span class="synConstant">5</span>
+</pre><p>このmin&maxは、与えられた引数のうち最小値と最大値を返す多値関数です。</p><p>他にも、商と余りを返すquotient&remainder等もあります。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink>gosh&gt; <span class="synSpecial">(</span>quotient&amp;remainder <span class="synConstant">5</span> <span class="synConstant">2</span><span class="synSpecial">)</span>
+<span class="synConstant">2</span>
+<span class="synConstant">1</span>
+</pre><p>多値を生成するには、values関数を使います。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>upcase&amp;downcase c<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span><span class="synIdentifier">values</span> <span class="synSpecial">(</span><span class="synIdentifier">char-upcase</span> c<span class="synSpecial">)</span> <span class="synSpecial">(</span><span class="synIdentifier">char-downcase</span> c<span class="synSpecial">)))</span>
+
+<span class="synSpecial">(</span>upcase&amp;downcase <span class="synConstant">#\a</span><span class="synSpecial">)</span> <span class="synComment">; =&gt; #\A #\a</span>
+<span class="synSpecial">(</span>upcase&amp;downcase <span class="synConstant">#\B</span><span class="synSpecial">)</span> <span class="synComment">; =&gt; #\B #\b</span>
+</pre><p>多値を受け取るには、<a class="keyword" href="http://d.hatena.ne.jp/keyword/srfi">srfi</a>-11のlet-valuesやlet*-valuesを使います。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span>let-values <span class="synSpecial">(((</span><span class="synIdentifier">min</span> <span class="synIdentifier">max</span><span class="synSpecial">)</span> <span class="synSpecial">(</span>min&amp;max <span class="synConstant">2</span> <span class="synConstant">4</span> <span class="synConstant">3</span> <span class="synConstant">1</span> <span class="synConstant">5</span><span class="synSpecial">)))</span>
+  <span class="synSpecial">(</span>print #<span class="synConstant">&quot;minimum is ~min&quot;</span><span class="synSpecial">)</span>
+  <span class="synSpecial">(</span>print #<span class="synConstant">&quot;maximum is ~max&quot;</span><span class="synSpecial">))</span>
+<span class="synComment">;; =&gt;</span>
+<span class="synComment">;; minimum is 1</span>
+<span class="synComment">;; maximum is 5</span>
+</pre>
+
+{% endraw %}

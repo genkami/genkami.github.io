@@ -1,0 +1,115 @@
+---
+layout: post
+title: 【重要】MacBookを手に入れたら真っ先にインストールするべき最強アプリn選
+tags:
+- Mac
+
+---
+{% raw %}
+<p>いい加減研究室で貰った<a class="keyword" href="http://d.hatena.ne.jp/keyword/MacBook">MacBook</a>の環境設定をしたくなってきたので、とりあえず必要と思われるものとその入手先をメモっておきます。<br />
+完全に自分用メモ。</p>
+
+<div class="section">
+    <h3>日本語入力しようとしたら勝手に変換される謎機能</h3>
+    <p>邪魔なので消します。<br />
+<span itemscope itemtype="http://schema.org/Photograph"><img src="https://cdn-ak.f.st-hatena.com/images/fotolife/c/cloudear8/20170508/20170508130909.png" alt="f:id:cloudear8:20170508130909p:plain" title="f:id:cloudear8:20170508130909p:plain" class="hatena-fotolife" itemprop="image"></span><br />
+ここのライブ変換のチェックをはずせばOK</p>
+
+</div>
+<div class="section">
+    <h3>スペルチェック無効化</h3>
+    <p>環境設定→キーボード→ユーザー辞書にあるいらなそうなチェックを消す</p>
+
+</div>
+<div class="section">
+    <h3><a class="keyword" href="http://d.hatena.ne.jp/keyword/Dvorak">Dvorak</a>, <a class="keyword" href="http://d.hatena.ne.jp/keyword/SKK">SKK</a></h3>
+    <p>最近使わなくなったので省略。</p>
+
+</div>
+<div class="section">
+    <h3>git</h3>
+    <p>たしか最初から入ってた……はず。<br />
+homebrewに入ってるやつを入れると<a class="keyword" href="http://d.hatena.ne.jp/keyword/bash">bash</a>-completionが増えます。</p>
+
+</div>
+<div class="section">
+    <h3>Homebrew</h3>
+    <p>これがないと始まりません。<br />
+<iframe src="//hatenablog-parts.com/embed?url=https%3A%2F%2Fbrew.sh%2Findex_ja.html" title="Homebrew" class="embed-card embed-webcard" scrolling="no" frameborder="0" style="display: block; width: 100%; height: 155px; max-width: 500px; margin: 10px 0px;"></iframe><cite class="hatena-citation"><a href="https://brew.sh/index_ja.html">brew.sh</a></cite><br />
+ここに書いてある通りにインス<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%C8%A1%BC">トー</a>ルします。</p>
+<pre class="code lang-sh" data-lang="sh" data-unlink>$ /usr/bin/ruby <span class="synSpecial">-e</span> <span class="synStatement">&quot;</span><span class="synPreProc">$(</span><span class="synSpecial">curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install</span><span class="synPreProc">)</span><span class="synStatement">&quot;</span>
+</pre>
+</div>
+<div class="section">
+    <h3><a class="keyword" href="http://d.hatena.ne.jp/keyword/Emacs">Emacs</a></h3>
+    <p><iframe src="//hatenablog-parts.com/embed?url=https%3A%2F%2Fgithub.com%2Frailwaycat%2Fhomebrew-emacsmacport" title="railwaycat/homebrew-emacsmacport" class="embed-card embed-webcard" scrolling="no" frameborder="0" style="display: block; width: 100%; height: 155px; max-width: 500px; margin: 10px 0px;"></iframe><cite class="hatena-citation"><a href="https://github.com/railwaycat/homebrew-emacsmacport">github.com</a></cite><br />
+日本語環境だとこの<a class="keyword" href="http://d.hatena.ne.jp/keyword/Emacs">Emacs</a>が一番いいらしいです。面倒なので思考停止してインス<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%C8%A1%BC">トー</a>ルしました。</p>
+<pre class="code lang-sh" data-lang="sh" data-unlink>$ brew tap railwaycat/emacsmacport
+$ brew install emacs-mac
+</pre><p>最後に</p>
+<pre class="code lang-sh" data-lang="sh" data-unlink>$ brew linkapps
+</pre><p>とかいうコマンドが必要。よく知らんけどたぶん.appをApplications以下にリンク貼ってよしなにしてくれるやつだと思う。</p><p>さらに、デフォルトで入っている古い<a class="keyword" href="http://d.hatena.ne.jp/keyword/Emacs">Emacs</a>を間違えて起動しないように、PATHの通っている適当なところに以下の<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%B9%A5%AF%A5%EA%A5%D7%A5%C8">スクリプト</a>を<a class="keyword" href="http://d.hatena.ne.jp/keyword/emacs">emacs</a>という名前で置いておく。</p>
+<pre class="code lang-sh" data-lang="sh" data-unlink><span class="synComment">#!/bin/sh</span>
+
+/usr/<span class="synStatement">local</span>/opt/emacs-mac/Emacs.app/Contents/MacOS/Emacs <span class="synStatement">&quot;</span><span class="synPreProc">$@</span><span class="synStatement">&quot;</span>
+</pre>
+</div>
+<div class="section">
+    <h3><a class="keyword" href="http://d.hatena.ne.jp/keyword/Haskell">Haskell</a>関連</h3>
+    <p>stackは<a class="keyword" href="http://d.hatena.ne.jp/keyword/brew">brew</a>にあります。</p>
+<pre class="code lang-sh" data-lang="sh" data-unlink>$ brew install haskell-stack
+</pre><p><a class="keyword" href="http://d.hatena.ne.jp/keyword/ghc">ghc</a>-modとかは<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A4%BD%A4%E2%A4%BD%A4%E2">そもそも</a>使ってないので略。あとで検討するかも。</p>
+
+</div>
+<div class="section">
+    <h3><a class="keyword" href="http://d.hatena.ne.jp/keyword/OCaml">OCaml</a>関連</h3>
+    <p>homebrewから入ります。utopも忘れずに。</p>
+<pre class="code lang-sh" data-lang="sh" data-unlink>$ brew install ocaml opam
+$ opam init
+$ spam install utop
+</pre>
+</div>
+<div class="section">
+    <h3><a class="keyword" href="http://d.hatena.ne.jp/keyword/Python">Python</a>関連</h3>
+    <p>pyenv入れたらとりあえず勝ち。<br />
+デフォルトで入ってるやつは2.7とかいうゴミなのでなかったことにしましょう。</p>
+<pre class="code lang-sh" data-lang="sh" data-unlink>$ brew install pyenv
+$ pyenv install 3.x.x
+$ pyenv global 3.x.x
+</pre><p><a class="keyword" href="http://d.hatena.ne.jp/keyword/%B4%C4%B6%AD%CA%D1%BF%F4">環境変数</a>の設定とかは割愛。</p>
+
+</div>
+<div class="section">
+    <h3>node.js関連</h3>
+    <p>homebrewにある</p>
+
+</div>
+<div class="section">
+    <h3>Elm関連</h3>
+    <p>npmから入れる(cabalではない)</p>
+
+</div>
+<div class="section">
+    <h3>Coq関連</h3>
+    <p>homebrewにある<br />
+proofgeneralは自分でmake<br />
+<iframe src="//hatenablog-parts.com/embed?url=https%3A%2F%2Fproofgeneral.github.io" title="Proof General" class="embed-card embed-webcard" scrolling="no" frameborder="0" style="display: block; width: 100%; height: 155px; max-width: 500px; margin: 10px 0px;"></iframe><cite class="hatena-citation"><a href="https://proofgeneral.github.io">proofgeneral.github.io</a></cite><br />
+だいたい公式サイトの通りにすればいける。<br />
+<br />
+</p>
+
+</div>
+<div class="section">
+    <h3>Docker</h3>
+    <p><iframe src="//hatenablog-parts.com/embed?url=https%3A%2F%2Fdocs.docker.com%2Fdocker-for-mac%2Finstall%2F%23download-docker-for-mac" title="Install Docker for Mac" class="embed-card embed-webcard" scrolling="no" frameborder="0" style="display: block; width: 100%; height: 155px; max-width: 500px; margin: 10px 0px;"></iframe><cite class="hatena-citation"><a href="https://docs.docker.com/docker-for-mac/install/#download-docker-for-mac">docs.docker.com</a></cite><br />
+公式でバイナリが用意されています。<a class="keyword" href="http://d.hatena.ne.jp/keyword/Linux">Linux</a>版の時は全くお目にかかることのなかった可愛らしいクジラのアイコンがついてお得。<br />
+docker-composeとかも全部勝手に入ってくれるっぽいです。</p>
+
+</div>
+<div class="section">
+    <h3><a class="keyword" href="http://d.hatena.ne.jp/keyword/Evernote">Evernote</a>, Slack</h3>
+    <p><a class="keyword" href="http://d.hatena.ne.jp/keyword/App%20Store">App Store</a>にある</p>
+
+</div>
+
+{% endraw %}

@@ -1,0 +1,16 @@
+---
+layout: post
+title: sudoで移行先のユーザーの環境変数を使う
+tags:
+- Linux
+
+---
+{% raw %}
+<p>今まで</p>
+<pre class="code lang-sh" data-lang="sh" data-unlink>$ sudo bash <span class="synSpecial">-c</span> <span class="synStatement">'</span><span class="synConstant">. $HOME/.bash_profile;...</span><span class="synStatement">'</span>
+</pre><p>とかやってましたが、</p>
+<pre class="code lang-sh" data-lang="sh" data-unlink>$ sudo <span class="synSpecial">-i</span> ...
+</pre><p>でいけるみたいです。</p>
+
+
+{% endraw %}

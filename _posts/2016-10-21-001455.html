@@ -1,0 +1,83 @@
+---
+layout: post
+title: Schemeにおける「多値」という概念について
+tags:
+- Gauche
+
+---
+{% raw %}
+<p><iframe src="http://inkar-us-i.hatenablog.com/embed/2016/08/09/200000" title="Gaucheで多値を受け取る - きくらげ観察日記" class="embed-card embed-blogcard" scrolling="no" frameborder="0" style="display: block; width: 100%; height: 190px; max-width: 500px; margin: 10px 0px;"></iframe><cite class="hatena-citation"><a href="/2016/08/09/200000.html">inkar-us-i.hatenablog.com</a></cite></p><p>この記事で少しだけ多値について紹介しましたが、この頃はまだよく存在意義がわかっていませんでした。</p>
+
+<div class="section">
+    <h3>そもそも多値とは？</h3>
+    <p>大雑把に説明すると、valuesとか<a class="keyword" href="http://d.hatena.ne.jp/keyword/hoge">hoge</a>&fuga関数を呼んだ時に値が複数返ってくるアレです。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synIdentifier">values</span> <span class="synConstant">3</span> <span class="synConstant">2</span> <span class="synConstant">1</span><span class="synSpecial">)</span>
+<span class="synComment">;; =&gt; 3 2 1 (※注: リストではなく、あくまで値が複数ある)</span>
+<span class="synSpecial">(</span>min&amp;max <span class="synConstant">1</span> <span class="synConstant">9</span> <span class="synConstant">3</span> <span class="synConstant">2</span> <span class="synConstant">5</span> <span class="synConstant">6</span><span class="synSpecial">)</span>
+<span class="synComment">;; =&gt; 1 9</span>
+</pre><p>多値を受け取るには、receive, call-with-values, let-values等を使います。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synIdentifier">call-with-values</span> <span class="synSpecial">(</span>^<span class="synSpecial">()</span> <span class="synSpecial">(</span>min&amp;max <span class="synConstant">1</span> <span class="synConstant">3</span> <span class="synConstant">5</span><span class="synSpecial">))</span>
+  <span class="synSpecial">(</span>^<span class="synSpecial">(</span><span class="synIdentifier">min</span> <span class="synIdentifier">max</span><span class="synSpecial">)</span>
+    <span class="synSpecial">(</span>format <span class="synConstant">#f</span> <span class="synConstant">&quot;min: ~s, max: ~s&quot;</span> <span class="synIdentifier">min</span> <span class="synIdentifier">max</span><span class="synSpecial">)))</span>
+<span class="synComment">;; =&gt; &quot;min: 1, max: 5&quot;</span>
+
+<span class="synSpecial">(</span>use srfi-8<span class="synSpecial">)</span>
+<span class="synSpecial">(</span>receive <span class="synSpecial">(</span>a b c<span class="synSpecial">)</span> <span class="synSpecial">(</span><span class="synIdentifier">values</span> <span class="synConstant">3</span> <span class="synConstant">3</span> <span class="synConstant">4</span><span class="synSpecial">)</span>
+  <span class="synSpecial">(</span><span class="synIdentifier">list</span> a b c<span class="synSpecial">))</span>
+<span class="synComment">;; =&gt; (3 3 4)</span>
+
+<span class="synSpecial">(</span>use srfi-11<span class="synSpecial">)</span>
+<span class="synSpecial">(</span>let-values <span class="synSpecial">(((</span>quot rem<span class="synSpecial">)</span> <span class="synSpecial">(</span>quotient&amp;remainder <span class="synConstant">5</span> <span class="synConstant">2</span><span class="synSpecial">)))</span>
+  <span class="synSpecial">(</span>format <span class="synConstant">#f</span> <span class="synConstant">&quot;5 ÷ 2 = ~sあまり~s&quot;</span> quot rem<span class="synSpecial">))</span>
+<span class="synComment">;; =&gt; &quot;5 ÷ 2 = 2あまり1&quot;</span>
+</pre><p><br />
+<a class="keyword" href="http://d.hatena.ne.jp/keyword/Scheme">Scheme</a>では、多値はファーストクラスの概念ではありません。すなわち、「多値」そのものを値として扱うことはできないということです。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink>gosh&gt; <span class="synSpecial">(</span><span class="synStatement">define</span> vals <span class="synSpecial">(</span><span class="synIdentifier">values</span> <span class="synConstant">3</span> <span class="synConstant">2</span> <span class="synConstant">1</span><span class="synSpecial">))</span>
+vals
+gosh&gt; vals
+<span class="synConstant">3</span>
+</pre><p>このように、valsにはvaluesの最初の値しか代入されていません。</p><p>このことからわかるように、<a class="keyword" href="http://d.hatena.ne.jp/keyword/Scheme">Scheme</a>では、「多値」を持つ変数を作ることはできません。しかし、その一方で「多値を返す」関数を作ることはできます。</p><p>これがどういうことか、それを理解するためには、まずは<a class="keyword" href="http://d.hatena.ne.jp/keyword/Scheme">Scheme</a>における関数について理解しなければなりません。</p>
+
+</div>
+<div class="section">
+    <h3><a class="keyword" href="http://d.hatena.ne.jp/keyword/Scheme">Scheme</a>における関数とreturn</h3>
+    <p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Scheme">Scheme</a>は継続がファーストクラスとなっている、非常に特殊な言語です。<br />
+そのため、見かけ上通常の「関数」のように見える以下のコードも、</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>add x y<span class="synSpecial">)</span> <span class="synSpecial">(</span><span class="synIdentifier">+</span> x y<span class="synSpecial">))</span>
+<span class="synSpecial">(</span>print <span class="synSpecial">(</span>add <span class="synConstant">3</span> <span class="synConstant">2</span><span class="synSpecial">))</span>
+...
+</pre><p>実質的には以下のコードと同じようなものになります。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>add/cps x y cont<span class="synSpecial">)</span> <span class="synSpecial">(</span>cont <span class="synSpecial">(</span><span class="synIdentifier">+</span> x y<span class="synSpecial">)))</span>
+<span class="synSpecial">(</span>add/cps <span class="synConstant">3</span> <span class="synConstant">2</span> <span class="synSpecial">(</span>^<span class="synSpecial">(</span>sum<span class="synSpecial">)</span>
+               <span class="synSpecial">(</span>print/cps sum <span class="synSpecial">(</span>^<span class="synSpecial">(</span>_<span class="synSpecial">)</span>
+                                ...<span class="synSpecial">))))</span>
+</pre><p>(ここで、<a class="keyword" href="http://d.hatena.ne.jp/keyword/hoge">hoge</a>/<a class="keyword" href="http://d.hatena.ne.jp/keyword/cps">cps</a>は元の関数<a class="keyword" href="http://d.hatena.ne.jp/keyword/hoge">hoge</a>を継続渡し形式にしたものです。)</p><p>上のコードのaddと、add/<a class="keyword" href="http://d.hatena.ne.jp/keyword/cps">cps</a>の定義の違いについて注意してみましょう。</p><p>addの本体は</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synIdentifier">+</span> x y<span class="synSpecial">)</span>
+</pre><p>として呼び出し元へ値を「返して」いるかのように見えますが、その一方でadd/<a class="keyword" href="http://d.hatena.ne.jp/keyword/cps">cps</a>は</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span>cont <span class="synSpecial">(</span><span class="synIdentifier">+</span> x y<span class="synSpecial">))</span>
+</pre><p>というように、戻り値を「返して」いるのではなく、戻り値に相当する値を引数として、現在の継続を呼び出しています。<br />
+すなわち、<a class="keyword" href="http://d.hatena.ne.jp/keyword/Scheme">Scheme</a>には「関数呼び出し」と「関数からのreturn」の間には違いがないのです。</p>
+
+</div>
+<div class="section">
+    <h3>多値を「返す」こと</h3>
+    <p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Scheme">Scheme</a>におけるreturnが手続きの呼び出しに他ならないのであれば、手続きに複数の引数を与えるのと同様に、複数の値に対するreturnができるはずです。<br />
+実際に、以下のような現在の継続に複数の引数を与えるコードは以下のようにして書くことができます。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synIdentifier">call/cc</span> <span class="synSpecial">(</span>^<span class="synSpecial">(</span>cont<span class="synSpecial">)</span> <span class="synSpecial">(</span>cont <span class="synConstant">1</span> <span class="synConstant">2</span> <span class="synConstant">3</span><span class="synSpecial">)))</span>
+</pre><p>実は、これが多値の正体です。R7RSではvaluesは以下のように定義されています。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span><span class="synIdentifier">values</span> <span class="synSpecial">.</span> things<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span><span class="synIdentifier">call-with-current-continuation</span>
+   <span class="synSpecial">(</span><span class="synStatement">lambda</span> <span class="synSpecial">(</span>cont<span class="synSpecial">)</span> <span class="synSpecial">(</span><span class="synIdentifier">apply</span> cont things<span class="synSpecial">))))</span>
+</pre><p>そして、receiveなどは現在の継続が複数の引数を持てるようにする構文なのです。</p><p>実際に、同じように定義した自作valuesを使っても、receive等の多値を扱う構文は正常に機能します。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>my-values <span class="synSpecial">.</span> args<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span><span class="synIdentifier">call/cc</span> <span class="synSpecial">(</span>^<span class="synSpecial">(</span>cont<span class="synSpecial">)</span> <span class="synSpecial">(</span><span class="synIdentifier">apply</span> cont args<span class="synSpecial">))))</span>
+<span class="synSpecial">(</span>receive <span class="synSpecial">(</span>a b c<span class="synSpecial">)</span> <span class="synSpecial">(</span>my-values <span class="synConstant">1</span> <span class="synConstant">2</span> <span class="synConstant">3</span><span class="synSpecial">)</span>
+  <span class="synSpecial">(</span><span class="synIdentifier">+</span> a b c<span class="synSpecial">))</span>
+<span class="synComment">;; =&gt; 6</span>
+</pre><p>たしかにreturnと手続きの呼び出しが等価ならば、現在の継続に複数の値を渡すことによって複数の値をreturnできるはずです。<br />
+しかし、だからと言って実際に複数の値を(リストやペアなどにせずに)返せてしまうのは面白いですね。<br />
+こんなことができる言語は<a class="keyword" href="http://d.hatena.ne.jp/keyword/Scheme">Scheme</a>くらいでしょう。(というか、そもそもファーストクラスの継続が扱える言語が<a class="keyword" href="http://d.hatena.ne.jp/keyword/Scheme">Scheme</a>くらいなので)</p>
+
+</div>
+
+{% endraw %}

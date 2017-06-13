@@ -1,0 +1,22 @@
+---
+layout: post
+title: pyenvで入れたpythonでwxPythonが動かない
+tags:
+- Python
+
+---
+{% raw %}
+<p><a class="keyword" href="http://d.hatena.ne.jp/keyword/wxPython">wxPython</a>で作った<a class="keyword" href="http://d.hatena.ne.jp/keyword/GUI">GUI</a>アプリを動かしてみようとした所、次のようなエラーが。</p>
+
+<pre>This program needs <a class="keyword" href="http://d.hatena.ne.jp/keyword/access">access</a> to the screen. Please run with a
+Framework build of <a class="keyword" href="http://d.hatena.ne.jp/keyword/python">python</a>, and only when you are logged in
+</pre><p>原因は--enable-frameworkオプションをつけずに<a class="keyword" href="http://d.hatena.ne.jp/keyword/Python">Python</a>がビルドされていることっぽいです。なので、</p>
+
+<pre>$ env <a class="keyword" href="http://d.hatena.ne.jp/keyword/PYTHON">PYTHON</a>_CONFIGURE_OPTS="--enable-framework" pyenv install 3.4.3
+</pre><p>で<a class="keyword" href="http://d.hatena.ne.jp/keyword/Python">Python</a>を入れ直し、</p>
+
+<pre>$ pip install <a href="http://www.wxpython.org/Phoenix/snapshot-builds/wxPython_Phoenix-3.0.3.dev1830+0b5f910-cp34-cp34m-macosx_10_6_intel.whl">http://www.wxpython.org/Phoenix/snapshot-builds/wxPython_Phoenix-3.0.3.dev1830+0b5f910-cp34-cp34m-macosx_10_6_intel.whl</a>
+</pre><p>で<a class="keyword" href="http://d.hatena.ne.jp/keyword/wxPython">wxPython</a>をインストールすれば正常に動くようになります(pip install <a class="keyword" href="http://d.hatena.ne.jp/keyword/wxPython">wxPython</a>ではうまくいかなかった)</p><p>ちなみに、homebrewでインストールした<a class="keyword" href="http://d.hatena.ne.jp/keyword/Python">Python</a>の場合はpythonwコマンドでウインドウを表示させられるようになるらしいです。</p>
+
+
+{% endraw %}

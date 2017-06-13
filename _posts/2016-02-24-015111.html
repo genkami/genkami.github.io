@@ -1,0 +1,120 @@
+---
+layout: post
+title: Scalaのtrait
+tags:
+- Scala
+
+---
+{% raw %}
+
+<div class="section">
+    <h3>traitとは</h3>
+    <p>具体的な実装を持たないようなクラスを<a class="keyword" href="http://d.hatena.ne.jp/keyword/Scala">Scala</a>ではtraitと呼びます。<a class="keyword" href="http://d.hatena.ne.jp/keyword/Java">Java</a>でいうinterfaceのようなもの。<br />
+abstract classとの使い分けは、abstract classが「それが何であるか」を指定するのに対し、traitでは「それがどういった振る舞いをするか」を記述するためにあると思っています。</p>
+
+</div>
+<div class="section">
+    <h3>基本的な使い方</h3>
+    <p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Java">Java</a>のinterfaceと同じです。例えば辞書型、<a class="keyword" href="http://d.hatena.ne.jp/keyword/%CF%A2%C1%DB%C7%DB%CE%F3">連想配列</a>、マップ等と呼ばれるアレの振る舞いを定義するための「MyMap」というtraitを定義してみましょう。<br />
+(余談ですが、<a class="keyword" href="http://d.hatena.ne.jp/keyword/Perl">Perl</a>がいわゆる<a class="keyword" href="http://d.hatena.ne.jp/keyword/%CF%A2%C1%DB%C7%DB%CE%F3">連想配列</a>に「ハッシュ変数」という実装部分の都合で名前を付けてしまったのは失敗だったと思います。<a class="keyword" href="http://d.hatena.ne.jp/keyword/Perl">Perl</a>でプログラミングを始めた初心者がハッシュマップでないマップのこともハッシュと呼んだりする事例が散見されるので。)</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink><span class="synPreProc">import</span> scala.collection.mutable._
+
+<span class="synType">trait</span> MyMap[K, V] {
+<span class="synIdentifier">  def</span> +=(kv: (K, V))
+<span class="synIdentifier">  def</span> lookup(key: K): Option[V]
+}
+</pre><p>(mutableなのが気持ち悪いですが、traitの説明のために分かりやすさ優先で書いているため悪しからず。)</p><p>このtraitの実装として、恐らく<a class="keyword" href="http://d.hatena.ne.jp/keyword/%CF%A2%C1%DB%C7%DB%CE%F3">連想配列</a>の実装の中で最も簡単な(そして最も効率の悪い)ものであるalistを作ってみましょう。</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink><span class="synType">class</span> AList[K, V](keyValues: (K, V)*) <span class="synType">extends</span> MyMap[K, V] {
+  <span class="synType">val</span> items: Buffer[(K, V)] = keyValues.toBuffer
+
+<span class="synIdentifier">  def</span> +=(kv: (K, V)) {
+    items += kv
+  }
+
+<span class="synIdentifier">  def</span> lookup(key: K): Option[V] = {
+    <span class="synStatement">for</span> ((k, v) &lt;- items) {
+      <span class="synStatement">if</span> (k == key)
+        <span class="synStatement">return</span> Some(v)
+    }
+    <span class="synStatement">return</span> None
+  }
+}
+</pre><p>ここまではOKですね。</p>
+
+</div>
+<div class="section">
+    <h3>traitを型クラス的に使う</h3>
+    <p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Scala">Scala</a>では、型クラスCの<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%B9%A5%BF%A5%F3%A5%B9">インスタンス</a>Aにおける振る舞いの集合をまとめてC[A]のようなtraitを作り、そのtraitの実装の<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%B9%A5%BF%A5%F3%A5%B9">インスタンス</a>を暗黙的に受け取ることによって、<s>無理矢理</s>型クラスのようなことを実現できてしまいます。</p><br />
+<p>例として、モノイドを表す型クラスをtraitを使って書いてみました。</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink><span class="synType">trait</span> Monoid[T] {
+<span class="synIdentifier">  def</span> zero: T
+<span class="synIdentifier">  def</span> add(x: T, y: T): T
+}
+
+<span class="synType">object</span> Monoid {
+<span class="synIdentifier">  def</span> sum[T](xs: Traversable[T])(implicit M: Monoid[T]) =
+    xs.foldLeft(M.zero)(M.add)
+}
+
+<span class="synType">object</span> IntMonoid <span class="synType">extends</span> Monoid[Int] {
+  <span class="synType">val</span> zero = <span class="synConstant">0</span>
+<span class="synIdentifier">  def</span> add(x: Int, y: Int): Int = x + y
+}
+
+<span class="synType">object</span> MonoidTest {
+  implicit <span class="synType">val</span> intMonoid = IntMonoid
+}
+</pre><p>コンソール上で実行してみましょう。</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink>scala&gt; <span class="synPreProc">import</span> Monoid._
+scala&gt; <span class="synPreProc">import</span> MonoidTest._
+scala&gt; <span class="synType">val</span> numbers = <span class="synConstant">1</span> until <span class="synConstant">100</span>
+scala&gt; sum(numbers)
+res0: Int = <span class="synConstant">4950</span>
+</pre><p>このtraitの使いかた、便利ではあるけど正直初めて見たときはかなり気持ち悪いと思いました……。しかし、<a class="keyword" href="http://d.hatena.ne.jp/keyword/Scala">Scala</a>から入った人のQiitaのエントリーとかを読んでいると、むしろ<a class="keyword" href="http://d.hatena.ne.jp/keyword/Haskell">Haskell</a>での型クラスの実装のほうに違和感を感じている人が多いようなので(要出典)、ようは慣れなのかな…?</p><p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Haskell">Haskell</a>の型クラスとの違いは、暗黙的に受け取るオブジェクトを変更することによって、同一の型に対して<a class="keyword" href="http://d.hatena.ne.jp/keyword/%CA%A3%BF%F4">複数</a>の<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%B9%A5%BF%A5%F3%A5%B9">インスタンス</a>定義ができることです。例えば、(Z, +, 0)と(Z, *, 1)はどちらも共にモノイドなので、次のようにMonoid[Int]の実装を2つ作ることもできます。</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink><span class="synType">object</span> IntSumMonoid <span class="synType">extends</span> Monoid[Int] {
+  <span class="synType">val</span> zero = <span class="synConstant">0</span>
+<span class="synIdentifier">  def</span> add(x: Int, y: Int): Int = x + y
+}
+
+<span class="synType">object</span> IntProductMonoid <span class="synType">extends</span> Monoid[Int] {
+  <span class="synType">val</span> zero = <span class="synConstant">1</span>
+<span class="synIdentifier">  def</span> add(x: Int, y: Int): Int = x * y
+}
+
+<span class="synType">object</span> Add {
+  implicit <span class="synType">val</span> intMonoid = IntSumMonoid
+}
+
+<span class="synType">object</span> Mul {
+  implicit <span class="synType">val</span> intMonoid = IntProductMonoid
+}
+</pre><p>Intを(Z, +, 0)のモノイドとして扱いたい場合はAddを、(Z, *, 1)のモノイドとして扱いたい場合はMulをそれぞれimportすれば、期待通りの動作が得られます。</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink>scala&gt; <span class="synPreProc">import</span> Monoid._
+scala&gt; <span class="synPreProc">import</span> Add._
+scala&gt; sum(<span class="synConstant">0</span> until <span class="synConstant">10</span>) <span class="synComment">//=&gt; 0 + 1 + 2 + ...  + 10</span>
+res1: Int = <span class="synConstant">45</span>
+</pre><pre class="code lang-scala" data-lang="scala" data-unlink>scala&gt; <span class="synPreProc">import</span> Monoid._
+scala&gt; <span class="synPreProc">import</span> Mul._
+scala&gt; sum(<span class="synConstant">0</span> until <span class="synConstant">10</span>) <span class="synComment">//=&gt; 0 * 1 * 2 * ... * 10</span>
+res1: Int = <span class="synConstant">0</span>
+</pre><p>さらに、モノイド同士の加算のための新たな<a class="keyword" href="http://d.hatena.ne.jp/keyword/%B1%E9%BB%BB%BB%D2">演算子</a>「|+|」を定義した新たなラッパーのようなクラスを作り、そのクラスへの暗黙的型変換を用意することによって、こんなこともできてしまいます。</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink><span class="synType">object</span> Monoid {
+  <span class="synComment">// sumの定義はさっきと同じ</span>
+  implicit <span class="synType">class</span> MonoidOps[T](<span class="synType">val</span> value: T) {
+<span class="synIdentifier">    def</span> |+|(y: T)(implicit M: Monoid[T]) = M.add(value, y)
+  }
+}
+</pre><p>実行結果</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink>scala&gt; <span class="synPreProc">import</span> Monoid._
+scala&gt; <span class="synPreProc">import</span> Mul._
+scala&gt; <span class="synConstant">3</span> |+| <span class="synConstant">5</span>
+res0: Int = <span class="synConstant">15</span>
+</pre><p>これはすごい、けど気持ち悪い(個人的に暗黙的型変換が嫌いなので)。<br />
+程々に利用すればとても便利だとは思います。</p><p>ちなみに、class MonoidOpsのimplicit修飾子を外して、かわりにobject Monoidの中で</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink>implicit<span class="synIdentifier"> def</span> toMonoid[T](x: T): MonoidOps[T] = <span class="synStatement">new</span> MonoidOps(x)
+</pre><p>のようにすることでも同じ結果を得られますが、こちらは<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%B3%A5%F3%A5%D1%A5%A4%A5%EB">コンパイル</a>時に警告が発生します。<br />
+暗黙的な型変換の濫用はよろしくないけど、implicit classで定義できる程度の単純なものならまあ許してやろうってことなのかな?</p><p>何にせよ、<a class="keyword" href="http://d.hatena.ne.jp/keyword/Haskell">Haskell</a>でのやりかたとは全く違うので、まだまだ慣れが必要なようです。</p><p><div class="hatena-asin-detail"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/4274068854/cloudear-22/"><img src="http://ecx.images-amazon.com/images/I/51P6NdS4IGL._SL160_.jpg" class="hatena-asin-detail-image" alt="すごいHaskellたのしく学ぼう!" title="すごいHaskellたのしく学ぼう!"></a><div class="hatena-asin-detail-info"><p class="hatena-asin-detail-title"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/4274068854/cloudear-22/">すごいHaskellたのしく学ぼう!</a></p><ul><li><span class="hatena-asin-detail-label">作者:</span> Miran Lipovača,<a class="keyword" href="http://d.hatena.ne.jp/keyword/%C5%C4%C3%E6%B1%D1%B9%D4">田中英行</a>,村主崇行</li><li><span class="hatena-asin-detail-label">出版社/メーカー:</span> <a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A1%BC%A5%E0%BC%D2">オーム社</a></li><li><span class="hatena-asin-detail-label">発売日:</span> 2012/05/23</li><li><span class="hatena-asin-detail-label">メディア:</span> 単行本（ソフトカバー）</li><li><span class="hatena-asin-detail-label">購入</span>: 25人 <span class="hatena-asin-detail-label">クリック</span>: 580回</li><li><a href="http://d.hatena.ne.jp/asin/4274068854/cloudear-22" target="_blank">この商品を含むブログ (69件) を見る</a></li></ul></div><div class="hatena-asin-detail-foot"></div></div><div class="hatena-asin-detail"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/4864873798/cloudear-22/"><img src="http://ecx.images-amazon.com/images/I/41Rr1Iv8lhL._SL160_.jpg" class="hatena-asin-detail-image" alt="Scalaファンクショナルデザイン ―関数型プログラミングの設計と理解" title="Scalaファンクショナルデザイン ―関数型プログラミングの設計と理解"></a><div class="hatena-asin-detail-info"><p class="hatena-asin-detail-title"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/4864873798/cloudear-22/">Scalaファンクショナルデザイン ―関数型プログラミングの設計と理解</a></p><ul><li><span class="hatena-asin-detail-label">作者:</span> 深井裕二</li><li><span class="hatena-asin-detail-label">出版社/メーカー:</span> 三恵社</li><li><span class="hatena-asin-detail-label">発売日:</span> 2015/05/29</li><li><span class="hatena-asin-detail-label">メディア:</span> 単行本（ソフトカバー）</li><li><a href="http://d.hatena.ne.jp/asin/4864873798/cloudear-22" target="_blank">この商品を含むブログを見る</a></li></ul></div><div class="hatena-asin-detail-foot"></div></div></p>
+
+</div>
+
+{% endraw %}

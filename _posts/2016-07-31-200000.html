@@ -1,0 +1,48 @@
+---
+layout: post
+title: ジェネリック関数を定義する
+tags:
+- Gauche
+
+---
+{% raw %}
+<p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Gauche">Gauche</a>では、<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A2%A5%C9%A5%DB%A5%C3%A5%AF">アドホック</a>に多相を実現する手段として<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%B8%A5%A7%A5%CD%A5%EA%A5%C3%A5%AF">ジェネリック</a>関数が用意されています。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synComment">;; 足し算</span>
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>add x y<span class="synSpecial">)</span> <span class="synSpecial">(</span><span class="synIdentifier">+</span> x y<span class="synSpecial">))</span>
+<span class="synSpecial">(</span>add <span class="synConstant">3</span> <span class="synConstant">2</span><span class="synSpecial">)</span> <span class="synComment">; =&gt; 5</span>
+
+<span class="synComment">;; ベクターも足し算したくなった</span>
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>vector-add xs ys<span class="synSpecial">)</span> <span class="synSpecial">(</span>vector-map <span class="synIdentifier">+</span> xs ys<span class="synSpecial">))</span>
+<span class="synSpecial">(</span>vector-add <span class="synSpecial">#(</span><span class="synConstant">1</span> <span class="synConstant">2</span> <span class="synConstant">3</span><span class="synSpecial">)</span> <span class="synSpecial">#(</span><span class="synConstant">4</span> <span class="synConstant">5</span> <span class="synConstant">6</span><span class="synSpecial">))</span> <span class="synComment">; =&gt; #(5 7 9)</span>
+
+<span class="synSpecial">(</span>define-method add <span class="synSpecial">((</span>x <span class="synConstant">&lt;number&gt;</span><span class="synSpecial">)</span> <span class="synSpecial">(</span>y <span class="synConstant">&lt;number&gt;</span><span class="synSpecial">)))</span>
+</pre><p>このような場合を<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%B8%A5%A7%A5%CD%A5%EA%A5%C3%A5%AF">ジェネリック</a>関数を用いて書きなおしてみましょう。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synComment">;; addのジェネリック版</span>
+<span class="synSpecial">(</span>define-method generic-add <span class="synSpecial">((</span>x <span class="synConstant">&lt;number&gt;</span><span class="synSpecial">)</span> <span class="synSpecial">(</span>y <span class="synConstant">&lt;number&gt;</span><span class="synSpecial">))</span>
+  <span class="synSpecial">(</span><span class="synIdentifier">+</span> x y<span class="synSpecial">))</span>
+
+<span class="synSpecial">(</span>define-method generic-add <span class="synSpecial">((</span>xs <span class="synConstant">&lt;vector&gt;</span><span class="synSpecial">)</span> <span class="synSpecial">(</span>ys <span class="synConstant">&lt;vector&gt;</span><span class="synSpecial">))</span>
+  <span class="synSpecial">(</span>vector-map generic-add xs ys<span class="synSpecial">))</span>
+
+<span class="synSpecial">(</span>generic-add <span class="synConstant">3</span> <span class="synConstant">4</span><span class="synSpecial">)</span> <span class="synComment">; =&gt; 7</span>
+<span class="synSpecial">(</span>generic-add <span class="synSpecial">#(</span><span class="synConstant">1</span> <span class="synConstant">2</span> <span class="synConstant">3</span><span class="synSpecial">)</span> <span class="synSpecial">#(</span><span class="synConstant">3</span> <span class="synConstant">2</span> <span class="synConstant">1</span><span class="synSpecial">))</span> <span class="synComment">; =&gt; #(4 4 4)</span>
+</pre><p>最初にdefine-methodが呼ばれた時点で、generic-addという1つの<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%B8%A5%A7%A5%CD%A5%EA%A5%C3%A5%AF">ジェネリック</a>関数が定義されます。<br />
+2回目以降のdefine-methodでは、指定された引数と関数本体が<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%B8%A5%A7%A5%CD%A5%EA%A5%C3%A5%AF">ジェネリック</a>関数の定義に追加されます。</p><p><a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%B8%A5%A7%A5%CD%A5%EA%A5%C3%A5%AF">ジェネリック</a>関数が呼び出された時、<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%B8%A5%A7%A5%CD%A5%EA%A5%C3%A5%AF">ジェネリック</a>関数は与えられた引数のリストに対して、最も具体的にマッチするものを選択し、その定義の本体を実行します。例えば、&lt;number&gt;と&lt;integer&gt;に対してどちらも<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%B8%A5%A7%A5%CD%A5%EA%A5%C3%A5%AF">ジェネリック</a>関数が定義されていた場合、<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%B8%A5%A7%A5%CD%A5%EA%A5%C3%A5%AF">ジェネリック</a>関数は以下のような振る舞いをします。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span>define-method get-type <span class="synSpecial">((</span>x <span class="synConstant">&lt;number&gt;</span><span class="synSpecial">))</span> <span class="synConstant">&quot;number&quot;</span><span class="synSpecial">)</span>
+<span class="synSpecial">(</span>define-method get-type <span class="synSpecial">((</span>x <span class="synConstant">&lt;integer&gt;</span><span class="synSpecial">))</span> <span class="synConstant">&quot;integer&quot;</span><span class="synSpecial">)</span>
+
+<span class="synSpecial">(</span>get-type <span class="synConstant">3.0</span><span class="synSpecial">)</span> <span class="synComment">; =&gt; &quot;number&quot;</span>
+<span class="synSpecial">(</span>get-type <span class="synConstant">3</span><span class="synSpecial">)</span>   <span class="synComment">; =&gt; &quot;integer&quot;</span>
+</pre><p>また、<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%B8%A5%A7%A5%CD%A5%EA%A5%C3%A5%AF">ジェネリック</a>関数本体の中ではnext-method関数を呼ぶことによって自身よりも1段階一般的な<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%B8%A5%A7%A5%CD%A5%EA%A5%C3%A5%AF">ジェネリック</a>関数のメソッドを呼び出すことができます。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span>define-method get-type <span class="synSpecial">((</span>x <span class="synConstant">&lt;number&gt;</span><span class="synSpecial">))</span> <span class="synConstant">&quot;number&quot;</span><span class="synSpecial">)</span>
+<span class="synSpecial">(</span>define-method get-type <span class="synSpecial">((</span>x <span class="synConstant">&lt;real&gt;</span><span class="synSpecial">))</span> <span class="synConstant">&quot;real&quot;</span><span class="synSpecial">)</span>
+<span class="synSpecial">(</span>define-method get-type <span class="synSpecial">((</span>x <span class="synConstant">&lt;integer&gt;</span><span class="synSpecial">))</span>
+  <span class="synSpecial">(</span>next-method x<span class="synSpecial">))</span> <span class="synComment">; 1段階一般的なメソッドを呼ぶようにした</span>
+
+<span class="synSpecial">(</span>get-type <span class="synConstant">3+i</span><span class="synSpecial">)</span> <span class="synComment">; =&gt; &quot;number&quot;</span>
+<span class="synSpecial">(</span>get-type <span class="synConstant">3.0</span><span class="synSpecial">)</span> <span class="synComment">; =&gt; &quot;real&quot;</span>
+<span class="synSpecial">(</span>get-type <span class="synConstant">3</span><span class="synSpecial">)</span>   <span class="synComment">; =&gt; &quot;real&quot;</span>
+</pre><p>&lt;number&gt;は&lt;real&gt;の親、&lt;real&gt;は&lt;integer&gt;の親なので、最後のget-typeでは&lt;integer&gt;の親、&lt;real&gt;のメソッドが呼び出されます。</p>
+
+
+{% endraw %}

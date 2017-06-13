@@ -1,0 +1,21 @@
+---
+layout: post
+title: Haskellで独自のパターンを定義
+tags:
+- Haskell
+
+---
+{% raw %}
+<p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Scala">Scala</a>ではunapplyメソッドを定義することにより独自のパターンを定義できますが、実は<a class="keyword" href="http://d.hatena.ne.jp/keyword/Haskell">Haskell</a>でも似たようなことができます。</p><p>PatternSynonyms拡張を有効化することで、既存のパターンについての<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A8%A5%A4%A5%EA%A5%A2%A5%B9">エイリアス</a>のようなものを定義することができます。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synSpecial">{-# LANGUAGE PatternSynonyms #-}</span>
+
+pattern x <span class="synStatement">:-&gt;</span> y <span class="synStatement">=</span> (x, y)
+</pre><p>この拡張を有効化することによって、新たな予約後「pattern」が追加されます。<br />
+左辺に新たなパターンを、右辺に既存のパターンを書くことによって、左辺のパターンが右辺のパターンの<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%B7%A5%F3%A5%BF%A5%C3%A5%AF%A5%B9">シンタックス</a>シュガーとなります。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synStatement">&gt;&gt;&gt;</span> <span class="synStatement">case</span> (<span class="synConstant">3</span>, <span class="synConstant">4</span>) <span class="synStatement">of</span> x <span class="synStatement">:-&gt;</span> y <span class="synStatement">-&gt;</span> x <span class="synStatement">+</span> y
+<span class="synConstant">7</span>
+<span class="synStatement">&gt;&gt;&gt;</span> <span class="synConstant">3</span> <span class="synStatement">:-&gt;</span> <span class="synConstant">4</span>
+(<span class="synConstant">3</span>,<span class="synConstant">4</span>)
+</pre>
+
+{% endraw %}

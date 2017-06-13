@@ -1,0 +1,53 @@
+---
+layout: post
+title: OCamlのmatch文とbegin..end
+tags:
+- OCaml
+
+---
+{% raw %}
+<p><a class="keyword" href="http://d.hatena.ne.jp/keyword/OCaml">OCaml</a>には<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A5%D5%A5%B5%A5%A4%A5%C9">オフサイド</a>ルールは無いので、例えばmatch文をネストした時に、</p>
+<pre class="code lang-ocaml" data-lang="ocaml" data-unlink><span class="synStatement">let</span> <span class="synStatement">rec</span> zip xs ys <span class="synStatement">=</span>
+  <span class="synStatement">match</span> xs <span class="synStatement">with</span>
+  <span class="synStatement">|</span> x <span class="synStatement">::</span> xs' <span class="synStatement">-&gt;</span> <span class="synStatement">match</span> ys <span class="synStatement">with</span>
+                <span class="synStatement">|</span> y <span class="synStatement">::</span> ys' <span class="synStatement">-&gt;</span> <span class="synStatement">(</span>x, y<span class="synStatement">)</span> <span class="synStatement">::</span> zip xs ys
+                <span class="synStatement">|</span> <span class="synConstant">[]</span> <span class="synStatement">-&gt;</span> <span class="synConstant">[]</span>
+  <span class="synStatement">|</span> <span class="synConstant">[]</span> <span class="synStatement">-&gt;</span> <span class="synConstant">[]</span>
+</pre><p>これは次のように解釈されます。</p>
+<pre class="code lang-ocaml" data-lang="ocaml" data-unlink><span class="synStatement">let</span> <span class="synStatement">rec</span> zip xs ys <span class="synStatement">=</span>
+  <span class="synStatement">match</span> xs <span class="synStatement">with</span>
+  <span class="synStatement">|</span> x <span class="synStatement">::</span> xs' <span class="synStatement">-&gt;</span> <span class="synStatement">(match</span> ys <span class="synStatement">with</span>
+                 <span class="synStatement">|</span> y <span class="synStatement">::</span> ys' <span class="synStatement">-&gt;</span> <span class="synStatement">(</span>x, y<span class="synStatement">)</span> <span class="synStatement">::</span> zip xs ys
+                 <span class="synStatement">|</span> <span class="synConstant">[]</span> <span class="synStatement">-&gt;</span> <span class="synConstant">[]</span>
+                 <span class="synStatement">|</span> <span class="synConstant">[]</span> <span class="synStatement">-&gt;</span> <span class="synConstant">[]</span><span class="synStatement">)</span>
+</pre><p>したがって、ネストしているmatchの部分は括弧でくくらなければなりません。</p>
+<pre class="code lang-ocaml" data-lang="ocaml" data-unlink><span class="synStatement">let</span> <span class="synStatement">rec</span> zip xs ys <span class="synStatement">=</span>
+  <span class="synStatement">match</span> xs <span class="synStatement">with</span>
+  <span class="synStatement">|</span> x <span class="synStatement">::</span> xs' <span class="synStatement">-&gt;</span> <span class="synStatement">(match</span> ys <span class="synStatement">with</span>
+                 <span class="synStatement">|</span> y <span class="synStatement">::</span> ys' <span class="synStatement">-&gt;</span> <span class="synStatement">(</span>x, y<span class="synStatement">)</span> <span class="synStatement">::</span> zip xs ys
+                 <span class="synStatement">|</span> <span class="synConstant">[]</span> <span class="synStatement">-&gt;</span> <span class="synConstant">[]</span><span class="synStatement">)</span>
+  <span class="synStatement">|</span> <span class="synConstant">[]</span> <span class="synStatement">-&gt;</span> <span class="synConstant">[]</span>
+</pre><p>これは少し不格好です。<br />
+こういう時はbegin..endを使うと、少しコードを綺麗に書くことができます。</p>
+<pre class="code lang-ocaml" data-lang="ocaml" data-unlink><span class="synStatement">let</span> <span class="synStatement">rec</span> zip xs ys <span class="synStatement">=</span>
+  <span class="synStatement">match</span> xs <span class="synStatement">with</span>
+  <span class="synStatement">|</span> x <span class="synStatement">::</span> xs' <span class="synStatement">-&gt;</span> <span class="synStatement">begin</span> <span class="synStatement">match</span> ys <span class="synStatement">with</span>
+                 <span class="synStatement">|</span> y <span class="synStatement">::</span> ys' <span class="synStatement">-&gt;</span> <span class="synStatement">(</span>x, y<span class="synStatement">)</span> <span class="synStatement">::</span> zip xs ys
+                 <span class="synStatement">|</span> <span class="synConstant">[]</span> <span class="synStatement">-&gt;</span> <span class="synConstant">[]</span>
+                <span class="synStatement">end</span>
+  <span class="synStatement">|</span> <span class="synConstant">[]</span> <span class="synStatement">-&gt;</span> <span class="synConstant">[]</span>
+</pre><p>面白いことに、begin..endはただの括弧の<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%B7%A5%F3%A5%BF%A5%C3%A5%AF%A5%B9">シンタックス</a>シュガーです。したがって、例えば</p>
+<pre class="code lang-ocaml" data-lang="ocaml" data-unlink><span class="synStatement">let</span> x <span class="synStatement">=</span> <span class="synStatement">(</span><span class="synConstant">3</span> + <span class="synConstant">4</span><span class="synStatement">)</span> <span class="synStatement">*</span> <span class="synStatement">(</span><span class="synConstant">8</span> - <span class="synConstant">2</span><span class="synStatement">);;</span>
+</pre><p>と書くかわりに、</p>
+<pre class="code lang-ocaml" data-lang="ocaml" data-unlink><span class="synStatement">let</span> x <span class="synStatement">=</span>
+  <span class="synStatement">begin</span>
+    <span class="synConstant">3</span> + <span class="synConstant">4</span>
+  <span class="synStatement">end</span>
+  <span class="synStatement">*</span>
+    <span class="synStatement">begin</span>
+      <span class="synConstant">8</span> - <span class="synConstant">2</span>
+    <span class="synStatement">end</span>
+</pre><p>と書いたりもできます。</p>
+
+
+{% endraw %}

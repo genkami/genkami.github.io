@@ -1,0 +1,82 @@
+---
+layout: post
+title: Gaucheでソースコードのあるパスを取得
+tags:
+- Gauche
+
+---
+{% raw %}
+<p>きちんと ./configure && make && make install するようなプログラムでもない限り、<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%BD%A1%BC%A5%B9%A5%B3%A1%BC%A5%C9">ソースコード</a>を適当にどこかから引っ張ってきて、そこから</p>
+
+<pre>$ gosh ./main.scm
+</pre><p>するだけでとりあえず動くようにできたほうが楽な場合はよくあります。<br />
+しかし、<a class="keyword" href="http://d.hatena.ne.jp/keyword/Gauche">Gauche</a>でそれをやろうとした場合は色々な問題が……。</p>
+
+<div class="section">
+    <h3><a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%BD%A1%BC%A5%B9%A5%B3%A1%BC%A5%C9">ソースコード</a>からの<a class="keyword" href="http://d.hatena.ne.jp/keyword/%C1%EA%C2%D0%A5%D1%A5%B9">相対パス</a>でload</h3>
+    <p>こちらの問題は簡単に解決します。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synIdentifier">load</span> <span class="synConstant">&quot;./relative/module.scm&quot;</span><span class="synSpecial">)</span>
+</pre><p>これで現在の<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%BD%A1%BC%A5%B9%A5%B3%A1%BC%A5%C9">ソースコード</a>のある位置からの<a class="keyword" href="http://d.hatena.ne.jp/keyword/%C1%EA%C2%D0%A5%D1%A5%B9">相対パス</a>でロードすることができます。<br />
+しかし、上のコードでいう ./relative/module.scm がモジュールになっていた場合</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synIdentifier">load</span> <span class="synConstant">&quot;./relative/module.scm&quot;</span><span class="synSpecial">)</span>
+<span class="synSpecial">(</span>import relative.module<span class="synSpecial">)</span>
+</pre><p>というように書かないといけなくなるため、少々不格好になってしまいます。素直にuseさせてくれ……。</p><p>そこで作られたのが、add-load-pathの:relativeオプションです。これを使うと、goshのカレント<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%C7%A5%A3%A5%EC%A5%AF%A5%C8">ディレクト</a>リではなく<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%BD%A1%BC%A5%B9%A5%B3%A1%BC%A5%C9">ソースコード</a>からの<a class="keyword" href="http://d.hatena.ne.jp/keyword/%C1%EA%C2%D0%A5%D1%A5%B9">相対パス</a>でload-pathを追加してくれます。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span>add-load-path <span class="synConstant">&quot;.&quot;</span> :relative<span class="synSpecial">)</span>
+<span class="synSpecial">(</span>use relative.module<span class="synSpecial">)</span> <span class="synComment">;; (このコードの位置)/relative/module.scmがuseされる</span>
+</pre><p>実は、この機能は以下のような作者とユーザーとのやりとりによって生まれたもののようです。</p><p><iframe src="//hatenablog-parts.com/embed?url=http%3A%2F%2Ftogetter.com%2Fli%2F283057" title="Gaucheスクリプトとload-path" class="embed-card embed-webcard" scrolling="no" frameborder="0" style="display: block; width: 100%; height: 155px; max-width: 500px; margin: 10px 0px;"></iframe><cite class="hatena-citation"><a href="http://togetter.com/li/283057">togetter.com</a></cite></p><p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Wiki">Wiki</a>や<a class="keyword" href="http://d.hatena.ne.jp/keyword/Twitter">Twitter</a>で要望を言うと、内容によってはすぐに反映させてくれるのが<a class="keyword" href="http://d.hatena.ne.jp/keyword/Gauche">Gauche</a>のいいところかもしれません。<br />
+<br />
+<br />
+</p>
+
+</div>
+<div class="section">
+    <h3><a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%BD%A1%BC%A5%B9%A5%B3%A1%BC%A5%C9">ソースコード</a>からの<a class="keyword" href="http://d.hatena.ne.jp/keyword/%C1%EA%C2%D0%A5%D1%A5%B9">相対パス</a>にあるファイルを開く</h3>
+    <p>これは少し難しい問題となり、いくつかのパターンがあります。</p><p><a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%BD%A1%BC%A5%B9%A5%B3%A1%BC%A5%C9">ソースコード</a>がmain関数のある場所である場合、(car args)が<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%BD%A1%BC%A5%B9%A5%B3%A1%BC%A5%C9">ソースコード</a>自体のパスとなるため、それを使用することができます。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span>use file.util<span class="synSpecial">)</span>
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>main args<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span><span class="synStatement">define</span> resource-path <span class="synSpecial">(</span>build-path <span class="synSpecial">(</span>sys-dirname <span class="synSpecial">(</span><span class="synIdentifier">car</span> args<span class="synSpecial">))</span>
+                                    <span class="synConstant">&quot;relative/resource.dat&quot;</span><span class="synSpecial">))</span>
+  <span class="synSpecial">(</span><span class="synIdentifier">call-with-input-file</span> resource-path
+    <span class="synSpecial">(</span>^<span class="synSpecial">(</span>resource<span class="synSpecial">)</span>
+      ...<span class="synSpecial">)))</span>
+</pre><p>しかし、このパターンが使えない場面もあります。main関数のあるファイルがPATHの通されている場所であり、コマンド名で呼ばれている場合や、main関数のあるファイルではないモジュールから<a class="keyword" href="http://d.hatena.ne.jp/keyword/%C1%EA%C2%D0%A5%D1%A5%B9">相対パス</a>でファイルを開く場合です。</p><p>このような場合には(current-load-path)が使えます。この関数は、ファイルのload中である場合、そのファイルのある<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%C7%A5%A3%A5%EC%A5%AF%A5%C8">ディレクト</a>リを返す関数です。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synComment">;; path.scm</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define</span> src-path
+  <span class="synSpecial">(</span>current-load-path<span class="synSpecial">))</span>
+
+<span class="synSpecial">(</span>print src-path<span class="synSpecial">)</span>
+</pre><p>これをgoshで読み込むと、以下のようになります。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink>gosh&gt; <span class="synSpecial">(</span><span class="synIdentifier">load</span> <span class="synConstant">&quot;./path.scm&quot;</span><span class="synSpecial">)</span>
+<span class="synError">./path.scm</span>
+<span class="synConstant">#t</span>
+</pre><p>しかし、(current-load-path)はload中に評価された場合のみ効果を持つため、以下のような場合にはうまく動きません。以下のように書き換えてみましょう。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synComment">;; path.scm</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>get-src-path<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span>current-load-path<span class="synSpecial">))</span>
+
+<span class="synSpecial">(</span>print src-path<span class="synSpecial">)</span>
+</pre><p>これをloadしてみると、以下のように表示されます。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink>gosh&gt; <span class="synSpecial">(</span><span class="synIdentifier">load</span> <span class="synConstant">&quot;./path.scm&quot;</span><span class="synSpecial">)</span>
+<span class="synError">./path.scm</span>
+<span class="synConstant">#t</span>
+</pre><p>先ほどと同じ結果が得られたかのように見えますが、実はこれはうまくいっていません。<br />
+(get-src-path)をもう一度実行してみましょう。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink>gosh&gt; <span class="synSpecial">(</span>get-src-path<span class="synSpecial">)</span>
+<span class="synConstant">#f</span>
+</pre><p>今度は#fが返ってきました。なぜなら現在はpath.scmのload中ではないからです。<br />
+(current-load-path)を使う場合は、確実にload中に評価されるように注意しなければなりません。</p>
+
+</div>
+<div class="section">
+    <h3>まとめ</h3>
+    
+<ol>
+<li><a class="keyword" href="http://d.hatena.ne.jp/keyword/%C1%EA%C2%D0%A5%D1%A5%B9">相対パス</a>でプログラムをloadしたい場合は(add-load-path "." :relative)</li>
+<li>main関数の中なら(car args)が実行ファイルのパスになる</li>
+<li>(current-load-path)はファイルのある位置を返すが、必ずload中に評価されなければならない</li>
+</ol>
+</div>
+
+{% endraw %}

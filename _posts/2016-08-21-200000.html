@@ -1,0 +1,62 @@
+---
+layout: post
+title: multi-termで快適なキー操作
+tags:
+- Emacs
+
+---
+{% raw %}
+<p>multi-termで作業してると、「単にシェルとして扱いたい場合」と「シェルの出力を編集したい場合」とでほしい<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AD%A1%BC%A5%D0%A5%A4%A5%F3%A5%C9">キーバインド</a>が異なる場合があります。</p><p>例えば、C-aにterm-send-rawを割り当てているとして、普通にコマンドを打っているとき</p>
+<pre class="code lang-sh" data-lang="sh" data-unlink>$ sl ./hoge/fuga/fo# ここでコマンド名間違えてることに気づく
+</pre><p>ここでC-aを押した時、期待しているカーソルの戻り位置は</p>
+<pre class="code lang-sh" data-lang="sh" data-unlink>$ sl ./hoge/fuga/fo
+  ↑ここ
+</pre><p>ここになります。<br />
+しかし、ここでコマンドを実行してlsの結果をコピペしたいとして、</p>
+<pre class="code lang-sh" data-lang="sh" data-unlink>$ <span class="synStatement">ls</span> ./hoge/fuga/foo
+hoge fuga piyo rofi<span class="synPreProc">(</span><span class="synSpecial">←ここにキーがある</span><span class="synPreProc">)</span>
+foo bar baz quux
+$ 
+</pre><p>ここでうっかりC-aを押してしまうと、戻ってくる位置は</p>
+<pre class="code lang-sh" data-lang="sh" data-unlink>$ <span class="synStatement">ls</span> ./hoge/fuga/foo
+<span class="synPreProc">(</span><span class="synSpecial">↓ここではなく</span><span class="synPreProc">)</span>
+hoge fuga piyo rofi
+foo bar baz quux
+$ <span class="synPreProc">(</span><span class="synSpecial">ここ</span><span class="synPreProc">)</span>
+</pre><p>このようになってしまいます。<br />
+これをいい感じに解決するために、toggle-term-keyというコマンドを作りました。</p>
+<pre class="code lang-lisp" data-lang="lisp" data-unlink><span class="synComment">;; termの編集モードを切り替える</span>
+<span class="synSpecial">(</span><span class="synStatement">defun</span> toggle-term-key <span class="synSpecial">()</span>
+  <span class="synSpecial">(</span>interactive<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span><span class="synStatement">if</span> <span class="synSpecial">(</span><span class="synStatement">eq</span> major-mode <span class="synSpecial">'</span><span class="synIdentifier">term-mode</span><span class="synSpecial">)</span>
+      <span class="synSpecial">(</span><span class="synStatement">progn</span>
+        <span class="synSpecial">(</span><span class="synStatement">loop</span> for <span class="synSpecial">(</span>key term-bind edit-bind<span class="synSpecial">)</span> in multi-term-toggle-key-list <span class="synStatement">do</span>
+              <span class="synSpecial">(</span><span class="synStatement">if</span> <span class="synSpecial">(</span><span class="synStatement">eq</span> multi-term-current-key <span class="synSpecial">'</span><span class="synIdentifier">term</span><span class="synSpecial">)</span>
+                  <span class="synSpecial">(</span>define-key term-raw-map key edit-bind<span class="synSpecial">)</span>
+                <span class="synSpecial">(</span>define-key term-raw-map key term-bind<span class="synSpecial">)))</span>
+        <span class="synSpecial">(</span><span class="synStatement">if</span> <span class="synSpecial">(</span><span class="synStatement">eq</span> multi-term-current-key <span class="synSpecial">'</span><span class="synIdentifier">term</span><span class="synSpecial">)</span>
+            <span class="synSpecial">(</span><span class="synStatement">progn</span>
+              <span class="synSpecial">(</span><span class="synStatement">setq</span> multi-term-current-key <span class="synSpecial">'</span><span class="synIdentifier">edit</span><span class="synSpecial">)</span>
+              <span class="synSpecial">(</span>message <span class="synConstant">&quot;switched to edit mode&quot;</span><span class="synSpecial">))</span>
+          <span class="synSpecial">(</span><span class="synStatement">progn</span>
+            <span class="synSpecial">(</span><span class="synStatement">setq</span> multi-term-current-key <span class="synSpecial">'</span><span class="synIdentifier">term</span><span class="synSpecial">)</span>
+            <span class="synSpecial">(</span>message <span class="synConstant">&quot;switched to term mode&quot;</span><span class="synSpecial">))))))</span>
+
+ <span class="synSpecial">(</span><span class="synStatement">setq</span> multi-term-toggle-key-list
+      <span class="synPreProc">`(</span><span class="synSpecial">(</span><span class="synConstant">&quot;\C-e&quot;</span> term-send-raw seq-end<span class="synSpecial">)</span>
+        <span class="synSpecial">(</span><span class="synConstant">&quot;\C-a&quot;</span> term-send-raw seq-home<span class="synSpecial">)</span><span class="synPreProc">)</span><span class="synSpecial">)</span>
+
+<span class="synComment">;; multi-term-current-keyにセットされた値に対応するキーバインドになる。</span>
+<span class="synComment">;; 'term =&gt; シェルのキーバインドに近いやつ</span>
+<span class="synComment">;; 'edit =&gt; 出力を編集しやすいキーバインド</span>
+<span class="synSpecial">(</span><span class="synStatement">setq</span> multi-term-current-key <span class="synSpecial">'</span><span class="synIdentifier">term</span><span class="synSpecial">)</span>
+
+<span class="synSpecial">(</span>add-hook <span class="synSpecial">'</span><span class="synIdentifier">term-mode-hook</span>
+          <span class="synSpecial">(</span><span class="synStatement">lambda</span> <span class="synSpecial">()</span>
+            <span class="synSpecial">(</span>define-key term-raw-map <span class="synConstant">&quot;\C-c\C-t&quot;</span> <span class="synSpecial">'</span><span class="synIdentifier">toggle-term-key</span><span class="synSpecial">)))</span>
+</pre><p>これでC-cC-tを押すたびに、C-e, C-aの<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AD%A1%BC%A5%D0%A5%A4%A5%F3%A5%C9">キーバインド</a>がseq-{home, end}とterm-send-rawを入れ替わるようになります。<br />
+あとはC-p, C-nあたりも設定しておくと幸せになれます。</p><p>こういった<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AD%A1%BC%A5%D0%A5%A4%A5%F3%A5%C9">キーバインド</a>の切り替えはmulti-term以外にもrun-<a class="keyword" href="http://d.hatena.ne.jp/keyword/scheme">scheme</a>やrun-<a class="keyword" href="http://d.hatena.ne.jp/keyword/haskell">haskell</a>等でも欲しくなってくるので、<br />
+いい感じにモジュール化できたらパッケージとして公開しようかな……。</p>
+
+
+{% endraw %}

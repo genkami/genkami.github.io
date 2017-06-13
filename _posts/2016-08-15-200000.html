@@ -1,0 +1,32 @@
+---
+layout: post
+title: Gaucheでリスト内包表記
+tags:
+- Gauche
+
+---
+{% raw %}
+<p><a class="keyword" href="http://d.hatena.ne.jp/keyword/srfi">srfi</a>-42には、リスト内包表記に関するマクロが定義されています。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span>use srfi-42<span class="synSpecial">)</span>
+
+<span class="synComment">;; Haskellでいう</span>
+<span class="synComment">;; [i * 2 | i &lt;- [0, 1, 2, 3, 4]]</span>
+<span class="synSpecial">(</span>list-ec <span class="synSpecial">(</span>: i <span class="synSpecial">'(</span><span class="synConstant">0</span> <span class="synConstant">1</span> <span class="synConstant">2</span> <span class="synConstant">3</span> <span class="synConstant">4</span><span class="synSpecial">))</span> <span class="synSpecial">(</span><span class="synIdentifier">*</span> i <span class="synConstant">2</span><span class="synSpecial">))</span> <span class="synComment">; =&gt; (0 2 4 6 8)</span>
+
+<span class="synComment">;; iの値の範囲の指定もできる</span>
+<span class="synSpecial">(</span>list-ec <span class="synSpecial">(</span>: i <span class="synConstant">0</span> <span class="synConstant">5</span><span class="synSpecial">)</span> <span class="synSpecial">(</span><span class="synIdentifier">*</span> i <span class="synConstant">2</span><span class="synSpecial">))</span> <span class="synComment">; =&gt; (0 2 4 6 8)</span>
+</pre><p>また、複数のリストを指定することもできます。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span>list-ec <span class="synSpecial">(</span>: i <span class="synConstant">0</span> <span class="synConstant">5</span><span class="synSpecial">)</span> <span class="synSpecial">(</span>: j <span class="synConstant">0</span> <span class="synConstant">3</span><span class="synSpecial">)</span> <span class="synSpecial">`(,</span>i <span class="synSpecial">.</span> <span class="synSpecial">,</span>j<span class="synSpecial">))</span>
+<span class="synComment">;; =&gt; ((0 . 0) (0 . 1) (0 . 2) (1 . 0) (1 . 1)</span>
+<span class="synComment">;;     (1 . 2) (2 . 0) (2 . 1) (2 . 2) (3 . 0)</span>
+<span class="synComment">;;     (3 . 1) (3 . 2) (4 . 0) (4 . 1) (4 . 2))</span>
+</pre><p>フィルタリングは、(if pred)もしくは(not pred)で行うことができます。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span>list-ec <span class="synSpecial">(</span>: i <span class="synConstant">10</span><span class="synSpecial">)</span> <span class="synSpecial">(</span><span class="synStatement">if</span> <span class="synSpecial">(</span><span class="synIdentifier">odd?</span> i<span class="synSpecial">))</span> i<span class="synSpecial">)</span>  <span class="synComment">; =&gt; (1 3 5 7 9)</span>
+<span class="synSpecial">(</span>list-ec <span class="synSpecial">(</span>: i <span class="synConstant">10</span><span class="synSpecial">)</span> <span class="synSpecial">(</span><span class="synIdentifier">not</span> <span class="synSpecial">(</span><span class="synIdentifier">odd?</span> i<span class="synSpecial">))</span> i<span class="synSpecial">)</span> <span class="synComment">; =&gt; (0 2 4 6 8)</span>
+</pre><p>また、複数のリストをzipしたい場合は、:parallelを使用します。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span>list-ec <span class="synSpecial">(</span>:parallel <span class="synSpecial">(</span>: i <span class="synConstant">1</span> <span class="synConstant">5</span><span class="synSpecial">)</span> <span class="synSpecial">(</span>: j <span class="synConstant">11</span> <span class="synConstant">15</span><span class="synSpecial">))</span> <span class="synSpecial">(</span><span class="synIdentifier">+</span> i j<span class="synSpecial">))</span>
+<span class="synComment">;; =&gt; (12 14 16 18)</span>
+</pre><p>その他にも、<a class="keyword" href="http://d.hatena.ne.jp/keyword/vector">vector</a>内包表記である<a class="keyword" href="http://d.hatena.ne.jp/keyword/vector">vector</a>-ecや、文字列内包表記であるstring-ecなども定義されています。</p><p>(余談ですが、この<a class="keyword" href="http://d.hatena.ne.jp/keyword/srfi">srfi</a>-**とかいうモジュール名、覚えにくすぎませんか……？なんとかならないもんですかね……。)</p>
+
+
+{% endraw %}

@@ -1,0 +1,44 @@
+---
+layout: post
+title: Gaucheでデータ型の簡単な表現を定義する
+tags:
+- Gauche
+
+---
+{% raw %}
+<p>例として、以下のようなクラスを用意します。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span>define-class <span class="synConstant">&lt;person&gt;</span> <span class="synSpecial">()</span>
+  <span class="synSpecial">((</span>name :init-keyword :name<span class="synSpecial">)</span>
+   <span class="synSpecial">(</span>age :init-keyword :age<span class="synSpecial">)</span>
+   <span class="synSpecial">(</span>pref :init-keyword :pref<span class="synSpecial">)))</span>
+</pre><p>このようなクラスの<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%B9%A5%BF%A5%F3%A5%B9">インスタンス</a>を作成してみます。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synStatement">define</span> taro <span class="synSpecial">(</span>make <span class="synConstant">&lt;person&gt;</span> :name <span class="synConstant">&quot;Taro&quot;</span> :age <span class="synConstant">20</span> :pref <span class="synConstant">&quot;Hokkaido&quot;</span><span class="synSpecial">))</span>
+</pre><p>少し面倒ですね。<br />
+しかし、これをもう少しだけ簡単に書く方法が存在します。</p><p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Gauche">Gauche</a>には読み込み時コンストラクタというものがあり、以下のような形をしています。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synError">#,</span><span class="synSpecial">(</span>ctor-name ...<span class="synSpecial">)</span>
+</pre><p>処理系はこのような構文が現れた場合、それを読み込み時コンストラクタであるとみなして、対応する式に置き換えます。</p><p>読み込み時コンストラクタは以下のように定義します。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span>define-reader-ctor <span class="synSpecial">'</span><span class="synConstant">&lt;person&gt;</span>
+  <span class="synSpecial">(</span>^<span class="synSpecial">(</span>name age pref<span class="synSpecial">)</span>
+    <span class="synSpecial">(</span>make <span class="synConstant">&lt;person&gt;</span> :name name :age age :pref pref<span class="synSpecial">)))</span>
+
+<span class="synError">#,</span><span class="synSpecial">(</span><span class="synConstant">&lt;person&gt;</span> <span class="synConstant">&quot;Taro&quot;</span> <span class="synConstant">20</span> <span class="synConstant">&quot;Hokkaido&quot;</span><span class="synSpecial">)</span> <span class="synComment">; =&gt; 先ほどのtaroと等しい値になる</span>
+</pre><p>また、write-objectに同様の書式で出力するように指定することによって、<a class="keyword" href="http://d.hatena.ne.jp/keyword/Haskell">Haskell</a>でいうShowとReadのように、データ型と文字列の相互変換を簡単に行うことができるようになります。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span>define-method write-object <span class="synSpecial">((</span>person <span class="synConstant">&lt;person&gt;</span><span class="synSpecial">)</span> out<span class="synSpecial">)</span>
+  <span class="synSpecial">(</span><span class="synStatement">let</span> <span class="synSpecial">((</span>name <span class="synSpecial">(</span>slot-ref person <span class="synSpecial">'</span>name<span class="synSpecial">))</span>
+        <span class="synSpecial">(</span>age <span class="synSpecial">(</span>slot-ref person <span class="synSpecial">'</span>age<span class="synSpecial">))</span>
+        <span class="synSpecial">(</span>pref <span class="synSpecial">(</span>slot-ref person <span class="synSpecial">'</span>pref<span class="synSpecial">)))</span>
+    <span class="synSpecial">(</span>format out <span class="synConstant">&quot;#,(&lt;person&gt; ~s ~s ~s)&quot;</span> name age pref<span class="synSpecial">)))</span>
+</pre><pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synStatement">define</span> jiro <span class="synError">#,</span><span class="synSpecial">(</span><span class="synConstant">&lt;person&gt;</span> <span class="synConstant">&quot;Jiro&quot;</span> <span class="synConstant">15</span> <span class="synConstant">&quot;Tokyo&quot;</span><span class="synSpecial">))</span>
+jiro <span class="synComment">; =&gt; #,(&lt;person&gt; &quot;Jiro&quot; 15 &quot;Tokyo&quot;)</span>
+</pre><p>また、読み込み時コンストラクタはクラスだけではなく、任意の値に対して定義することができます。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span>define-reader-ctor <span class="synSpecial">'</span>e
+  <span class="synSpecial">(</span>^<span class="synSpecial">()</span> <span class="synConstant">2.718281828</span><span class="synSpecial">))</span>
+
+<span class="synSpecial">(</span>define-reader-ctor <span class="synSpecial">'</span>pi
+  <span class="synSpecial">(</span>^<span class="synSpecial">()</span> <span class="synConstant">3.141592653</span><span class="synSpecial">))</span>
+
+<span class="synError">#,</span><span class="synSpecial">(</span>e<span class="synSpecial">)</span>  <span class="synComment">; =&gt; 2.718281828</span>
+<span class="synError">#,</span><span class="synSpecial">(</span>pi<span class="synSpecial">)</span> <span class="synComment">; =&gt; 3.141592653</span>
+</pre>
+
+{% endraw %}

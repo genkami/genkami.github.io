@@ -1,0 +1,122 @@
+---
+layout: post
+title: Coqで型クラスで群論
+tags:
+- Coq
+
+---
+{% raw %}
+<p><a class="keyword" href="http://d.hatena.ne.jp/keyword/%B7%B2%CF%C0">群論</a>に関する定義をするのであれば、型クラスを使うのが一番うまくいくと思います。</p>
+<pre class="code" data-lang="" data-unlink>Class Group G :=
+  {
+    gunit : G;
+    gadd : G -&gt; G -&gt; G;
+    ginv : G -&gt; G;
+    gadd_unit_l : forall g : G, gadd gunit g = g;
+    gadd_unit_r : forall g : G, gadd g gunit = g;
+    gadd_assoc : forall a b c : G, gadd (gadd a b) c = gadd a (gadd b c);
+    gadd_inv : forall g : G, gadd g (ginv g) = gunit /\ gadd (ginv g) g = gunit
+  }.
+
+Infix &#34;&lt;+&gt;&#34; := gadd (at level 40, left associativity).</pre><p>何より、このgaddを<a class="keyword" href="http://d.hatena.ne.jp/keyword/%B1%E9%BB%BB%BB%D2">演算子</a>にできるのが便利です。他の方法で、例えば</p>
+<pre class="code" data-lang="" data-unlink>Definition is_group (G : Type) (gadd : G -&gt; G -&gt; G) (gunit : G) ...</pre><p>としても、gaddは単なる束縛変数なので、別な名前を付けることはできません。</p><p>群の定義だけして終わるのもつまらないので、簡単な定理を証明してみましょう。</p><p><a class="keyword" href="http://d.hatena.ne.jp/keyword/%C3%B1%B0%CC%B8%B5">単位元</a>の一意性。</p>
+<pre class="code" data-lang="" data-unlink>Theorem group_unit_unique:
+  forall (G : Type) (Grp : Group G),
+  forall u : G,
+    (forall g : G, g &lt;+&gt; u = g /\ u &lt;+&gt; g = g)
+    -&gt; u = gunit.
+Proof.
+  intros G Grp u H.
+  specialize (H gunit).
+  destruct H.
+  rewrite -&gt; gadd_unit_l in H.
+  assumption.
+Qed.</pre><p>逆元の一意性。</p>
+<pre class="code" data-lang="" data-unlink>Theorem ginv_unique:
+  forall (G : Type) (Grp : Group G) (g h : G),
+    g &lt;+&gt; h = gunit /\ h &lt;+&gt; g = gunit
+    -&gt; h = ginv g.
+Proof.
+  intros G Grp g h H.
+  destruct H.
+  assert (Hinv := gadd_inv).
+  specialize (Hinv g).
+  destruct Hinv.
+  rewrite &lt;- H1 in H.
+  assert (H3: ginv g &lt;+&gt; (g &lt;+&gt; h) = ginv g &lt;+&gt; (g &lt;+&gt; ginv g)).
+  {
+    rewrite -&gt; H. reflexivity.
+  }
+  rewrite &lt;- gadd_assoc in H3.
+  rewrite -&gt; H2 in H3.
+  rewrite &lt;- gadd_assoc in H3.
+  rewrite -&gt; H2 in H3.
+  rewrite -&gt; gadd_unit_l in H3.
+  rewrite -&gt; gadd_unit_l in H3.
+  assumption.
+Qed.</pre><p>自明な群は任意の群の部分集合</p>
+<pre class="code" data-lang="" data-unlink>Definition hom {G H : Type} {Grp : Group G} {Hrp : Group H} (f : G -&gt; H) :=
+  forall a b : G, f (a &lt;+&gt; b) = f a &lt;+&gt; f b.
+
+Definition mono {A B : Type} (f : A -&gt; B) :=
+  forall a b : A, f a = f b -&gt; a = b.
+
+Definition subgroup (H G : Type) {Grp : Group G} {Hrp : Group H} (f : H -&gt; G) :=
+  mono f /\ hom f.
+
+Inductive trivial : Type := T.
+
+Instance trivial_group : Group trivial :=
+  {
+    gunit := T;
+    gadd := fun _ _ =&gt; T;
+    ginv := fun _ =&gt; T
+  }.
+Proof.
+  (* gadd_unit_l *)
+  intros g.
+  destruct g.
+  reflexivity.
+  (* gadd_unit_r *)
+  intros g.
+  destruct g.
+  reflexivity.
+  (* gadd_assoc *)
+  intros.
+  reflexivity.
+  (* gadd_inv *)
+  intros.
+  split.
+  reflexivity.
+  reflexivity.
+Qed.
+
+Definition trivial_to_grp {G : Type} {Grp : Group G} (z : trivial) : G := gunit.
+
+Theorem trivial_subgroup:
+  forall (G : Type) (Grp : Group G),
+  exists f : trivial -&gt; G,
+    subgroup trivial G f.
+Proof.
+  intros G Grp.
+  exists trivial_to_grp.
+  unfold subgroup.
+  split.
+  - (* mono f *)
+    unfold mono.
+    intros a b H.
+    destruct a.
+    destruct b.
+    reflexivity.
+  - (* hom f *)
+    unfold hom.
+    intros a b.
+    destruct a.
+    destruct b.
+    unfold trivial_to_grp.
+    rewrite -&gt; gadd_unit_l.
+    reflexivity.
+Qed.</pre><p>Coqだと「部分群」などの概念をうまく記述できないので、より<a class="keyword" href="http://d.hatena.ne.jp/keyword/%B7%F7%CF%C0">圏論</a>的な同等の定義(monoな射の存在とか)で代替したほうがうまく書けるものが多い気がします。</p>
+
+
+{% endraw %}

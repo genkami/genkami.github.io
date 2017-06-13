@@ -1,0 +1,116 @@
+---
+layout: post
+title: Smith-Waterman法で配列の局所アラインメントを求める
+tags:
+- OCaml
+- Algorithm
+
+---
+{% raw %}
+<p>今度は局所アラインメントを求めます。<br />
+前回の大域アラインメントと違って、今度は最も一致度の高い部分文字列を求める<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A2%A5%EB%A5%B4%A5%EA%A5%BA%A5%E0">アルゴリズム</a>になります。</p>
+<pre class="code lang-ocaml" data-lang="ocaml" data-unlink><span class="synStatement">type</span> alignment <span class="synStatement">=</span> <span class="synType">char</span> <span class="synType">option</span> <span class="synType">list</span>
+
+<span class="synStatement">let</span> maximums_by <span class="synStatement">(</span>key : 'a <span class="synStatement">-&gt;</span> 'b<span class="synStatement">)</span> <span class="synStatement">(</span>lst : 'a <span class="synType">list</span><span class="synStatement">)</span> : 'a <span class="synType">list</span> <span class="synStatement">=</span>
+  <span class="synStatement">let</span> <span class="synStatement">rec</span> loop max_val maxs xs <span class="synStatement">=</span>
+    <span class="synStatement">match</span> xs <span class="synStatement">with</span>
+    <span class="synStatement">|</span> <span class="synConstant">[]</span> <span class="synStatement">-&gt;</span> maxs
+    <span class="synStatement">|</span> x <span class="synStatement">::</span> xs' <span class="synStatement">-&gt;</span>
+       <span class="synStatement">let</span> x_val <span class="synStatement">=</span> key x
+       <span class="synStatement">in</span> <span class="synStatement">if</span> max_val <span class="synStatement">&lt;</span> x_val <span class="synStatement">then</span> loop x_val <span class="synStatement">[</span>x<span class="synStatement">]</span> xs'
+          <span class="synStatement">else</span> <span class="synStatement">if</span> max_val <span class="synStatement">=</span> x_val <span class="synStatement">then</span> loop max_val <span class="synStatement">(</span>x <span class="synStatement">::</span> maxs<span class="synStatement">)</span> xs'
+          <span class="synStatement">else</span> loop max_val maxs xs'
+  <span class="synStatement">in</span> <span class="synStatement">match</span> lst <span class="synStatement">with</span>
+     <span class="synStatement">|</span> <span class="synConstant">[]</span> <span class="synStatement">-&gt;</span> <span class="synStatement">raise</span> <span class="synStatement">(</span><span class="synConstant">Failure</span> <span class="synConstant">&quot;maximums_by: empty list&quot;</span><span class="synStatement">)</span>
+     <span class="synStatement">|</span> max <span class="synStatement">::</span> xs <span class="synStatement">-&gt;</span> loop <span class="synStatement">(</span>key max<span class="synStatement">)</span> <span class="synStatement">[</span>max<span class="synStatement">]</span> xs
+
+<span class="synStatement">let</span> maximum <span class="synStatement">(</span>lst : 'a <span class="synType">list</span><span class="synStatement">)</span> : 'a <span class="synStatement">=</span>
+  <span class="synPreProc">List</span>.hd <span class="synStatement">(</span>maximums_by <span class="synStatement">(fun</span> x <span class="synStatement">-&gt;</span> x<span class="synStatement">)</span> lst<span class="synStatement">)</span>
+
+<span class="synStatement">let</span> fromto <span class="synStatement">(</span>from : <span class="synType">int</span><span class="synStatement">)</span> <span class="synStatement">(</span>to_ : <span class="synType">int</span><span class="synStatement">)</span> : <span class="synType">int</span> <span class="synType">list</span> <span class="synStatement">=</span>
+  <span class="synStatement">let</span> <span class="synStatement">rec</span> loop i acc <span class="synStatement">=</span>
+    <span class="synStatement">if</span> i <span class="synStatement">&lt;</span> from <span class="synStatement">then</span> acc
+    <span class="synStatement">else</span> loop <span class="synStatement">(</span>i - <span class="synConstant">1</span><span class="synStatement">)</span> <span class="synStatement">(</span>i <span class="synStatement">::</span> acc<span class="synStatement">)</span>
+  <span class="synStatement">in</span> loop to_ <span class="synConstant">[]</span>
+
+<span class="synStatement">let</span> prod <span class="synStatement">(</span>xs : 'a <span class="synType">list</span><span class="synStatement">)</span> <span class="synStatement">(</span>ys : 'b <span class="synType">list</span><span class="synStatement">)</span> : <span class="synStatement">(</span>'a <span class="synStatement">*</span> 'b<span class="synStatement">)</span> <span class="synType">list</span> <span class="synStatement">=</span>
+  <span class="synPreProc">List</span>.flatten <span class="synStatement">(</span><span class="synPreProc">List</span>.map <span class="synStatement">(fun</span> x <span class="synStatement">-&gt;</span> <span class="synPreProc">List</span>.map <span class="synStatement">(fun</span> y <span class="synStatement">-&gt;</span> <span class="synStatement">(</span>x, y<span class="synStatement">))</span> ys<span class="synStatement">)</span> xs<span class="synStatement">)</span>
+
+<span class="synStatement">module type </span><span class="synPreProc">ALIGNMENT</span> <span class="synStatement">=</span>
+  <span class="synPreProc">sig</span>
+    <span class="synStatement">val</span> align : <span class="synType">string</span> <span class="synStatement">-&gt;</span> <span class="synType">string</span> <span class="synStatement">-&gt;</span> <span class="synStatement">(</span>alignment <span class="synStatement">*</span> alignment<span class="synStatement">)</span> <span class="synType">list</span>
+  <span class="synPreProc">end</span>
+
+<span class="synStatement">module type </span><span class="synPreProc">WEIGHT</span> <span class="synStatement">=</span>
+  <span class="synPreProc">sig</span>
+    <span class="synStatement">val</span> weight : <span class="synType">char</span> <span class="synStatement">-&gt;</span> <span class="synType">char</span> <span class="synStatement">-&gt;</span> <span class="synType">int</span>
+    <span class="synStatement">val</span> gap_penalty : <span class="synType">int</span>
+  <span class="synPreProc">end</span>
+
+<span class="synStatement">module</span><span class="synPreProc"> Alignment</span> (<span class="synPreProc">W</span> : <span class="synPreProc">WEIGHT</span>) : <span class="synPreProc">ALIGNMENT</span> <span class="synStatement">=</span>
+  <span class="synPreProc">struct</span>
+    <span class="synStatement">let</span> path s t m n calc : alignment <span class="synStatement">*</span> alignment <span class="synStatement">=</span>
+      <span class="synStatement">let</span> <span class="synStatement">rec</span> loop i j acc <span class="synStatement">=</span>
+        <span class="synStatement">match</span> i, j <span class="synStatement">with</span>
+        <span class="synStatement">|</span> <span class="synConstant">0</span>, <span class="synConstant">0</span> <span class="synStatement">-&gt;</span> <span class="synPreProc">List</span>.split acc
+        <span class="synStatement">|</span> <span class="synStatement">_</span>, <span class="synStatement">_</span> <span class="synStatement">-&gt;</span>
+           <span class="synStatement">let</span> dp_val <span class="synStatement">=</span> calc i j
+           <span class="synStatement">in</span> <span class="synStatement">if</span> dp_val <span class="synStatement">=</span> <span class="synConstant">0</span> <span class="synStatement">then</span>
+                <span class="synPreProc">List</span>.split acc
+              <span class="synStatement">else</span> <span class="synStatement">if</span> dp_val <span class="synStatement">=</span> calc <span class="synStatement">(</span>i - <span class="synConstant">1</span><span class="synStatement">)</span> j - <span class="synPreProc">W</span>.gap_penalty <span class="synStatement">then</span>
+                loop <span class="synStatement">(</span>i - <span class="synConstant">1</span><span class="synStatement">)</span> j <span class="synStatement">((</span><span class="synConstant">Some</span> s.<span class="synStatement">[</span>i - <span class="synConstant">1</span><span class="synStatement">]</span>, <span class="synConstant">None</span><span class="synStatement">)</span> <span class="synStatement">::</span> acc<span class="synStatement">)</span>
+              <span class="synStatement">else</span> <span class="synStatement">if</span> dp_val <span class="synStatement">=</span> calc i <span class="synStatement">(</span>j - <span class="synConstant">1</span><span class="synStatement">)</span> - <span class="synPreProc">W</span>.gap_penalty <span class="synStatement">then</span>
+                loop i <span class="synStatement">(</span>j - <span class="synConstant">1</span><span class="synStatement">)</span> <span class="synStatement">((</span><span class="synConstant">None</span>, <span class="synConstant">Some</span> t.<span class="synStatement">[</span>j - <span class="synConstant">1</span><span class="synStatement">])</span> <span class="synStatement">::</span> acc<span class="synStatement">)</span>
+              <span class="synStatement">else</span> loop <span class="synStatement">(</span>i - <span class="synConstant">1</span><span class="synStatement">)</span> <span class="synStatement">(</span>j - <span class="synConstant">1</span><span class="synStatement">)</span> <span class="synStatement">((</span><span class="synConstant">Some</span> s.<span class="synStatement">[</span>i - <span class="synConstant">1</span><span class="synStatement">]</span>, <span class="synConstant">Some</span> t.<span class="synStatement">[</span>j - <span class="synConstant">1</span><span class="synStatement">])</span> <span class="synStatement">::</span> acc<span class="synStatement">)</span>
+         <span class="synStatement">in</span> loop m n <span class="synConstant">[]</span>
+
+    <span class="synStatement">let</span> align s t <span class="synStatement">=</span>
+      <span class="synStatement">let</span> s_len <span class="synStatement">=</span> <span class="synPreProc">String</span>.length s <span class="synStatement">in</span>
+      <span class="synStatement">let</span> t_len <span class="synStatement">=</span> <span class="synPreProc">String</span>.length t <span class="synStatement">in</span>
+      <span class="synStatement">let</span> dp <span class="synStatement">=</span> <span class="synPreProc">Array</span>.make_matrix <span class="synStatement">(</span>s_len + <span class="synConstant">1</span><span class="synStatement">)</span> <span class="synStatement">(</span>t_len + <span class="synConstant">1</span><span class="synStatement">)</span> <span class="synConstant">None</span> <span class="synStatement">in</span>
+      <span class="synStatement">let</span> <span class="synStatement">rec</span> calc i j <span class="synStatement">=</span>
+        <span class="synStatement">let</span> value <span class="synStatement">=</span> dp.<span class="synStatement">(</span>i<span class="synStatement">)</span>.<span class="synStatement">(</span>j<span class="synStatement">)</span> <span class="synStatement">in</span>
+        <span class="synStatement">match</span> value <span class="synStatement">with</span>
+        <span class="synStatement">|</span> <span class="synConstant">Some</span> <span class="synStatement">(</span>v<span class="synStatement">)</span> <span class="synStatement">-&gt;</span> v
+        <span class="synStatement">|</span> <span class="synConstant">None</span> <span class="synStatement">-&gt;</span>
+           <span class="synStatement">let</span> new_value <span class="synStatement">=</span>
+             <span class="synStatement">match</span> i, j <span class="synStatement">with</span>
+             <span class="synStatement">|</span> <span class="synConstant">0</span>, <span class="synStatement">_</span> <span class="synStatement">-&gt;</span> i <span class="synStatement">*</span> -<span class="synPreProc">W</span>.gap_penalty
+             <span class="synStatement">|</span> <span class="synStatement">_</span>, <span class="synConstant">0</span> <span class="synStatement">-&gt;</span> j <span class="synStatement">*</span> -<span class="synPreProc">W</span>.gap_penalty
+             <span class="synStatement">|</span> <span class="synStatement">_</span>, <span class="synStatement">_</span> <span class="synStatement">-&gt;</span> maximum <span class="synStatement">[</span>
+                           <span class="synConstant">0</span>
+                         <span class="synStatement">;</span> calc <span class="synStatement">(</span>i - <span class="synConstant">1</span><span class="synStatement">)</span> j - <span class="synPreProc">W</span>.gap_penalty
+                         <span class="synStatement">;</span> calc i <span class="synStatement">(</span>j - <span class="synConstant">1</span><span class="synStatement">)</span> - <span class="synPreProc">W</span>.gap_penalty
+                         <span class="synStatement">;</span> calc <span class="synStatement">(</span>i - <span class="synConstant">1</span><span class="synStatement">)</span> <span class="synStatement">(</span>j - <span class="synConstant">1</span><span class="synStatement">)</span> + <span class="synPreProc">W</span>.weight s.<span class="synStatement">[</span>i - <span class="synConstant">1</span><span class="synStatement">]</span> t.<span class="synStatement">[</span>j - <span class="synConstant">1</span><span class="synStatement">]</span>
+                         <span class="synStatement">]</span>
+           <span class="synStatement">in</span> dp.<span class="synStatement">(</span>i<span class="synStatement">)</span>.<span class="synStatement">(</span>j<span class="synStatement">)</span> <span class="synStatement">&lt;-</span> <span class="synConstant">Some</span><span class="synStatement">(</span>new_value<span class="synStatement">);</span>
+              new_value <span class="synStatement">in</span>
+      <span class="synStatement">let</span> indices <span class="synStatement">=</span> maximums_by <span class="synStatement">(fun</span> <span class="synStatement">(</span>i, j<span class="synStatement">)</span> <span class="synStatement">-&gt;</span> calc i j<span class="synStatement">)</span>
+                                <span class="synStatement">(</span>prod <span class="synStatement">(</span>fromto <span class="synConstant">0</span> s_len<span class="synStatement">)</span> <span class="synStatement">(</span>fromto <span class="synConstant">0</span> t_len<span class="synStatement">))</span> <span class="synStatement">in</span>
+      <span class="synPreProc">List</span>.map <span class="synStatement">(fun</span> <span class="synStatement">(</span>m, n<span class="synStatement">)</span> <span class="synStatement">-&gt;</span> path s t m n calc<span class="synStatement">)</span> indices
+  <span class="synPreProc">end</span>
+
+<span class="synStatement">module</span><span class="synPreProc"> Default_weight</span> : <span class="synPreProc">WEIGHT</span> <span class="synStatement">=</span>
+  <span class="synPreProc">struct</span>
+    <span class="synStatement">let</span> weight c d <span class="synStatement">=</span> <span class="synStatement">if</span> c <span class="synStatement">=</span> d <span class="synStatement">then</span> <span class="synConstant">5</span> <span class="synStatement">else</span> -<span class="synConstant">3</span>
+    <span class="synStatement">let</span> gap_penalty <span class="synStatement">=</span> <span class="synConstant">4</span>
+  <span class="synPreProc">end</span>
+
+<span class="synStatement">module</span><span class="synPreProc"> Default_alignment</span> <span class="synStatement">=</span> <span class="synPreProc">Alignment</span>(<span class="synPreProc">Default_weight</span>)
+</pre><p>Default_weightのweightとgap_penaltyの値は、以下のサイトを参考にしました。<br />
+<iframe src="//hatenablog-parts.com/embed?url=http%3A%2F%2Fvlab.amrita.edu%2F%3Fsub%3D3%26brch%3D274%26sim%3D1433%26cnt%3D1" title="Smith-Waterman Algorithm - Local Alignment of Sequences (Theory) : Bioinformatics Virtual Lab II : Biotechnology and Biomedical Engineering : Amrita Vishwa Vidyapeetham Virtual Lab" class="embed-card embed-webcard" scrolling="no" frameborder="0" style="display: block; width: 100%; height: 155px; max-width: 500px; margin: 10px 0px;"></iframe><cite class="hatena-citation"><a href="http://vlab.amrita.edu/?sub=3&brch=274&sim=1433&cnt=1">vlab.amrita.edu</a></cite></p><br />
+<p>実行結果:</p>
+<pre class="code lang-ocaml" data-lang="ocaml" data-unlink><span class="synPreProc">#</span> <span class="synPreProc">Default_alignment</span>.align <span class="synConstant">&quot;GACTTAC&quot;</span> <span class="synConstant">&quot;CGTGAATTCAT&quot;</span><span class="synStatement">;;</span>
+- : <span class="synStatement">(</span>alignment <span class="synStatement">*</span> alignment<span class="synStatement">)</span> <span class="synType">list</span> <span class="synStatement">=</span>
+<span class="synStatement">[([</span><span class="synConstant">Some</span> <span class="synConstant">'G'</span><span class="synStatement">;</span> <span class="synConstant">Some</span> <span class="synConstant">'A'</span><span class="synStatement">;</span> <span class="synConstant">Some</span> <span class="synConstant">'C'</span><span class="synStatement">;</span> <span class="synConstant">Some</span> <span class="synConstant">'T'</span><span class="synStatement">;</span> <span class="synConstant">Some</span> <span class="synConstant">'T'</span><span class="synStatement">;</span> <span class="synConstant">Some</span> <span class="synConstant">'A'</span><span class="synStatement">;</span> <span class="synConstant">Some</span> <span class="synConstant">'C'</span><span class="synStatement">]</span>,
+  <span class="synStatement">[</span><span class="synConstant">Some</span> <span class="synConstant">'G'</span><span class="synStatement">;</span> <span class="synConstant">Some</span> <span class="synConstant">'A'</span><span class="synStatement">;</span> <span class="synConstant">Some</span> <span class="synConstant">'A'</span><span class="synStatement">;</span> <span class="synConstant">Some</span> <span class="synConstant">'T'</span><span class="synStatement">;</span> <span class="synConstant">Some</span> <span class="synConstant">'T'</span><span class="synStatement">;</span> <span class="synConstant">None</span><span class="synStatement">;</span> <span class="synConstant">Some</span> <span class="synConstant">'C'</span><span class="synStatement">]);</span>
+ <span class="synStatement">([</span><span class="synConstant">Some</span> <span class="synConstant">'G'</span><span class="synStatement">;</span> <span class="synConstant">Some</span> <span class="synConstant">'A'</span><span class="synStatement">;</span> <span class="synConstant">Some</span> <span class="synConstant">'C'</span><span class="synStatement">;</span> <span class="synConstant">Some</span> <span class="synConstant">'T'</span><span class="synStatement">;</span> <span class="synConstant">Some</span> <span class="synConstant">'T'</span><span class="synStatement">;</span> <span class="synConstant">None</span><span class="synStatement">;</span> <span class="synConstant">Some</span> <span class="synConstant">'A'</span><span class="synStatement">]</span>,
+  <span class="synStatement">[</span><span class="synConstant">Some</span> <span class="synConstant">'G'</span><span class="synStatement">;</span> <span class="synConstant">Some</span> <span class="synConstant">'A'</span><span class="synStatement">;</span> <span class="synConstant">Some</span> <span class="synConstant">'A'</span><span class="synStatement">;</span> <span class="synConstant">Some</span> <span class="synConstant">'T'</span><span class="synStatement">;</span> <span class="synConstant">Some</span> <span class="synConstant">'T'</span><span class="synStatement">;</span> <span class="synConstant">Some</span> <span class="synConstant">'C'</span><span class="synStatement">;</span> <span class="synConstant">Some</span> <span class="synConstant">'A'</span><span class="synStatement">])]</span>
+</pre><p>得られた局所アラインメントは、</p>
+<pre class="code" data-lang="" data-unlink>GACTTAC
+GAATT-C</pre><p>と</p>
+<pre class="code" data-lang="" data-unlink>GACTT-A
+GAATTCA</pre><p>の2つです。先ほどのサイトの結果と一致しているので、<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A2%A5%EB%A5%B4%A5%EA%A5%BA%A5%E0">アルゴリズム</a>は正しく動いているようです。</p><p>余談ですが、この<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A2%A5%EB%A5%B4%A5%EA%A5%BA%A5%E0">アルゴリズム</a>におけるweight, gap_penaltyのような、引数にするほどでもないけど自由に設定したい値を渡すのにFunctorを使うと便利です。他の<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A5%D6%A5%B8%A5%A7%A5%AF%A5%C8%BB%D8%B8%FE%B8%C0%B8%EC">オブジェクト指向言語</a>なら<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%B9%A5%BF%A5%F3%A5%B9">インスタンス</a>のメンバに割り当てたり、<a class="keyword" href="http://d.hatena.ne.jp/keyword/Scheme">Scheme</a>ならparameterを使ったりするのでしょうが、<a class="keyword" href="http://d.hatena.ne.jp/keyword/Haskell">Haskell</a>だとなかなかこういうことができなくて少し不便です。</p>
+
+
+{% endraw %}

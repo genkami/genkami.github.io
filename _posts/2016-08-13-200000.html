@@ -1,0 +1,52 @@
+---
+layout: post
+title: Gaucheで構造体を定義する
+tags:
+- Gauche
+
+---
+{% raw %}
+<p>クラスほど大したことをしなくても良い場合、define-record-typeというマクロを使うことでより簡単な構造体を定義することができます。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synStatement">define-record-type</span> point <span class="synConstant">#t</span> <span class="synConstant">#t</span> x y<span class="synSpecial">)</span>
+<span class="synSpecial">(</span><span class="synStatement">define</span> p <span class="synSpecial">(</span>make-point <span class="synConstant">3</span> <span class="synConstant">4</span><span class="synSpecial">))</span>
+<span class="synSpecial">(</span>point? p<span class="synSpecial">)</span>  <span class="synComment">; =&gt; #t</span>
+<span class="synSpecial">(</span>point-x p<span class="synSpecial">)</span> <span class="synComment">; =&gt; 3</span>
+<span class="synSpecial">(</span>point-y p<span class="synSpecial">)</span> <span class="synComment">; =&gt; 4</span>
+</pre><p>define-record-typeの実体はただのdefine-classで、いい感じのコンストラクタとアクセサを定義してくれる仕様になっています。</p><p>しかし、pの型をよく見てみると…</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink>gosh&gt; p
+<span class="synError">#&lt;point</span> <span class="synError">0x2915a20&gt;</span>
+</pre><p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Gauche">Gauche</a>では形名は&lt;&gt;で囲われるお約束になっているので、ちょっと微妙な感じです……</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synStatement">define-record-type</span> <span class="synConstant">&lt;point&gt;</span> <span class="synConstant">#t</span> <span class="synConstant">#t</span> x y<span class="synSpecial">)</span>
+</pre><p>これで&lt;point&gt;という名前の構造体を定義できますが……</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synStatement">define</span> q <span class="synSpecial">(</span>make-&lt;point&gt; <span class="synConstant">1</span> <span class="synConstant">5</span><span class="synSpecial">))</span>
+<span class="synSpecial">(</span>&lt;point&gt;? q<span class="synSpecial">)</span> <span class="synComment">;  =&gt; t</span>
+<span class="synSpecial">(</span>&lt;point&gt;-x q<span class="synSpecial">)</span> <span class="synComment">; =&gt; 1</span>
+</pre><p>今度は他の関数の名前が微妙な感じに……。</p><p>一応コンストラクタ等の名前を指定することもできます。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span><span class="synStatement">define-record-type</span> <span class="synConstant">&lt;point&gt;</span> make-point point? <span class="synSpecial">(</span>x point-x<span class="synSpecial">)</span> <span class="synSpecial">(</span>y point-y<span class="synSpecial">))</span>
+<span class="synSpecial">(</span><span class="synStatement">define</span> q <span class="synSpecial">(</span>make-point <span class="synConstant">1</span> <span class="synConstant">5</span><span class="synSpecial">))</span>
+<span class="synSpecial">(</span>point? q<span class="synSpecial">)</span>  <span class="synComment">;  =&gt; t</span>
+<span class="synSpecial">(</span>point-x q<span class="synSpecial">)</span> <span class="synComment">; =&gt; 1</span>
+</pre><p>これでとりあえずは動きますが、一々名前指定するのが面倒……。</p><p>こんな感じのマクロを書けばいい感じに解決できます。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synSpecial">(</span>define-macro <span class="synSpecial">(</span>define-struct name <span class="synSpecial">.</span> <span class="synStatement">fields</span><span class="synSpecial">)</span>
+  <span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>make-accessor prefix <span class="synSpecial">.</span> postfixes<span class="synSpecial">)</span>
+    <span class="synSpecial">(</span><span class="synIdentifier">string-&gt;symbol</span>
+     <span class="synSpecial">(</span><span class="synIdentifier">apply</span> <span class="synIdentifier">string-append</span> <span class="synSpecial">(</span><span class="synIdentifier">map</span> x-&gt;string <span class="synSpecial">`(,</span>prefix <span class="synSpecial">,</span>name <span class="synSpecial">,@</span>postfixes<span class="synSpecial">)))))</span>
+  <span class="synSpecial">(</span><span class="synStatement">define</span> class-name <span class="synSpecial">(</span>make-accessor <span class="synConstant">&quot;&lt;&quot;</span> <span class="synConstant">&quot;&gt;&quot;</span><span class="synSpecial">))</span>
+  <span class="synSpecial">`(</span>define-record-type class-name
+     <span class="synSpecial">,(</span>make-accessor <span class="synConstant">&quot;make-&quot;</span><span class="synSpecial">)</span>
+     <span class="synSpecial">,(</span>make-accessor <span class="synConstant">&quot;&quot;</span> <span class="synConstant">&quot;?&quot;</span><span class="synSpecial">)</span>
+     <span class="synSpecial">,@(</span><span class="synIdentifier">map</span> <span class="synSpecial">(</span><span class="synStatement">lambda</span> <span class="synSpecial">(</span>field-name<span class="synSpecial">)</span>
+             <span class="synSpecial">`(,</span>field-name <span class="synSpecial">,(</span>make-accessor <span class="synConstant">&quot;&quot;</span> <span class="synConstant">&quot;-&quot;</span> field-name<span class="synSpecial">)))</span> <span class="synStatement">fields</span><span class="synSpecial">)))</span>
+
+
+
+<span class="synSpecial">(</span>define-struct person name age pref<span class="synSpecial">)</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define</span> taro <span class="synSpecial">(</span>make-person <span class="synConstant">&quot;Taro&quot;</span> <span class="synConstant">20</span> <span class="synConstant">&quot;Hokkaido&quot;</span><span class="synSpecial">))</span>
+<span class="synSpecial">(</span>person? taro<span class="synSpecial">)</span>     <span class="synComment">; =&gt; #t</span>
+<span class="synSpecial">(</span>person-name taro<span class="synSpecial">)</span> <span class="synComment">; =&gt; &quot;Taro&quot;</span>
+</pre><p>こんな感じのやつ標準で用意してないんですかね…？<br />
+あとはwrite-objectとreader-ctorもいい感じにしてくれるやつがほしい……。metaclassとmacro使ったらいい感じにできそうだけど。</p>
+
+
+{% endraw %}

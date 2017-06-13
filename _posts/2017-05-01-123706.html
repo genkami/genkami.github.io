@@ -1,0 +1,45 @@
+---
+layout: post
+title: Leftist Heapの性質
+tags:
+- Algorithm
+- OCaml
+
+---
+{% raw %}
+<p>Leftist Heapは、純粋関数型的にヒープを操作するために用いられるデータ構造です。</p><p>Leftist Heapは要素が左に偏っている二分木として実装されます。<br />
+データ構造自体は以下のように単純に構成できます。</p>
+<pre class="code lang-ocaml" data-lang="ocaml" data-unlink><span class="synStatement">type</span> 'a heap <span class="synStatement">=</span>
+  <span class="synStatement">|</span> <span class="synConstant">E</span>
+  <span class="synStatement">|</span> <span class="synConstant">T</span> <span class="synStatement">of</span> 'a <span class="synStatement">*</span> 'a heap <span class="synStatement">*</span> 'a heap
+</pre><p>ただし、このデータ構造は以下のような制約を持ちます。</p>
+<pre class="code lang-ocaml" data-lang="ocaml" data-unlink><span class="synStatement">let</span> rank <span class="synStatement">=</span> <span class="synStatement">function</span>
+  <span class="synStatement">|</span> <span class="synConstant">E</span> <span class="synStatement">-&gt;</span> <span class="synConstant">0</span>
+  <span class="synStatement">|</span> <span class="synConstant">T</span> <span class="synStatement">(_</span>, <span class="synStatement">_</span>, r<span class="synStatement">)</span> <span class="synStatement">-&gt;</span> <span class="synConstant">1</span> + rank r
+</pre><p>このような関数rankを定義したとき、ツリーのどのノードT(x, l, r)に対しても、</p>
+<pre class="code lang-ocaml" data-lang="ocaml" data-unlink>rank l <span class="synStatement">&gt;=</span> rank r ... <span class="synStatement">(</span><span class="synConstant">1</span><span class="synStatement">)</span>
+</pre><p>が成り立っていなければなりません。</p><p>ちなみに、上の性質を満たしているLeftist Heap tでは、以下の不等式が成り立ちます。</p>
+<pre class="code lang-ocaml" data-lang="ocaml" data-unlink>rank t <span class="synStatement">&lt;=</span> log<span class="synStatement">(</span>size t + <span class="synConstant">1</span><span class="synStatement">)</span> ... <span class="synStatement">(</span><span class="synConstant">2</span><span class="synStatement">)</span>
+</pre><p>ただし、size t はtの要<a class="keyword" href="http://d.hatena.ne.jp/keyword/%C1%C7%BF%F4">素数</a>を表します。</p><p><b>証明:</b><br />
+t = E のとき、</p>
+<pre class="code lang-ocaml" data-lang="ocaml" data-unlink>rank t <span class="synStatement">=</span> <span class="synConstant">0</span> <span class="synStatement">&lt;=</span> <span class="synConstant">0</span> <span class="synStatement">=</span> log<span class="synStatement">(</span>size t + <span class="synConstant">1</span><span class="synStatement">)</span>
+</pre><p>なので(2)が成立。</p><p>l, r がともに(2)を満たしていると仮定して、t = T(x, l, r) のとき、<br />
+tについて(2)が成り立たないと仮定すると、rankは整数なので、</p>
+<pre class="code lang-ocaml" data-lang="ocaml" data-unlink>rank t <span class="synStatement">&gt;=</span> log<span class="synStatement">(</span>size t + <span class="synConstant">1</span><span class="synStatement">)</span> + <span class="synConstant">1</span>
+</pre><p>よって、</p>
+<pre class="code lang-ocaml" data-lang="ocaml" data-unlink>rank r <span class="synStatement">=</span> rank t - <span class="synConstant">1</span>
+  <span class="synStatement">&gt;=</span> log<span class="synStatement">(</span>size t + <span class="synConstant">1</span><span class="synStatement">)</span>
+</pre><p>ところで、仮定よりrは(2)を満たすので、</p>
+<pre class="code lang-ocaml" data-lang="ocaml" data-unlink>log<span class="synStatement">(</span>size t + <span class="synConstant">1</span><span class="synStatement">)</span> <span class="synStatement">&lt;=</span> rank r <span class="synStatement">&lt;=</span> log<span class="synStatement">(</span>size r + <span class="synConstant">1</span><span class="synStatement">)</span>
+∴ log<span class="synStatement">(</span>size t + <span class="synConstant">1</span><span class="synStatement">)</span> <span class="synStatement">&lt;=</span> log<span class="synStatement">(</span>size r + <span class="synConstant">1</span><span class="synStatement">)</span>
+</pre><p>logは単調増加なので、</p>
+<pre class="code lang-ocaml" data-lang="ocaml" data-unlink>size t <span class="synStatement">&lt;=</span> size r
+</pre><p>ところで、明らかに</p>
+<pre class="code lang-ocaml" data-lang="ocaml" data-unlink>size r <span class="synStatement">&lt;</span> size t
+</pre><p>であるため、矛盾。<br />
+したがって、tは(2)を満たす。</p><p>以上より、全てのleftist heap tは(2)を満たす ■</p><br />
+<p>この不等式(2)が成り立つことによって、2つのヒープをマージする時に右へ右へと辿っていけばO(logn)でマージを完了させることができます。<br />
+長くなってしまったので、具体的な実装はまた今度。</p>
+
+
+{% endraw %}

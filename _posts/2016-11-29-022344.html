@@ -1,0 +1,14 @@
+---
+layout: post
+title: 機械学習でAV女優かどうかを判定するプログラムを作った
+tags:
+- Products
+
+---
+{% raw %}
+<p><a href="http://dokodeglobal.com/av_classifier/">AV&#x5973;&#x512A;&#x5224;&#x5B9A;&#x6A5F;</a></p><p>タイトルの通りです。<br />
+<a class="keyword" href="http://d.hatena.ne.jp/keyword/Gauche">Gauche</a>の練習 & <a class="keyword" href="http://d.hatena.ne.jp/keyword/%B5%A1%B3%A3%B3%D8%BD%AC">機械学習</a>の勉強として作ってみました。<br />
+ナイーブ<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%D9%A5%A4%A5%BA">ベイズ</a>を用いて、ユーザーの直近の発言内容からそのユーザーが「AV女優、一般男性、一般女性、<a class="keyword" href="http://d.hatena.ne.jp/keyword/bot">bot</a>」のうちどれに最も近いかを判定します。</p><p><span itemscope itemtype="http://schema.org/Photograph"><img src="https://cdn-ak.f.st-hatena.com/images/fotolife/c/cloudear8/20161129/20161129021915.png" alt="f:id:cloudear8:20161129021915p:plain" title="f:id:cloudear8:20161129021915p:plain" class="hatena-fotolife" itemprop="image"></span></p><p>このように、AV女優のIDを入れるとかなりの高確率でAV女優であると判定してくれます。</p><p><span itemscope itemtype="http://schema.org/Photograph"><img src="https://cdn-ak.f.st-hatena.com/images/fotolife/c/cloudear8/20161129/20161129021914.png" alt="f:id:cloudear8:20161129021914p:plain" title="f:id:cloudear8:20161129021914p:plain" class="hatena-fotolife" itemprop="image"></span></p><p>ちなみに、自分は一般女性と判定されました。</p><p>現在の問題点としては、教師データが自分の友達とAV女優の2種類(+<a class="keyword" href="http://d.hatena.ne.jp/keyword/bot">bot</a>が数種類)しかないので、そのいずれにも属さないアカウントはうまく判別することができません。</p><p>たとえば橋本環奈のアカウントを入力してみた場合、</p><p><span itemscope itemtype="http://schema.org/Photograph"><img src="https://cdn-ak.f.st-hatena.com/images/fotolife/c/cloudear8/20161129/20161129021916.png" alt="f:id:cloudear8:20161129021916p:plain" title="f:id:cloudear8:20161129021916p:plain" class="hatena-fotolife" itemprop="image"></span></p><p>全国の橋本環奈ファンの皆さん、申し訳ございません。</p>
+
+
+{% endraw %}

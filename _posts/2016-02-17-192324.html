@@ -1,0 +1,147 @@
+---
+layout: post
+title: SBTのインストールから、簡単なプロジェクトができるまで
+tags:
+- Scala
+
+---
+{% raw %}
+<p>バイトとかで<a class="keyword" href="http://d.hatena.ne.jp/keyword/Scala">Scala</a>に触ったことはあるけど、そういえば自分で1からプロジェクト作ったことは無かったなぁと思ったので。</p>
+
+<div class="section">
+    <h3>インストール</h3>
+    <p>各々の環境に合わせて。僕は<a class="keyword" href="http://d.hatena.ne.jp/keyword/Mac">Mac</a>なんで<a class="keyword" href="http://d.hatena.ne.jp/keyword/brew">brew</a>使いました。</p>
+
+<pre>$ <a class="keyword" href="http://d.hatena.ne.jp/keyword/brew">brew</a> install sbt
+</pre>
+</div>
+<div class="section">
+    <h3>とりあえず実行</h3>
+    
+<pre>$ sbt console
+</pre><p>と打てばとりあえず対話型実行環境を作ってくれますが、実行するとカレントディレクトリ以下に必要なパッケージ等を含んだディレクトリが勝手にできてくれやがりますので適当なディレクトリを作ってそこで実行するのがおすすめ。とりあえず以下では、「myfirst」というディレクトリを作成し、そこに新しいプロジェクトのソースファイル等を置いていくことにします。</p>
+
+</div>
+<div class="section">
+    <h3>build.sbtの作成</h3>
+    <p>プロジェクトの名前やバージョン、他のパッケージへの依存関係を定義するために、build.sbtというファイルを作成します。<br />
+<a href="http://www.scala-sbt.org/0.13/docs/ja/Basic-Def.html">http://www.scala-sbt.org/0.13/docs/ja/Basic-Def.html</a> 等を参考にしつつ、とりあえず最低限必要な設定だけ。</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink>lazy <span class="synType">val</span> root = (project in file(<span class="synConstant">&quot;.&quot;</span>)).
+  settings(
+    name := <span class="synConstant">&quot;my-first-project&quot;</span>,
+    version := <span class="synConstant">&quot;0.0.1&quot;</span>,
+    scalaVersion := <span class="synConstant">&quot;2.10.5&quot;</span>
+  )
+</pre><p>これを先ほど作成した「myfirst」直下にbuild.sbtという名前で保存します。</p>
+
+</div>
+<div class="section">
+    <h3><a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%BD%A1%BC%A5%B9%A5%B3%A1%BC%A5%C9">ソースコード</a>の配置</h3>
+    <p>(プロジェクトのディレクトリ)/src/main/<a class="keyword" href="http://d.hatena.ne.jp/keyword/scala">scala</a>/ 以下に<a class="keyword" href="http://d.hatena.ne.jp/keyword/Scala">Scala</a>のソースファイルを置くのが普通みたいです。とりあえず簡単な<a class="keyword" href="http://d.hatena.ne.jp/keyword/Hello%20World">Hello World</a>を作成して、myfirst/src/main/<a class="keyword" href="http://d.hatena.ne.jp/keyword/scala">scala</a>/HelloWorld.<a class="keyword" href="http://d.hatena.ne.jp/keyword/scala">scala</a>という名前で保存してみましょう。</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink><span class="synType">object</span> HelloWorld <span class="synType">extends</span> App {
+  println(<span class="synConstant">&quot;Hello world&quot;</span>)
+}
+</pre>
+</div>
+<div class="section">
+    <h3>実行</h3>
+    
+<pre>$ sbt run
+</pre><p>を実行すると、現在のプロジェクト内にある実行可能なクラスを実行してくれます。先程のソースファイルが正しく配置されているならば、(sbtのメッセージが出力された後に)"<a class="keyword" href="http://d.hatena.ne.jp/keyword/Hello%20world">Hello world</a>"という文字列が出力されるはずです。</p>
+
+</div>
+<div class="section">
+    <h3>外部ライブラリの使用</h3>
+    <p>これで終わりでは面白くないので、外部ライブラリを使用したプログラムを作成してみます。<br />
+今回はscalaj-httpとjson4sを利用して、外部のウェブサイトの<a class="keyword" href="http://d.hatena.ne.jp/keyword/API">API</a>を適当に叩いてみるプログラムを書いてみましょう。(書いた後で最近はdispatchとかいうもう少し<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%CA%A5%A6%A4%A4">ナウい</a>感じのhttpクライアントライブラリがあることに気付いた)</p><p>まずはbuild.sbtに以下のように依存関係を追加します。</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink>lazy <span class="synType">val</span> root = (project in file(<span class="synConstant">&quot;.&quot;</span>)).
+  settings(
+    name := <span class="synConstant">&quot;my-first-project&quot;</span>,
+    version := <span class="synConstant">&quot;0.0.1&quot;</span>,
+    scalaVersion := <span class="synConstant">&quot;2.10.5&quot;</span>,
+    libraryDependencies ++= Seq(
+      <span class="synConstant">&quot;org.scalaj&quot;</span> %% <span class="synConstant">&quot;scalaj-http&quot;</span> % <span class="synConstant">&quot;2.2.1&quot;</span>,
+      <span class="synConstant">&quot;org.json4s&quot;</span> %% <span class="synConstant">&quot;json4s-native&quot;</span> % <span class="synConstant">&quot;3.3.0&quot;</span>
+    )
+  )
+</pre><p>利用可能なライブラリのバージョンとかについては <a href="http://mvnrepository.com/">http://mvnrepository.com/</a> とかで探すといいかも。</p><p>このライブラリを使用して適当にコードを書きます。</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink><span class="synPreProc">import</span> scalaj.http._
+
+<span class="synPreProc">import</span> org.json4s._
+<span class="synPreProc">import</span> org.json4s.DefaultFormats
+<span class="synPreProc">import</span> org.json4s.native.JsonMethods._
+
+<span class="synType">case</span> <span class="synType">class</span> Station(
+  name: <span class="synConstant">String</span>,
+  x: Double,
+  y: Double
+)
+
+<span class="synType">object</span> StationAPI {
+  <span class="synType">val</span> baseUrl = <span class="synConstant">&quot;http://geoapi.heartrails.com/api/json&quot;</span>
+  implicit <span class="synType">private</span> <span class="synType">val</span> formats = DefaultFormats
+
+<span class="synIdentifier">  def</span> getNearest(postal: <span class="synConstant">String</span>): Option[Station] = {
+    <span class="synType">val</span> resp = Http(baseUrl).
+      param(<span class="synConstant">&quot;method&quot;</span>, <span class="synConstant">&quot;getStations&quot;</span>).
+      param(<span class="synConstant">&quot;postal&quot;</span>, postal).
+      asString
+    <span class="synStatement">if</span> (resp.isError) {
+      <span class="synStatement">return</span> None
+    } <span class="synStatement">else</span> {
+      <span class="synType">val</span> json = parse(resp.body)
+      <span class="synStatement">return</span> (json \ <span class="synConstant">&quot;response&quot;</span> \ <span class="synConstant">&quot;station&quot;</span>).extractOpt[Station]
+    }
+  }
+}
+</pre><p><a class="keyword" href="http://d.hatena.ne.jp/keyword/json">json</a>.extract[T]でT型のcase classに勝手に変換してくれるのが超便利。<br />
+<a href="http://www.heartrails.com/">HeartRails | &#x30CF;&#x30FC;&#x30C8;&#x30EC;&#x30A4;&#x30EB;&#x30BA; | &#x30B6;&#x30FB;&#x30A6;&#x30A7;&#x30D6;&#x30B5;&#x30FC;&#x30D3;&#x30B9;&#x30FB;&#x30AB;&#x30F3;&#x30D1;&#x30CB;&#x30FC;</a> というサイトの<a class="keyword" href="http://d.hatena.ne.jp/keyword/API">API</a>を使って、郵便番号を渡すと最寄り駅の名前とその位置を返してくれるようなオブジェクトを作りました。これをsrc/main/<a class="keyword" href="http://d.hatena.ne.jp/keyword/scala">scala</a>/Station.<a class="keyword" href="http://d.hatena.ne.jp/keyword/scala">scala</a>とかいった名前で保存しておきます。</p><p>最後にHelloWorldも少しだけ変更します。</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink><span class="synType">object</span> HelloWorld <span class="synType">extends</span> App {
+  println(<span class="synConstant">&quot;Hello world&quot;</span>)
+
+  <span class="synType">val</span> station = StationAPI.getNearest(<span class="synConstant">&quot;6068301&quot;</span>)
+  station match {
+    <span class="synType">case</span> Some(s) =&gt; println(<span class="synConstant">&quot;nearest station: &quot;</span> + s.name)
+    <span class="synType">case</span> _ =&gt; println(<span class="synConstant">&quot;no station around there&quot;</span>)
+  }
+}
+</pre><p>実行すると、以下のように出力されるはずです。</p>
+
+<pre>$ sbt run
+(ログがいろいろ)
+<a class="keyword" href="http://d.hatena.ne.jp/keyword/Hello%20world">Hello world</a>
+nearest station: <a class="keyword" href="http://d.hatena.ne.jp/keyword/%BD%D0%C4%AE%CC%F8">出町柳</a>
+(この後もログがいろいろ)
+</pre><p>ちなみに、606-8301とは <a href="http://tabelog.com/kyoto/A2601/A260302/26018246/">&#x307F;&#x3093;&#x306A;&#x5927;&#x597D;&#x304D;&#x306B;&#x307C;&#x6B21;&#x6717;&#x767E;&#x4E07;&#x904D;&#x5E97;</a> の郵便番号です。</p>
+
+</div>
+<div class="section">
+    <h3>sbt<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%D7%A5%E9%A5%B0%A5%A4%A5%F3">プラグイン</a>のインストール</h3>
+    <p>今度は、完成したプログラムをjarファイルにまとめてみましょう。<br />
+sbt自体の機能にも</p>
+
+<pre>$ sbt package
+</pre><p>でjarファイルに固めてくれる機能はありますが、この機能だと依存関係にあるライブラリのファイルなどはjarに含めてくれないため、配布には不向きです。<br />
+そこで、sbt-assemblyというsbtの<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%D7%A5%E9%A5%B0%A5%A4%A5%F3">プラグイン</a>を利用してみましょう。</p><p>最近のバージョンから、sbtへの<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%D7%A5%E9%A5%B0%A5%A4%A5%F3">プラグイン</a>の追加はかなり簡単になったらしいです。<br />
+インストールはproject/assembly.sbtに以下の記述をするだけ</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink>addSbtPlugin(<span class="synConstant">&quot;com.eed3si9n&quot;</span> % <span class="synConstant">&quot;sbt-assembly&quot;</span> % <span class="synConstant">&quot;0.14.1&quot;</span>)
+</pre><p>保存後、</p>
+
+<pre>$ sbt assembly
+</pre><p>を実行するだけで、target/<a class="keyword" href="http://d.hatena.ne.jp/keyword/scala">scala</a>-2.10以下にmy-first-project-assembly-0.0.1.jarを作成してくれます。<br />
+実際に実行してみると……</p>
+
+<pre>$ <a class="keyword" href="http://d.hatena.ne.jp/keyword/java">java</a> -jar target/<a class="keyword" href="http://d.hatena.ne.jp/keyword/scala">scala</a>-2.10/my-first-project-assembly-0.0.1.jar 
+<a class="keyword" href="http://d.hatena.ne.jp/keyword/Hello%20world">Hello world</a>
+nearest station: <a class="keyword" href="http://d.hatena.ne.jp/keyword/%BD%D0%C4%AE%CC%F8">出町柳</a>
+</pre><p>先程と同様の結果が出力されました。</p><br />
+<p>これだけできれば、<a class="keyword" href="http://d.hatena.ne.jp/keyword/Scala">Scala</a>で適当なアプリケーションを作る際の流れは一通り捕めたのではないでしょうか。<br />
+今年は<a href="http://www.lancers.jp/">Lancers</a>で<a class="keyword" href="http://d.hatena.ne.jp/keyword/Scala">Scala</a>のコード書きまくって一儲けしてバイト辞めたいです。</p><br />
+<p><div class="hatena-asin-detail"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/4844330845/cloudear-22/"><img src="http://ecx.images-amazon.com/images/I/415CsfYp64L._SL160_.jpg" class="hatena-asin-detail-image" alt="Scalaスケーラブルプログラミング第2版" title="Scalaスケーラブルプログラミング第2版"></a><div class="hatena-asin-detail-info"><p class="hatena-asin-detail-title"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/4844330845/cloudear-22/">Scalaスケーラブルプログラミング第2版</a></p><ul><li><span class="hatena-asin-detail-label">作者:</span> Martin Odersky,Lex Spoon,Bill Venners,羽生田栄一,水島宏太,長尾高弘</li><li><span class="hatena-asin-detail-label">出版社/メーカー:</span> <a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%D7%A5%EC%A5%B9%A5%B8%A5%E3%A5%D1%A5%F3">インプレスジャパン</a></li><li><span class="hatena-asin-detail-label">発売日:</span> 2011/09/27</li><li><span class="hatena-asin-detail-label">メディア:</span> 単行本（ソフトカバー）</li><li><span class="hatena-asin-detail-label">購入</span>: 12人 <span class="hatena-asin-detail-label">クリック</span>: 235回</li><li><a href="http://d.hatena.ne.jp/asin/4844330845/cloudear-22" target="_blank">この商品を含むブログ (46件) を見る</a></li></ul></div><div class="hatena-asin-detail-foot"></div></div>言わずと知れた<a class="keyword" href="http://d.hatena.ne.jp/keyword/Scala">Scala</a>のバイブル。<a class="keyword" href="http://d.hatena.ne.jp/keyword/Scala">Scala</a>自体の機能については一通り書いているので、とりあえず全体像を捕みたい場合にはいいと思います。</p><p><div class="hatena-asin-detail"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/4839948879/cloudear-22/"><img src="http://ecx.images-amazon.com/images/I/51pXrnWKSJL._SL160_.jpg" class="hatena-asin-detail-image" alt="これからの「標準」を身につける HTML+CSSデザインレシピ (Web Designing Books)" title="これからの「標準」を身につける HTML+CSSデザインレシピ (Web Designing Books)"></a><div class="hatena-asin-detail-info"><p class="hatena-asin-detail-title"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/4839948879/cloudear-22/">これからの「標準」を身につける HTML+CSSデザインレシピ (Web Designing Books)</a></p><ul><li><span class="hatena-asin-detail-label">作者:</span> エ・<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%D3%A5%B9%A5%B3">ビスコ</a>ム・テック・ラボ</li><li><span class="hatena-asin-detail-label">出版社/メーカー:</span> <a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%DE%A5%A4%A5%CA%A5%D3">マイナビ</a></li><li><span class="hatena-asin-detail-label">発売日:</span> 2014/03/20</li><li><span class="hatena-asin-detail-label">メディア:</span> 単行本（ソフトカバー）</li><li><a href="http://d.hatena.ne.jp/asin/4839948879/cloudear-22" target="_blank">この商品を含むブログ (9件) を見る</a></li></ul></div><div class="hatena-asin-detail-foot"></div></div>最近いろいろあって、とあるイベントの公式サイトの運営をさせてもらっています。Web関連はHTMLとか<a class="keyword" href="http://d.hatena.ne.jp/keyword/CSS">CSS</a>でできること自体に関してはなんとなく知ってるけど、それを使って実際にウェブサイトを制作していく過程を学びたかったので購入した1冊。基本的なWebデザイン作業の勧め方から、Bootstrap等の使い方まで書いてます。<br />
+余談ですが、最近は<a href="http://www.scala-js.org/">Scala&#x3067;&#x30AF;&#x30E9;&#x30A4;&#x30A2;&#x30F3;&#x30C8;&#x30B5;&#x30A4;&#x30C9;&#x304B;&#x3089;&#x30B5;&#x30FC;&#x30D0;&#x30FC;&#x30B5;&#x30A4;&#x30C9;&#x307E;&#x3067;&#x5168;&#x3066;&#x66F8;&#x304F;&#x3053;&#x3068;&#x304C;&#x3067;&#x304D;&#x308B;</a>らしいですね。次にウェブ関連をやる機会があれば全て<a class="keyword" href="http://d.hatena.ne.jp/keyword/Scala">Scala</a>でやるのも面白いかも。AngularJSとかReact.jsあたりの<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%D5%A5%EC%A1%BC%A5%E0%A5%EF%A1%BC%A5%AF">フレームワーク</a>も対応しているライブラリがあるみたいですし。<br />
+<a href="https://github.com/greencatsoft/scalajs-angular">GitHub - greencatsoft/scalajs-angular: AngularJS Binding for Scala.js</a><br />
+<a href="https://github.com/japgolly/scalajs-react">GitHub - japgolly/scalajs-react: Facebook&#39;s React on Scala.js</a></p><p><div class="hatena-asin-detail"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/479735142X/cloudear-22/"><img src="http://ecx.images-amazon.com/images/I/51EJqRp8t8L._SL160_.jpg" class="hatena-asin-detail-image" alt="デザイン入門教室 ［特別講義］ 確かな力を身に付けられる ?学び、考え、作る授業? (Design &IDEA)" title="デザイン入門教室 ［特別講義］ 確かな力を身に付けられる ?学び、考え、作る授業? (Design &IDEA)"></a><div class="hatena-asin-detail-info"><p class="hatena-asin-detail-title"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/479735142X/cloudear-22/">デザイン入門教室 ［特別講義］ 確かな力を身に付けられる ?学び、考え、作る授業? (Design &IDEA)</a></p><ul><li><span class="hatena-asin-detail-label">作者:</span> 坂本伸二</li><li><span class="hatena-asin-detail-label">出版社/メーカー:</span> SBクリエイティブ</li><li><span class="hatena-asin-detail-label">発売日:</span> 2015/07/01</li><li><span class="hatena-asin-detail-label">メディア:</span> 大型本</li><li><a href="http://d.hatena.ne.jp/asin/479735142X/cloudear-22" target="_blank">この商品を含むブログ (1件) を見る</a></li></ul></div><div class="hatena-asin-detail-foot"></div></div>こちらもデザイン力を身に付けたくて購入した1冊。Webに限らず(というかWebについてはあまり想定されてない印象)、デザイン一般について学べます。少し前までサークルのイベントの関連でポスター等の情報宣伝物の制作に関わる機会が多かったので、その間にもっと勉強しておけばよかった……。</p>
+
+</div>
+
+{% endraw %}

@@ -1,0 +1,35 @@
+---
+layout: post
+title: パターンマッチでTextを1文字ずつ処理する
+tags:
+- Haskell
+
+---
+{% raw %}
+<p>PatternSynonymsのいい感じの実用例が思いついたので。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synSpecial">{-# LANGUAGE PatternSynonyms, OverloadedStrings, ViewPatterns #-}</span>
+
+<span class="synPreProc">import</span> Data.Text
+
+pattern c <span class="synStatement">:+</span> cs <span class="synStatement">&lt;-</span> (uncons <span class="synStatement">-&gt;</span> Just (c, cs))
+</pre><p>このパターンを定義することで、先頭文字がcで残りがcsであるようなTextにパターンマッチさせることができます。</p><br />
+<p>使用例:</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synPreProc">import</span> Data.Char
+
+numAlpha <span class="synStatement">::</span> Text <span class="synStatement">-&gt;</span> Int
+numAlpha <span class="synConstant">&quot;&quot;</span> <span class="synStatement">=</span> <span class="synConstant">0</span>
+numAlpha (c <span class="synStatement">:+</span> cs)
+  <span class="synStatement">|</span> isAlpha c <span class="synStatement">=</span> <span class="synConstant">1</span> <span class="synStatement">+</span> numAlpha cs
+  <span class="synStatement">|</span> otherwise <span class="synStatement">=</span> numAlpha cs
+</pre><p>実行例:</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synStatement">&gt;&gt;&gt;</span> numAlpha <span class="synConstant">&quot;abc012def&quot;</span>
+<span class="synConstant">6</span>
+</pre><p>ただし、pattern synonymの定義にview patternを使っているため、このパターンはbidirectionalではありません。<br />
+したがって、例えば式中に</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synConstant">'a'</span> <span class="synStatement">:+</span> <span class="synConstant">'b'</span> <span class="synStatement">:+</span> <span class="synConstant">'c'</span> <span class="synStatement">:+</span> <span class="synConstant">&quot;def&quot;</span>
+</pre><p>と書いたところで、これが</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synConstant">&quot;abcdef&quot;</span>
+</pre><p>になるわけではなく、単に<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%B3%A5%F3%A5%D1%A5%A4%A5%EB">コンパイル</a>エラーになります。</p>
+
+
+{% endraw %}

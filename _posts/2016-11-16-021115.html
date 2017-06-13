@@ -1,0 +1,82 @@
+---
+layout: post
+title: Coqで数学的帰納法を行う
+tags:
+- Coq
+
+---
+{% raw %}
+<p><a class="keyword" href="http://d.hatena.ne.jp/keyword/%BF%F4%B3%D8%C5%AA%B5%A2%C7%BC%CB%A1">数学的帰納法</a>を行いたい場合は、基本的にelimかinductionのどちらかのタクティックを利用します。</p>
+
+<div class="section">
+    <h3>elim</h3>
+    <p>こちらが最も基本的な<a class="keyword" href="http://d.hatena.ne.jp/keyword/%B5%A2%C7%BC%CB%A1">帰納法</a>です。elim x.とすることで、xについての<a class="keyword" href="http://d.hatena.ne.jp/keyword/%B5%A2%C7%BC%CB%A1">帰納法</a>を行うことができます。<br />
+例えば、以下のコードでは直接to_zero n = 0を示すのではなく、ゴールをto_zero 0 = 0と、<br />
+forall n0, to_zero n0 = 0 -> to_zero (S n0) = 0の2つのサブゴールに分割してそれぞれ証明しています。</p>
+<pre class="code" data-lang="" data-unlink>Fixpoint to_zero (n : nat) : nat :=
+  match n with
+    | O =&gt; O
+    | S n&#39; =&gt; to_zero n&#39;
+  end.
+
+Theorem to_zero_n_is_zero:
+  forall n : nat, to_zero n = 0.
+Proof.
+  intros n.
+  elim n.
+  - (* Goal: to_zero 0 = 0 *)
+    reflexivity.
+  - (* Goal: forall n0 : nat, to_zero n0 = 0 -&gt; to_zero (S n0) = 0 *)
+    intros n0 H. (* H : to_zero n0 = 0 *)
+    (* Goal: to_zero (S n0) = 0 *)
+    simpl.
+    (* Goal: to_zero n0 = 0 *)
+    apply H.
+Qed.</pre>
+</div>
+<div class="section">
+    <h3>induction</h3>
+    <p>inductionはもう少し高機能な<a class="keyword" href="http://d.hatena.ne.jp/keyword/%B5%A2%C7%BC%CB%A1">帰納法</a>です。こちらはもう少し通常の証明で使うような方法で<a class="keyword" href="http://d.hatena.ne.jp/keyword/%BF%F4%B3%D8%C5%AA%B5%A2%C7%BC%CB%A1">数学的帰納法</a>を扱えます。<br />
+induction xを行うとxについて場合分けが行われ、フィールドを持つ値の場合は<a class="keyword" href="http://d.hatena.ne.jp/keyword/%B5%A2%C7%BC%CB%A1">帰納法</a>の仮定がIHhoge(<a class="keyword" href="http://d.hatena.ne.jp/keyword/hoge">hoge</a>は変数名)の形で追加されます。</p>
+<pre class="code" data-lang="" data-unlink>Theorem to_zero_n_is_zero2:
+  forall n : nat, to_zero n = 0.
+Proof.
+  intros n.
+  induction n as [| n&#39;]. (* destruct と同様の構文で変数名を指定する *)
+  - (* n = O の場合 *)
+    (* Goal: to_zero 0 = 0 *)
+    reflexivity.
+  - (* n = S n&#39; の場合 *)
+    (* IHn&#39; : to_zero n&#39; = 0 *)
+    (* Goal: to_zero (S n&#39;) = 0 *)
+    simpl.
+    (* Goal: to_zero n&#39; = 0 *)
+    apply IHn&#39;.
+Qed.</pre><p>ちなみに、場合分けの頭についている"-"は単なる見やすさのためだけの構文なので、別に無くてもかまいません。<br />
+"-"の他に"+", "*", "{ .. }"が使えます。</p>
+
+</div>
+<div class="section">
+    <h3><a class="keyword" href="http://d.hatena.ne.jp/keyword/%BC%AB%C1%B3%BF%F4">自然数</a>以外のデータ型についての<a class="keyword" href="http://d.hatena.ne.jp/keyword/%BF%F4%B3%D8%C5%AA%B5%A2%C7%BC%CB%A1">数学的帰納法</a></h3>
+    <p><a class="keyword" href="http://d.hatena.ne.jp/keyword/%BC%AB%C1%B3%BF%F4">自然数</a>以外でも、機能的に定義されたデータ構造に対しては<a class="keyword" href="http://d.hatena.ne.jp/keyword/%BF%F4%B3%D8%C5%AA%B5%A2%C7%BC%CB%A1">数学的帰納法</a>を行うことができます。<br />
+例えばlistについて以下のような定理を証明してみましょう。</p>
+<pre class="code" data-lang="" data-unlink>Require Import Coq.Init.Datatypes.
+
+Theorem list_length:
+  forall (T : Type) (xs ys : list T),
+    length (xs ++ ys) = length xs + length ys.
+Proof.
+  intros T xs ys.
+  induction xs as [| x&#39; xs&#39;].
+  - (* xs = nil *)
+    reflexivity.
+  - (* xs = x&#39; :: xs&#39; *)
+    (* IHxs&#39;: length (xs&#39; ++ ys) = length xs&#39; + length ys *)
+    simpl.
+    (* Goal: S (length xs&#39; ++ ys) = S (length xs&#39; + length ys) *)
+    rewrite -&gt; IHxs&#39;.
+    reflexivity.
+Qed.</pre>
+</div>
+
+{% endraw %}

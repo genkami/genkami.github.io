@@ -1,0 +1,46 @@
+---
+layout: post
+title: Coqで型クラスでモナド
+tags:
+- Coq
+
+---
+{% raw %}
+<p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Haskell">Haskell</a>大好きなので、<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%E2%A5%CA%A5%C9">モナド</a>を実装できそうな言語があればとりあえず実装してしまう癖があります。<br />
+Coqで<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%E2%A5%CA%A5%C9">モナド</a>使うほどのことを書くのか、と言われればアレですが。</p>
+<pre class="code" data-lang="" data-unlink>Class Monad (M : Type -&gt; Type) :=
+  {
+    point {A : Type} : A -&gt; M A;
+    bind {A B : Type} : M A -&gt; (A -&gt; M B) -&gt; M B
+  }.
+
+
+Infix &#34;&gt;&gt;=&#34; := bind (at level 65, left associativity).</pre><p>試しにoptionで<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%B9%A5%BF%A5%F3%A5%B9">インスタンス</a>定義してみます。</p>
+<pre class="code" data-lang="" data-unlink>Definition option_point {T : Type} (x : T) : option T := Some x.
+Definition option_bind {A B : Type}
+           (m : option A) (f : A -&gt; option B) : option B :=
+  match m with
+    | None =&gt; None
+    | Some x =&gt; f x
+  end.
+
+Instance option_monad : Monad option :=
+  {
+    point := @option_point;
+    bind := @option_bind
+  }.</pre><p>たぶん使わないけどCoqでoption<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%E2%A5%CA%A5%C9">モナド</a>ができました。</p><p>Coqなので、例えば m >>= f = Some x なら m = Some a のようなことも証明できてしまいます。すごい。</p>
+<pre class="code" data-lang="" data-unlink>Theorem option_bind_some:
+  forall (A B : Type) (m : option A) (f : A -&gt; option B),
+    (exists b : B, m &gt;&gt;= f = Some b)
+    -&gt; (exists a : A, m = Some a).
+Proof.
+  intros A B m f H.
+  destruct H as [b].
+  destruct m as [m&#39; | ].
+  - exists m&#39;.
+    reflexivity.
+  - simpl in H.
+    congruence.
+Qed.</pre>
+
+{% endraw %}

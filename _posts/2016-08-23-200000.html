@@ -1,0 +1,75 @@
+---
+layout: post
+title: Ook!はSchemeである
+tags:
+- Gauche
+
+---
+{% raw %}
+<p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Ook%21">Ook!</a>のソースも、括弧で括ればただのS式ですよね。</p>
+<pre class="code lang-scheme" data-lang="scheme" data-unlink><span class="synComment">;; ook.scm</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synConstant">*mem-size*</span> <span class="synConstant">10000</span><span class="synSpecial">)</span>
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synConstant">*mem*</span> <span class="synSpecial">(</span><span class="synIdentifier">make-vector</span> <span class="synConstant">*mem-size*</span> <span class="synConstant">0</span><span class="synSpecial">))</span>
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synConstant">*ptr*</span> <span class="synConstant">0</span><span class="synSpecial">)</span>
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>inc-ptr!<span class="synSpecial">)</span> <span class="synSpecial">(</span>inc! <span class="synConstant">*ptr*</span><span class="synSpecial">))</span>
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>dec-ptr!<span class="synSpecial">)</span> <span class="synSpecial">(</span>dec! <span class="synConstant">*ptr*</span><span class="synSpecial">))</span>
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>inc-mem!<span class="synSpecial">)</span> <span class="synSpecial">(</span>inc! <span class="synSpecial">(</span>~ <span class="synConstant">*mem*</span> <span class="synConstant">*ptr*</span><span class="synSpecial">)))</span>
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>dec-mem!<span class="synSpecial">)</span> <span class="synSpecial">(</span>dec! <span class="synSpecial">(</span>~ <span class="synConstant">*mem*</span> <span class="synConstant">*ptr*</span><span class="synSpecial">)))</span>
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>read-mem<span class="synSpecial">)</span> <span class="synSpecial">(</span><span class="synStatement">set!</span> <span class="synSpecial">(</span>~ <span class="synConstant">*mem*</span> <span class="synConstant">*ptr*</span><span class="synSpecial">)</span> <span class="synSpecial">(</span><span class="synIdentifier">read-char</span><span class="synSpecial">)))</span>
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>write-mem<span class="synSpecial">)</span> <span class="synSpecial">(</span><span class="synIdentifier">write-char</span> <span class="synSpecial">(</span><span class="synIdentifier">integer-&gt;char</span> <span class="synSpecial">(</span>~ <span class="synConstant">*mem*</span> <span class="synConstant">*ptr*</span><span class="synSpecial">))))</span>
+<span class="synSpecial">(</span><span class="synStatement">define</span> <span class="synSpecial">(</span>get-mem<span class="synSpecial">)</span> <span class="synSpecial">(</span>~ <span class="synConstant">*mem*</span> <span class="synConstant">*ptr*</span><span class="synSpecial">))</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define-syntax</span> Ook!-next
+  <span class="synSpecial">(</span><span class="synStatement">syntax-rules</span> <span class="synSpecial">(</span>Ook. Ook! Ook?<span class="synSpecial">)</span>
+    <span class="synSpecial">((</span>_ <span class="synSpecial">()</span> Ook? Ook! rest ...<span class="synSpecial">)</span> <span class="synSpecial">(</span>Ook! rest ...<span class="synSpecial">))</span>
+    <span class="synSpecial">((</span>_ <span class="synSpecial">(()</span> <span class="synSpecial">.</span> lev<span class="synSpecial">)</span> Ook? Ook! rest ...<span class="synSpecial">)</span> <span class="synSpecial">(</span>Ook!-next lev rest ...<span class="synSpecial">))</span>
+    <span class="synSpecial">((</span>_ lev Ook! Ook? rest ...<span class="synSpecial">)</span> <span class="synSpecial">(</span>Ook!-next <span class="synSpecial">(()</span> <span class="synSpecial">.</span> lev<span class="synSpecial">)</span> rest ...<span class="synSpecial">))</span>
+    <span class="synSpecial">((</span>_ lev ook. ook! rest ...<span class="synSpecial">)</span> <span class="synSpecial">(</span>Ook!-next lev rest ...<span class="synSpecial">))))</span>
+
+<span class="synSpecial">(</span><span class="synStatement">define-syntax</span> Ook!
+  <span class="synSpecial">(</span><span class="synStatement">syntax-rules</span> <span class="synSpecial">(</span>Ook. Ook! Ook?<span class="synSpecial">)</span>
+    <span class="synSpecial">((</span>_<span class="synSpecial">)</span> <span class="synConstant">#t</span><span class="synSpecial">)</span>
+    <span class="synSpecial">((</span>_ Ook. Ook? rest ...<span class="synSpecial">)</span> <span class="synSpecial">(</span><span class="synStatement">begin</span> <span class="synSpecial">(</span>inc-ptr!<span class="synSpecial">)</span> <span class="synSpecial">(</span>Ook! rest ...<span class="synSpecial">)))</span>
+    <span class="synSpecial">((</span>_ Ook? Ook. rest ...<span class="synSpecial">)</span> <span class="synSpecial">(</span><span class="synStatement">begin</span> <span class="synSpecial">(</span>dec-ptr!<span class="synSpecial">)</span> <span class="synSpecial">(</span>Ook! rest ...<span class="synSpecial">)))</span>
+    <span class="synSpecial">((</span>_ Ook. Ook. rest ...<span class="synSpecial">)</span> <span class="synSpecial">(</span><span class="synStatement">begin</span> <span class="synSpecial">(</span>inc-mem!<span class="synSpecial">)</span> <span class="synSpecial">(</span>Ook! rest ...<span class="synSpecial">)))</span>
+    <span class="synSpecial">((</span>_ Ook! Ook! rest ...<span class="synSpecial">)</span> <span class="synSpecial">(</span><span class="synStatement">begin</span> <span class="synSpecial">(</span>dec-mem!<span class="synSpecial">)</span> <span class="synSpecial">(</span>Ook! rest ...<span class="synSpecial">)))</span>
+    <span class="synSpecial">((</span>_ Ook. Ook! rest ...<span class="synSpecial">)</span> <span class="synSpecial">(</span><span class="synStatement">begin</span> <span class="synSpecial">(</span>read-mem<span class="synSpecial">)</span> <span class="synSpecial">(</span>Ook! rest ...<span class="synSpecial">)))</span>
+    <span class="synSpecial">((</span>_ Ook! Ook. rest ...<span class="synSpecial">)</span> <span class="synSpecial">(</span><span class="synStatement">begin</span> <span class="synSpecial">(</span>write-mem<span class="synSpecial">)</span> <span class="synSpecial">(</span>Ook! rest ...<span class="synSpecial">)))</span>
+    <span class="synSpecial">((</span>_ Ook! Ook? rest ...<span class="synSpecial">)</span>
+     <span class="synSpecial">(</span><span class="synStatement">let</span> loop <span class="synSpecial">()</span>
+       <span class="synSpecial">(</span><span class="synStatement">if</span> <span class="synSpecial">(</span><span class="synIdentifier">=</span> <span class="synSpecial">(</span>get-mem<span class="synSpecial">)</span> <span class="synConstant">0</span><span class="synSpecial">)</span>
+           <span class="synSpecial">(</span>Ook!-next <span class="synSpecial">()</span> rest ...<span class="synSpecial">)</span>
+           <span class="synSpecial">(</span><span class="synStatement">begin</span>
+             <span class="synSpecial">(</span>Ook! rest ...<span class="synSpecial">)</span>
+             <span class="synSpecial">(</span>loop<span class="synSpecial">)))))</span>
+    <span class="synSpecial">((</span>_ Ook? Ook! rest ...<span class="synSpecial">)</span> <span class="synConstant">#t</span><span class="synSpecial">)))</span>
+
+
+<span class="synSpecial">(</span>Ook!
+ Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook.
+ Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook! Ook? Ook. Ook?
+ Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook.
+ Ook. Ook. Ook. Ook? Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook.
+ Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook.
+ Ook. Ook? Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook? Ook. Ook.
+ Ook? Ook. Ook? Ook. Ook? Ook. Ook? Ook. Ook! Ook! Ook? Ook!
+ Ook. Ook? Ook. Ook. Ook. Ook. Ook! Ook. Ook. Ook? Ook. Ook.
+ Ook! Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook.
+ Ook. Ook. Ook. Ook. Ook! Ook. Ook! Ook. Ook. Ook. Ook. Ook.
+ Ook. Ook. Ook! Ook. Ook. Ook? Ook. Ook. Ook. Ook. Ook! Ook.
+ Ook? Ook. Ook? Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook.
+ Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook.
+ Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook! Ook.
+ Ook. Ook? Ook! Ook. Ook. Ook. Ook. Ook. Ook. Ook. Ook! Ook.
+ Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook!
+ Ook! Ook. Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook!
+ Ook! Ook! Ook! Ook! Ook! Ook! Ook! Ook. Ook. Ook? Ook. Ook.
+ Ook! Ook. Ook. Ook? Ook! Ook.<span class="synSpecial">)</span>
+</pre><p>実行結果:</p>
+<pre class="code lang-sh" data-lang="sh" data-unlink>$ gosh ./ook.scm
+Hello World!
+</pre><p>おわり。</p>
+
+
+{% endraw %}

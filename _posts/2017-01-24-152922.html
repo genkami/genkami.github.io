@@ -1,0 +1,94 @@
+---
+layout: post
+title: implicit parameterによる型クラスの罠
+tags:
+- Scala
+
+---
+{% raw %}
+<p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Scala">Scala</a>の型クラスは暗黙引数の受け渡しにより行われるため、スコープごとに同一な型クラスの別な<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%B9%A5%BF%A5%F3%A5%B9">インスタンス</a>実装を使うことができます。<br />
+例えば、以下のような比較を行う型クラス、Cmpを考えてみましょう。</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink><span class="synType">trait</span> Cmp[A] {
+<span class="synIdentifier">  def</span> eq(x : A, y : A) : Boolean
+<span class="synIdentifier">  def</span> lt(x : A, y : A) : Boolean
+}
+</pre><p>これに対して、例えばIntであれば少なくとも以下の2種類の<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%B9%A5%BF%A5%F3%A5%B9">インスタンス</a>が考えられます。</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink><span class="synComment">// 昇順</span>
+<span class="synType">object</span> IntCmp <span class="synType">extends</span> Cmp[Int] {
+<span class="synIdentifier">  def</span> eq(x : Int, y : Int) : Boolean = x == y
+<span class="synIdentifier">  def</span> lt(x : Int, y : Int) : Boolean = x &lt; y
+}
+
+<span class="synComment">// 降順</span>
+<span class="synType">object</span> IntRevCmp <span class="synType">extends</span> Cmp[Int] {
+<span class="synIdentifier">  def</span> eq(x : Int, y : Int) : Boolean = x == y
+<span class="synIdentifier">  def</span> lt(x : Int, y : Int) : Boolean = x &gt; y
+}
+</pre><p>この時点では特に問題はありません。<br />
+しかし、以下のようなデータ構造を考えてみましょう。</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink><span class="synType">sealed</span> <span class="synType">trait</span> TreeSet[+A]
+<span class="synType">case</span> <span class="synType">class</span> Branch[A](x : A, left : TreeSet[A], right : TreeSet[A]) <span class="synType">extends</span> TreeSet[A]
+<span class="synType">case object</span> Leaf <span class="synType">extends</span> TreeSet[Nothing]
+
+<span class="synType">object</span> TreeSet {
+
+<span class="synIdentifier">  def</span> empty[A] : TreeSet[A] = Leaf
+
+<span class="synIdentifier">  def</span> insert[A](x : A, tree : TreeSet[A])(implicit C : Cmp[A]) : TreeSet[A] =
+    tree match {
+      <span class="synType">case</span> Leaf =&gt; Branch(x, Leaf, Leaf)
+      <span class="synType">case</span> Branch(y, left, right) =&gt;
+        <span class="synStatement">if</span> (C.eq(x, y))
+          tree
+        <span class="synStatement">else</span> <span class="synStatement">if</span> (C.lt(x, y))
+          Branch(y, insert(x, left), right)
+        <span class="synStatement">else</span>
+          Branch(y, left, insert(x, right))
+    }
+
+<span class="synIdentifier">  def</span> fromSeq[A](xs : Seq[A])(implicit C : Cmp[A]) : TreeSet[A] =
+    xs.foldLeft(Leaf : TreeSet[A]){ (tr, x) =&gt; insert(x, tr) }
+
+<span class="synIdentifier">  def</span> apply[A](elems : A*)(implicit C : Cmp[A]) : TreeSet[A] =
+    TreeSet.fromSeq(elems)
+
+<span class="synIdentifier">  def</span> elem[A](x : A, tree : TreeSet[A])(implicit C : Cmp[A]) : Boolean =
+    tree match {
+      <span class="synType">case</span> Leaf =&gt; <span class="synConstant">false</span>
+      <span class="synType">case</span> Branch(y, left, right) =&gt;
+        <span class="synStatement">if</span> (C.eq(x, y))
+          <span class="synConstant">true</span>
+        <span class="synStatement">else</span> <span class="synStatement">if</span> (C.lt(x, y))
+          elem(x, left)
+        <span class="synStatement">else</span>
+          elem(x, right)
+    }
+}
+</pre><p>これは、Cmp[A]で与えられた順序を元にした2分木によるツリーセットです(平衡をとったりはしていませんが、あくまで例なのでご了承ください)。</p><p>これを使うライブラリを考えてみましょう。</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink><span class="synType">object</span> Hoge {
+  implicit <span class="synType">val</span> C : Cmp[Int] = IntCmp
+  <span class="synType">val</span> someSet = TreeSet(<span class="synConstant">5</span>, <span class="synConstant">3</span>, <span class="synConstant">7</span>, <span class="synConstant">1</span>, <span class="synConstant">6</span>)
+}
+</pre><p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Hoge">Hoge</a>ライブラリでは、昇順のCmpを利用したツリーセット、someSetを定義しています。</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink><span class="synType">object</span> Fuga {
+  implicit <span class="synType">val</span> C : Cmp[Int] = IntRevCmp
+<span class="synIdentifier">  def</span> is7InSet(set : TreeSet[Int]) : Boolean =
+    TreeSet.elem(<span class="synConstant">7</span>, set)
+}
+</pre><p>一方こちらのFugaライブラリでは、与えられたツリーセットに7が含まれているかどうかを判定する関数を定義しています。</p><p>これらのモジュールを使用するプログラムを考えてみましょう。</p>
+<pre class="code lang-scala" data-lang="scala" data-unlink><span class="synType">object</span> Main <span class="synType">extends</span> App {
+  println(<span class="synConstant">&quot;Hoge.someSet = &quot;</span> + Hoge.someSet.toString)
+  <span class="synStatement">if</span> (Fuga.is7InSet(Hoge.someSet))
+    println(<span class="synConstant">&quot;7 is in someSet&quot;</span>)
+  <span class="synStatement">else</span>
+    println(<span class="synConstant">&quot;7 is not in someSet&quot;</span>)
+}
+</pre><p>この実行結果はどうなるでしょうか？</p>
+<pre class="code" data-lang="" data-unlink>$ scala Main
+Hoge.someSet = Branch(5,Branch(3,Branch(1,Leaf,Leaf),Leaf),Branch(7,Branch(6,Leaf,Leaf),Leaf))
+7 is not in someSet</pre><p>someSetには7が含まれているにも関わらず、"7 is not in someSet"と表示されてしまいました。<br />
+これは<a class="keyword" href="http://d.hatena.ne.jp/keyword/Hoge">Hoge</a>.someSetがIntCmpを使っているのに対し、Fuga.is7InSetがIntRevCmpを使っていることが原因になります。</p><p>一つの型クラスに対して複数の<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%B9%A5%BF%A5%F3%A5%B9">インスタンス</a>が定義できるのは便利ではありますが、場合によってはこういった落とし穴もあるんですね。<br />
+実用上このような問題が起こることはあまりないとは思いますが。</p>
+
+
+{% endraw %}

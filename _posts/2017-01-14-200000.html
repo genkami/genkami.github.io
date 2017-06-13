@@ -1,0 +1,26 @@
+---
+layout: post
+title: Coqで等式の左右を入れ替える
+tags:
+- Coq
+
+---
+{% raw %}
+<p>タイトルの通りです。</p><p>eq_reflをdestructしていい感じにやるような方法でも解けることは解けます。</p>
+<pre class="code" data-lang="" data-unlink>Goal forall (T : Type) (x y : T), x = y -&gt; y = x.
+Proof.
+  intros T x y H. (* H : x = y *)
+  destruct H.
+  (* Goal: x = x *)
+  reflexivity.
+Qed.</pre><p>しかし、等式の左右入れ替えを行うためのタクティック、symmetryが用意されているので、これを使ったほうが賢いでしょう。</p>
+<pre class="code" data-lang="" data-unlink>Goal forall (T : Type) (x y : T), x = y -&gt; y = x.
+Proof.
+  intros T x y H. (* H : x = y *)
+  (* Goal: y = x *)
+  symmetry.
+  (* Goal: x = y *)
+  apply H.
+Qed.</pre>
+
+{% endraw %}

@@ -1,0 +1,130 @@
+---
+layout: post
+title: JavaにOptional<T>は必要だったのか
+tags:
+- Java
+
+---
+{% raw %}
+<p>大学の授業で初めて<a class="keyword" href="http://d.hatena.ne.jp/keyword/Java">Java</a>に触れて思ったことです。<br />
+<a class="keyword" href="http://d.hatena.ne.jp/keyword/Java">Java</a>に関しては全くの初心者なので、見当違いのことを言ってたらごめんなさい。</p>
+
+<div class="section">
+    <h3>Functional Interface</h3>
+    <p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Java">Java</a> 8以降にはFunctional Interface(訳語は関数型インターフェース、かと思いきや<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%B3%A5%F3%A5%D1%A5%A4%A5%E9">コンパイラ</a>内のメッセージでは機能インターフェースとか呼ばれていたりするのでよく分からない)という機能が追加されています。これは抽象<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%E1%A5%BD%A5%C3%A5%C9">メソッド</a>が1つしか無いようなインターフェースの実装を<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%E9%A5%E0%A5%C0%BC%B0">ラムダ式</a>っぽく表記できるような機能です。例えば、</p>
+<pre class="code lang-java" data-lang="java" data-unlink><span class="synType">class</span> Event {
+    <span class="synIdentifier">...</span>
+}
+
+<span class="synType">interface</span> Handler {
+    <span class="synType">public</span> <span class="synType">void</span> handle(Event e);
+}
+</pre><p>というようなクラスがあったとして、今まではその実装となる無名クラスの<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%A4%A5%F3%A5%B9%A5%BF%A5%F3%A5%B9">インスタンス</a>を</p>
+<pre class="code lang-java" data-lang="java" data-unlink>Handler h = <span class="synStatement">new</span> Handler() {
+        <span class="synPreProc">@Override</span>
+        <span class="synType">public</span> <span class="synType">void</span> handle(Event e) {
+            <span class="synIdentifier">...</span>
+        }
+    };
+</pre><p>というように定義していたのに対して、<a class="keyword" href="http://d.hatena.ne.jp/keyword/Java">Java</a> 8からは</p>
+<pre class="code lang-java" data-lang="java" data-unlink>Handler h = e<span class="synError"> -&gt;</span> {
+    <span class="synIdentifier">...</span>
+};
+</pre><p>というように略記できる、という新たな文法です。</p>
+
+</div>
+<div class="section">
+    <h3>Optional<T></h3>
+    <p>これも関数型インターフェースの実装に伴って、<a class="keyword" href="http://d.hatena.ne.jp/keyword/Java">Java</a> 8で新たに追加された型です。<a class="keyword" href="http://d.hatena.ne.jp/keyword/Haskell">Haskell</a>でいうMaybe, <a class="keyword" href="http://d.hatena.ne.jp/keyword/Scala">Scala</a>でいうOptionみたいなアレですね。<br />
+要は値がnullableなのかどうかを型レベルで指定してやりましょう、という趣旨の型ということです。<br />
+今まで、</p>
+<pre class="code lang-java" data-lang="java" data-unlink>String name = <span class="synIdentifier">...</span>;
+<span class="synStatement">if</span> (name == <span class="synConstant">null</span>) {
+    System.out.println(<span class="synConstant">&quot;Anonymous&quot;</span>);
+} <span class="synStatement">else</span> {
+    System.out.println(name);
+}
+</pre><p>というように書いていたコードを、Optionalを使って書くと</p>
+<pre class="code lang-java" data-lang="java" data-unlink>Optional&lt;String&gt; name = <span class="synIdentifier">...</span>;
+System.out.println(name.orElse(<span class="synConstant">&quot;Anonymous&quot;</span>));
+</pre><p>と書けるようになります。</p><p>最大のメリットは、値が無い場合についての処理を強制できる点でしょうか。<br />
+nullを使う場合、「この変数の値がnullを取り得るのか」「この関数はnullを返しうるのか」といった情報は、ドキュメントにのみ存在していました。Optionalを使うことで、それを明示化することができるわけです。<br />
+また、nullはほとんど全ての動作に対してNullPointerExceptionを投げますが、かと言ってどのような状況でも常にNullPointerExceptionが投げられるわけではないため、例えば上のコードを間違って以下のように書いてしまった場合、catch節以下はどのような場合でも実行されず、name == nullの場合は単に「null」と出力されます。</p>
+<pre class="code lang-java" data-lang="java" data-unlink>String name = <span class="synIdentifier">...</span>;
+<span class="synStatement">try</span> {
+    System.out.println(name);
+} <span class="synStatement">catch</span> (NullPointerException e) {
+    System.out.println(<span class="synConstant">&quot;Anonymous&quot;</span>);
+}
+</pre><p>このような問題を解決するために<a class="keyword" href="http://d.hatena.ne.jp/keyword/%B4%D8%BF%F4%B7%BF%B8%C0%B8%EC">関数型言語</a>から輸入されてきたのがOptional、というわけですね</p>
+
+</div>
+<div class="section">
+    <h3><a class="keyword" href="http://d.hatena.ne.jp/keyword/Java">Java</a>にとってのOptionalの立ち位置</h3>
+    <p>確かにOptionalを使うことで「値が無いかもしれない」ような値に対する処理をより簡単に行うことができるようになりました。<br />
+しかし、次のような場合はどうでしょう:</p>
+<pre class="code lang-java" data-lang="java" data-unlink>Optional&lt;T&gt; maybeValue = <span class="synIdentifier">...</span>;
+maybeValue.map(value<span class="synError"> -&gt;</span> {
+        SomeClass.someMethodThatMayFail(value);
+    });
+</pre><p>someMethodThatMayFailは検査例外SomeExceptionを投げるとします。</p><p>このようなコードを実際に書くことはできません。Optional<T>.mapの引数はFunctionですが、Functional Interface Function<T, U>は以下のような定義になっています(実際のコードではありませんが、ほぼ同じもの)。</p>
+<pre class="code lang-java" data-lang="java" data-unlink><span class="synType">interface</span> Function&lt;T, U&gt; {
+    <span class="synType">public</span> U apply(T t);
+
+    <span class="synComment">// ...(残りはdefaultメソッド)</span>
+}
+</pre><p>見ての通り、Function<T, U>.applyは例外を投げることができません。<br />
+コードの全ての部分が純粋な「関数型的」なコードなのであればあまり問題はありませんが、そもそも扱っている言語が<a class="keyword" href="http://d.hatena.ne.jp/keyword/Java">Java</a>なのでそうはいきません。既存の<a class="keyword" href="http://d.hatena.ne.jp/keyword/Java">Java</a>で書かれた資産のほとんどは、何らかのエラーが発生すれば素直に例外を投げます。</p><p>解決策としては以下のようなものが考えられますが、どれも一長一短。</p>
+
+<div class="section">
+    <h5>ifPresentの中の<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%E9%A5%E0%A5%C0%BC%B0">ラムダ式</a>で例外を全てcatchしてしまう</h5>
+    <p>とりあえずまず最初に思い付くであろう方法がこれです。しかし、これができるのは発生した例外がifPresentの中の<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%E9%A5%E0%A5%C0%BC%B0">ラムダ式</a>で対応できる場合に限られます。</p>
+
+</div>
+<div class="section">
+    <h5>自前でEither<T, U>のような型を作り、例外も含めて値として返す。</h5>
+    <p>根っからの関数型ユーザーであればまず最初に思い付くのはこの方法。残念ながら<a class="keyword" href="http://d.hatena.ne.jp/keyword/Java">Java</a>には現在のところEither型は用意されてませんが、自前で実装して以下のように書くこともできます。</p>
+<pre class="code lang-java" data-lang="java" data-unlink>maybeValue.map(value<span class="synError"> -&gt;</span> {
+        <span class="synStatement">try</span> {
+            SomeObject hoge = SomeClass.someMethodThatMayFail(value);
+            <span class="synStatement">return</span> Either.right(hoge);
+        } <span class="synStatement">catch</span> (SomeException e) {
+            <span class="synStatement">return</span> Either.left(e);
+        }
+    });
+</pre><p>ただし、この方法を使うとEitherから例外を取り出してthrowし直そうとか考え出した時に再び同じ問題に直面します。</p>
+
+</div>
+<div class="section">
+    <h5>非検査例外に変換して投げる</h5>
+    <p>非検査例外は補足する必要がないため、Function<T, U>.applyの中でも投げることができます。元の例外をそのままラップした非検査例外を投げて、外でcatchしてから元の検査例外に戻してthrowし直すという方法も考えられます。<br />
+……しかし、少しトリッキーですし、この方法で綺麗にコードが書けるとは思えません。特に<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%E9%A5%E0%A5%C0%BC%B0">ラムダ式</a>の中で互いに親子関係にない<a class="keyword" href="http://d.hatena.ne.jp/keyword/%CA%A3%BF%F4">複数</a>の例外を投げる場合、うまく作らないと非検査例外に変換する段階で例外の型情報が失われてしまいます。この方法はやめておいたほうがいいでしょう。</p>
+
+</div>
+<div class="section">
+    <h5>mapの中で例外を投げられるような自前Optionalを定義する</h5>
+    <pre class="code lang-java" data-lang="java" data-unlink><span class="synType">interface</span> FunctionThatMayFail&lt;T, R, E <span class="synType">extends</span> Throwable&gt; {
+    <span class="synType">public</span> R apply(T arg) <span class="synType">throws</span> E;
+}
+</pre><p>例えば以下のようなインターフェースを定義して、自前のOptional<T>のmap<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%E1%A5%BD%A5%C3%A5%C9">メソッド</a>の引数にFunctionThatMayFailを取るようにすることもできます。しかし、この方法も1つ上の方法と似たような問題を抱えています。</p><br />
+<br />
+<p>以上のことから考えて、どの場合でも確実にうまくやれる方法はどうも無さそうです。<br />
+え? <a class="keyword" href="http://d.hatena.ne.jp/keyword/Haskell">Haskell</a>ならうまいこといくのかって? MaybeT (Either e) aを使えば済む話です。<br />
+なぜ<a class="keyword" href="http://d.hatena.ne.jp/keyword/Haskell">Haskell</a>ならうまくいくのかというと、<a class="keyword" href="http://d.hatena.ne.jp/keyword/Haskell">Haskell</a>の場合は検査例外(的な情報)も戻り値の型に含むことができるからです。<br />
+<a class="keyword" href="http://d.hatena.ne.jp/keyword/Haskell">Haskell</a>は他の言語に比べて非常に機能が制限されている(例外が投げられなかったり、破壊的代入ができなかったり)かわりに、型に関する機能だけはやたら豊富にあります。それを利用して、<a class="keyword" href="http://d.hatena.ne.jp/keyword/Haskell">Haskell</a>であれば例えば「このコードは何らかのエラーを発生しうる」だとか「この部分では破壊的代入(的な動作)が起こりうる」だとかに相当する、いわばコードのメタ情報のようなものを型に含めることができるのです。そして、それらのメタ情報を<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%E2%A5%CA%A5%C9">モナド</a>変換子を使ってうまく組み合わせることができます。</p><p><a class="keyword" href="http://d.hatena.ne.jp/keyword/Java">Java</a>の場合、そういったメタ情報を柔軟に表わせるほど強力な型機能が無いかわりに、検査例外という全く別な方法を使って発生しうる例外の補足を行っています。<br />
+それに対して、Optionalは「型でコードのメタ情報を表す」に近いことを行っています。両者は似ていますが、方法としては全く別なものなので、相互に変換することができません。そのため、両者を同時に扱おうとすると面倒なことになってしまうわけです。<br />
+<br />
+</p>
+
+</div>
+</div>
+<div class="section">
+    <h3>ではどうするべきだったか</h3>
+    <p>そもそも通常の型がデフォルトでnullを取れるような設計が間違いだ。と言ってしまえばそれまでですが、そういう仕様になってしまったものはしょうがない。<a class="keyword" href="http://d.hatena.ne.jp/keyword/Java">Java</a>は<a class="keyword" href="http://d.hatena.ne.jp/keyword/%B8%E5%CA%FD%B8%DF%B4%B9">後方互換</a>性を最重要視しているので、今さら仕様変更することもできないでしょうし、今さらするくらいなら別な言語作ってろって話です。<br />
+うまいこと状況に合わせて「if (<a class="keyword" href="http://d.hatena.ne.jp/keyword/hoge">hoge</a> == null)」したり「if (<a class="keyword" href="http://d.hatena.ne.jp/keyword/hoge">hoge</a>.isPresent())」したりEitherでまとめて返したりを使いわけるしかないんじゃないですかねえ。</p><br />
+<br />
+<p>まあ、Optionalが便利なことは事実です。僕はこれからも<a class="keyword" href="http://d.hatena.ne.jp/keyword/Java">Java</a>でコード書く機会があればOptional使いまくりますけどね。</p>
+
+</div>
+
+{% endraw %}

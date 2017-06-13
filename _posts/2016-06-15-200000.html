@@ -1,0 +1,86 @@
+---
+layout: post
+title: gunfoldの型を読み解く
+tags:
+- Haskell
+
+---
+{% raw %}
+<p>まず最初に、Data型クラスのその他のメソッドについて見てみましょう。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synStatement">&gt;&gt;&gt;</span> <span class="synStatement">:</span>t toConstr
+toConstr <span class="synStatement">::</span> Data a <span class="synStatement">=&gt;</span> a <span class="synStatement">-&gt;</span> Constr
+</pre><p>toConstrは、値から値コンストラクタの情報を得るための関数です。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synType">data</span> Dish <span class="synStatement">=</span> Sushi { fish <span class="synStatement">::</span> String }
+          <span class="synStatement">|</span> Curry { isChicken <span class="synStatement">::</span> Bool, spicyLevel <span class="synStatement">::</span> Int }
+          <span class="synType">deriving</span> (Eq, Show, Data, Typeable)
+</pre><p>自前で定義したDish型に対して、toConstrを使ってみましょう。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synStatement">&gt;&gt;&gt;</span> toConstr Sushi { fish <span class="synStatement">=</span> <span class="synConstant">&quot;Salmon&quot;</span> }
+Sushi
+<span class="synStatement">&gt;&gt;&gt;</span> toConstr Curry { isChicken <span class="synStatement">=</span> False, spicyLevel <span class="synStatement">=</span> <span class="synConstant">2</span> }
+Curry
+</pre><p>さらに、取得したConstr型の値を用いて、さらにコンストラクタについての情報を得ることができます。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synStatement">&gt;&gt;&gt;</span> <span class="synStatement">let</span> con <span class="synStatement">=</span> toConstr Curry { isChicken <span class="synStatement">=</span> False, spicyLevel <span class="synStatement">=</span> <span class="synConstant">2</span> }
+<span class="synStatement">&gt;&gt;&gt;</span> con
+Curry
+<span class="synStatement">&gt;&gt;&gt;</span> constrFields con
+[<span class="synConstant">&quot;isChicken&quot;</span>,<span class="synConstant">&quot;spicyLevel&quot;</span>]
+<span class="synStatement">&gt;&gt;&gt;</span> constrIndex con
+<span class="synConstant">2</span>
+</pre><p>これらの情報から、CurryがDish型の2番目の値コンストラクタで、フィールドにisChickenとspicyLevelの2つを持つことがわかりました。</p><br />
+<p>逆に、Constrから元の値に戻すこともできます。そのための関数がgunfoldです。<br />
+gunfoldの型を見てみましょう。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink>gunfold
+  <span class="synStatement">::</span> Data a <span class="synStatement">=&gt;</span>
+     (forall b r<span class="synStatement">.</span> Data b <span class="synStatement">=&gt;</span> c (b <span class="synStatement">-&gt;</span> r) <span class="synStatement">-&gt;</span> c r)
+     <span class="synStatement">-&gt;</span> (forall r<span class="synStatement">.</span> r <span class="synStatement">-&gt;</span> c r) <span class="synStatement">-&gt;</span> Constr <span class="synStatement">-&gt;</span> c a
+</pre><p>例によって第二引数は値コンストラクタをApplicative的なものに包むだけの関数です。</p><p>第一引数の型を見てみましょう。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink>app <span class="synStatement">::</span> forall b r<span class="synStatement">.</span> Data b <span class="synStatement">=&gt;</span> c (b <span class="synStatement">-&gt;</span> r) <span class="synStatement">-&gt;</span> c r
+</pre><p>第一引数appは、(n - 1)個まで引数が適用された値コンストラクタに、n個めの引数を適用する関数です。<br />
+コンストラクタへ渡す各引数の型がバラバラであるため、appの型も非常に一般的なものとなっています。</p><p>前回定義したPerson型を使って、gunfoldの動きを見てみましょう。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synType">data</span> Person <span class="synStatement">=</span> Person {
+    name <span class="synStatement">::</span> String
+  , age <span class="synStatement">::</span> Int
+  , isMale <span class="synStatement">::</span> Bool
+  } <span class="synType">deriving</span> (Eq, Show, Data, Typeable)
+</pre><p>appを使って順に引数を適用させていった時のイメージは以下のようになります。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink>c Person                    <span class="synStatement">::</span> c (String <span class="synStatement">-&gt;</span> Int <span class="synStatement">-&gt;</span> Bool <span class="synStatement">-&gt;</span> Person)
+c (Person <span class="synConstant">&quot;Yamada&quot;</span>)         <span class="synStatement">::</span> c (Int <span class="synStatement">-&gt;</span> Bool <span class="synStatement">-&gt;</span> Person)
+c (Person <span class="synConstant">&quot;Yamada&quot;</span> <span class="synConstant">20</span>)      <span class="synStatement">::</span> c (Bool <span class="synStatement">-&gt;</span> Person)
+c (Persor <span class="synConstant">&quot;Yamada&quot;</span> <span class="synConstant">20</span> True) <span class="synStatement">::</span> c Person
+</pre><p>このような動作をする関数を実際に作ってみましょう。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink>app <span class="synStatement">::</span> forall c b r<span class="synStatement">.</span> (Monad c, Data b) <span class="synStatement">=&gt;</span> c (b <span class="synStatement">-&gt;</span> r) <span class="synStatement">-&gt;</span> c r
+app con' <span class="synStatement">=</span> con' <span class="synStatement">&gt;&gt;=</span> <span class="synStatement">\</span>con <span class="synStatement">-&gt;</span> <span class="synStatement">do</span>
+  <span class="synStatement">let</span> rep <span class="synStatement">=</span> typeRep (Proxy <span class="synStatement">::</span> Proxy b)
+  <span class="synStatement">if</span> <span class="synStatement">|</span> rep <span class="synStatement">==</span> typeRep (Proxy <span class="synStatement">::</span> Proxy String)
+       <span class="synStatement">-&gt;</span> return <span class="synStatement">$</span> con <span class="synStatement">$</span> unsafeCoerce <span class="synConstant">&quot;Yamada&quot;</span>
+     <span class="synStatement">|</span> rep <span class="synStatement">==</span> typeRep (Proxy <span class="synStatement">::</span> Proxy Int)
+       <span class="synStatement">-&gt;</span> return <span class="synStatement">$</span> con <span class="synStatement">$</span> unsafeCoerce (<span class="synConstant">20</span> <span class="synStatement">::</span> Int)
+     <span class="synStatement">|</span> rep <span class="synStatement">==</span> typeRep (Proxy <span class="synStatement">::</span> Proxy Bool)
+       <span class="synStatement">-&gt;</span> return <span class="synStatement">$</span> con <span class="synStatement">$</span> unsafeCoerce True
+</pre><p>実行例:</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synStatement">&gt;&gt;&gt;</span> <span class="synStatement">let</span> con <span class="synStatement">=</span> toConstr <span class="synStatement">$</span> Person <span class="synConstant">&quot;Tanaka&quot;</span> <span class="synConstant">15</span> True
+<span class="synStatement">&gt;&gt;&gt;</span> con
+Person
+<span class="synStatement">&gt;&gt;&gt;</span> gunfold app Just con <span class="synStatement">::</span> Maybe Person
+Just (Person {name <span class="synStatement">=</span> <span class="synConstant">&quot;Yamada&quot;</span>, age <span class="synStatement">=</span> <span class="synConstant">20</span>, isMale <span class="synStatement">=</span> True})
+</pre><p>この例では引数の型を調べるのに、Data.TypeableのtypeRepを使用しています。</p><p>gunfoldの簡単なバージョンとして、fromCotstr, fromConstrB, fromConstrMの3種類の関数が用意されています。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink>fromConstr <span class="synStatement">::</span> Data a <span class="synStatement">=&gt;</span> Constr <span class="synStatement">-&gt;</span> a
+fromConstrB <span class="synStatement">::</span> Data a <span class="synStatement">=&gt;</span> (forall d<span class="synStatement">.</span> Data d <span class="synStatement">=&gt;</span> d) <span class="synStatement">-&gt;</span> Constr <span class="synStatement">-&gt;</span> a
+fromConstrM <span class="synStatement">::</span> (Data a, Monad m) <span class="synStatement">=&gt;</span> (forall d<span class="synStatement">.</span> Data d <span class="synStatement">=&gt;</span> m d) <span class="synStatement">-&gt;</span> Constr <span class="synStatement">-&gt;</span> m a
+</pre><p>fromConstrは値コンストラクタのみからなるフィールド無しの値を生成し、、fromConstrBは各フィールドの値を生成する関数を受け取りコンストラクタに適用します。fromConstrMはfromConstrBの<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%E2%A5%CA%A5%C9">モナド</a>版です。</p><p>先ほどのappをfromConstrB用に書き換えると、以下のようになります。</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink>fieldValue <span class="synStatement">::</span> forall d<span class="synStatement">.</span> Data d <span class="synStatement">=&gt;</span> d
+fieldValue
+  <span class="synStatement">|</span> rep <span class="synStatement">==</span> typeRep (Proxy <span class="synStatement">::</span> Proxy String)
+  <span class="synStatement">=</span> unsafeCoerce <span class="synConstant">&quot;Yamada&quot;</span>
+  <span class="synStatement">|</span> rep <span class="synStatement">==</span> typeRep (Proxy <span class="synStatement">::</span> Proxy Int)
+  <span class="synStatement">=</span> unsafeCoerce (<span class="synConstant">20</span> <span class="synStatement">::</span> Int)
+  <span class="synStatement">|</span> rep <span class="synStatement">==</span> typeRep (Proxy <span class="synStatement">::</span> Proxy Bool)
+  <span class="synStatement">=</span> unsafeCoerce True
+  <span class="synType">where</span> rep <span class="synStatement">=</span> typeRep (Proxy <span class="synStatement">::</span> Proxy d)
+</pre><p>実行例:</p>
+<pre class="code lang-haskell" data-lang="haskell" data-unlink><span class="synStatement">&gt;&gt;&gt;</span> fromConstrB fieldValue con <span class="synStatement">::</span> Person
+Person {name <span class="synStatement">=</span> <span class="synConstant">&quot;Yamada&quot;</span>, age <span class="synStatement">=</span> <span class="synConstant">20</span>, isMale <span class="synStatement">=</span> True}
+</pre><p><div class="hatena-asin-detail"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/4873114233/cloudear-22/"><img src="http://ecx.images-amazon.com/images/I/510S2ulyuJL._SL160_.jpg" class="hatena-asin-detail-image" alt="Real World Haskell―実戦で学ぶ関数型言語プログラミング" title="Real World Haskell―実戦で学ぶ関数型言語プログラミング"></a><div class="hatena-asin-detail-info"><p class="hatena-asin-detail-title"><a href="http://www.amazon.co.jp/exec/obidos/ASIN/4873114233/cloudear-22/">Real World Haskell―実戦で学ぶ関数型言語プログラミング</a></p><ul><li><span class="hatena-asin-detail-label">作者:</span> Bryan O'Sullivan,John Goerzen,Don Stewart,山下伸夫,伊東勝利,株式会社タイムインターメディア</li><li><span class="hatena-asin-detail-label">出版社/メーカー:</span> <a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%AA%A5%E9%A5%A4%A5%EA%A1%BC%A5%B8%A5%E3%A5%D1%A5%F3">オライリージャパン</a></li><li><span class="hatena-asin-detail-label">発売日:</span> 2009/10/26</li><li><span class="hatena-asin-detail-label">メディア:</span> 大型本</li><li><span class="hatena-asin-detail-label">購入</span>: 8人 <span class="hatena-asin-detail-label">クリック</span>: 245回</li><li><a href="http://d.hatena.ne.jp/asin/4873114233/cloudear-22" target="_blank">この商品を含むブログ (76件) を見る</a></li></ul></div><div class="hatena-asin-detail-foot"></div></div></p>
+
+
+{% endraw %}

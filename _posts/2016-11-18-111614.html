@@ -1,0 +1,27 @@
+---
+layout: post
+title: ApacheでCGIを動かす
+tags:
+- Linux
+
+---
+{% raw %}
+<p>今更<a class="keyword" href="http://d.hatena.ne.jp/keyword/CGI">CGI</a>、と思うかもしれませんが、諸般の事情により<a class="keyword" href="http://d.hatena.ne.jp/keyword/CGI">CGI</a>を実行せざるを得ない状況に陥ってしまったので、ここにその方法をメモしておきます。</p>
+
+<div class="section">
+    <h3><a class="keyword" href="http://d.hatena.ne.jp/keyword/CGI">CGI</a>のモジュールが読み込まれているか確認</h3>
+    <p>少なくとも<a class="keyword" href="http://d.hatena.ne.jp/keyword/Ubuntu">Ubuntu</a>のapache2では、<a class="keyword" href="http://d.hatena.ne.jp/keyword/cgi">cgi</a>_moduleはデフォルトでは読み込まれていません。<br />
+モジュールを有効化するには、/path/to/mods-enabled/にモジュールの<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%B7%A5%F3%A5%DC%A5%EA%A5%C3%A5%AF%A5%EA%A5%F3%A5%AF">シンボリックリンク</a>を貼ります。</p>
+<pre class="code" data-lang="" data-unlink>$ ln -s /etc/apache2/mods-available/cgi.load /etc/apache2/mods-enabled/</pre>
+</div>
+<div class="section">
+    <h3><a class="keyword" href="http://d.hatena.ne.jp/keyword/CGI">CGI</a>の実行設定</h3>
+    <p>まずは<a class="keyword" href="http://d.hatena.ne.jp/keyword/cgi">cgi</a>が置いてある<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%C7%A5%A3%A5%EC%A5%AF%A5%C8">ディレクト</a>リで、<a class="keyword" href="http://d.hatena.ne.jp/keyword/cgi">cgi</a>の実行を許可するようにapache2.confの設定を行います。</p>
+<pre class="code" data-lang="" data-unlink>&lt;Directory /var/www/cgi-bin/&gt;
+        Options ExecCGI
+&lt;/Directory&gt;</pre><p>もしくは、ScriptAliasを使用することによって、その<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%C7%A5%A3%A5%EC%A5%AF%A5%C8">ディレクト</a>リで<a class="keyword" href="http://d.hatena.ne.jp/keyword/cgi">cgi</a>の実行を許可することができるようです。</p>
+<pre class="code" data-lang="" data-unlink>ScriptAlias /cgi-bin/ /var/www/cgi-bin/</pre><p>最後に、<a class="keyword" href="http://d.hatena.ne.jp/keyword/CGI">CGI</a>として実行したい<a class="keyword" href="http://d.hatena.ne.jp/keyword/%A5%B9%A5%AF%A5%EA%A5%D7%A5%C8">スクリプト</a>の拡張子を設定します。</p>
+<pre class="code" data-lang="" data-unlink>AddHandler cgi-script .pl</pre>
+</div>
+
+{% endraw %}
