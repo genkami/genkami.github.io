@@ -105,13 +105,10 @@
        this.max_queue_size = Math.max(this.max_queue_size, this.pq.length);
        var first = this.pq.dequeue();
        this.puzzle = first.p;
-       console.log(first.p.puzzlestr);
        this.how_many_loop++;
        this.max_depth = Math.max(this.max_depth, first.p.depth);
 
        if (first.p.puzzlestr === this.goal.puzzlestr) {
-         console.log(first.p.puzzlestr);
-         console.log(this.puzzle.puzzlestr);
          this.message = '探索が終了しました。';
          this.started = false;
          clearInterval(this.timer);
