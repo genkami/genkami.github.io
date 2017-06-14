@@ -38,6 +38,9 @@
           <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title | slice: 0, 17 }}{% if post.title.size > 18 %}...{% endif %}</a>
         </div>
         {% endfor %}
+        <div>
+          <a href="/articles.html">[more]</a>
+        </div>
 
         <h3>Tags</h3>
         <ul>
@@ -45,11 +48,6 @@
           <li><a href="{{ site.baseurl }}/tags.html#{{ tag[0] }}">{{ tag[0] }}</a></li>
           {% endfor %}
         </ul>
-
-        <h3>Links</h3>
-        <div>
-          <a href="{{ site.baseurl }}/links.html">雑多な静的ページ</a>
-        </div>
       </header>
       <section>
 

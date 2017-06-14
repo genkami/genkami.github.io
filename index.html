@@ -1,66 +1,43 @@
 ---
 layout: default
-title: TOP
+title: top
 ---
-<h1>記事一覧</h1>
-<div class="articles">
-  {% for post in site.posts %}
-  <div class="article">
-    <article style="padding-top: 20px; padding-bottom: 20px;">
-      <h2><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></h2>
-      <div>
-        {{ post.content | strip_html | slice: 0, 500 }}
-      </div>
-    </article>
-    <hr>
-  </div>
-  {% endfor %}
+<h1>あるもの</h1>
+<hr>
+<div>
+  <h2><a href="/articles.html">記事一覧</a></h2>
 </div>
-<div id="prev-page" style="float: left;"><a href="" id="prev-page-link">←新しい記事</a></div>
-<div id="next-page" style="text-align: right;"><a href="" id="next-page-link">古い記事→</a></div>
+<h1>その他</h1>
+<hr>
+<div>
+  <h2><a href="/ku/eight-puzzle-demo/">Eight Puzzle</a></h2>
+  8パズルをいろいろなアルゴリズムで勝手に解いてくれます。
+</div>
+
+<div>
+  <h2><a href="http://monamonamonad.github.io/lifegame/">ライフゲーム</a></h2>
+  <p>唐突にライフゲームがしたくなったので作りました。</p>
+</div>
+
+<div>
+  <h2><a href="http://monamonamonad.github.io/tetris/">テトリス</a></h2>
+  <p>1時間でテトリスを作る動画かなんかをみて自分もやってみようと思ったら2時間かかりました。まだまだ修行が足りない。</p>
+</div>
+
+<div>
+  <h2><a href="http://monamonamonad.github.io/jk/">じゃんけん</a></h2>
+  <p>スマホがあればどこでも誰とでもじゃんけんができます。</p>
+</div>
+
+<div>
+  <h2><a href="http://dokodeglobal.com/av_classifier/">AV女優判定機</a></h2>
+  <p>TwitterのユーザーがAV女優かどうか判定してくれます。</p>
+</div>
 
 
-<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-<script>
- (function () {
-   var offset = 10;
+<style>
+ section div {
+   margin-bottom: 30px;
+ }
+</style>
 
-   var movePage = () => {
-     var currentPage;
-     if (location.hash === '' || location.hash === '#') {
-       currentPage = 0;
-     } else {
-       currentPage = parseInt(location.hash.substring(1));
-     }
-     if (isNaN(currentPage)) {
-       location.href = '/';
-       return;
-     }
-
-     $('.articles .article').hide();
-
-     var start_index = offset * currentPage;
-     $('.article').slice(start_index, start_index + offset).show();
-     if (currentPage > 0) {
-       $('#prev-page-link').attr('href', '#' + (currentPage - 1));
-       $('#prev-page').show();
-     } else {
-       $('#prev-page').hide();
-     }
-     var num_articles = $('.article').length;
-     if (offset * (currentPage + 1) < num_articles) {
-       $('#next-page-link').attr('href', '#' + (currentPage + 1));
-       $('#next-page').show();
-     } else {
-       $('#next-page').hide();
-     }
-   };
-
-   $(document).ready(() => movePage());
-   $(window).on('hashchange', () => {
-     movePage();
-     window.scrollTo(0, 0);
-   });
-
- })();
-</script>
