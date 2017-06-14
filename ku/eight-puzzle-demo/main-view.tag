@@ -16,6 +16,7 @@
     </div>
     <div>
       <button onClick={ cancel }>中止</button>
+      <button onClick={ reset }>リセット</button>
     </div>
     <div>
       { message }
@@ -130,6 +131,11 @@
        clearInterval(this.timer);
        this.initialize();
        this.update();
+     }
+
+     reset() {
+       this.cancel();
+       this.initialize();
      }
     </script>
 </main-view>

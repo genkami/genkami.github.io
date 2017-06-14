@@ -1,4 +1,43 @@
 (function () {
+
+  // 諸事情により https://github.com/adamhooper/js-priority-queue とAPI互換
+  // 実装は雑だし効率も良くない
+  function PriorityQueue(args) {
+    this.comperator = args.comperator;
+    this.elems = args.initialValues;
+    this.length = this.elems.length;
+  }
+
+  window.PriorityQueue = PriorityQueue;
+
+  PriorityQueue.prototype.queue = function (x) {
+    this.elems.push(x);
+    this.length = this.elems.length;
+  };
+
+  PriorityQueue.prototype.dequeue = function () {
+    if (this.elems.length == 0) throw 'empty queue';
+    this.elems.sort(this.comperator);
+    var ret = this.elems.shift();
+    this.length = this.elems.length;
+    return ret;
+  };
+
+  // js-priority-queue にはないメソッド
+  // pred を満たす要素を一つポップして返す
+  // 一つもない場合は null
+  PriorityQueue.prototype.popElem = function (pred) {
+    for (var i = 0; i < this.elems.length; i++) {
+      if (pred(this.elems[i])) {
+        var ret = this.elems.splice(i, 1)[0];
+        this.length = this.elems.length;
+        return ret;
+      }
+    }
+    return null;
+  };
+
+
   PUZZLE_WIDTH = 3;
   PUZZLE_HEIGHT = 3;
 
@@ -82,8 +121,15 @@
   // 副作用として、 pq, visited の値を更新する。
   Puzzle.idaStarStep = function (puzzle, h, pq, visited, goal, max_depth) {
     puzzle.possibleNextSteps().forEach((p) => {
-      if (p.depth <= max_depth && !(p.puzzlestr in visited)) {
-        pq.queue({ p: p, h: h(p) });
+      if (p.puzzlestr in visited) {
+        elm = pq.popElem((elm) => elm.p.puzzlestr == p.puzzlestr);
+        if (elm && p.depth > elm.p.depth) {
+          pq.queue(elm);
+        } else {
+          pq.queue({ p: p, h: p.depth + h(p) });
+        }
+      } else if (p.depth <= max_depth) {
+        pq.queue({ p: p, h: p.depth + h(p) });
         visited[p.puzzlestr] = true;
       }
     });
@@ -95,8 +141,15 @@
   // 副作用として、 pq, visited の値を更新する。
   Puzzle.aStarStep = function (puzzle, h, pq, visited, goal) {
     puzzle.possibleNextSteps().forEach((p) => {
-      if (!(p.puzzlestr in visited)) {
-        pq.queue({ p: p, h: h(p) });
+      if (p.puzzlestr in visited) {
+        elm = pq.popElem((elm) => elm.p.puzzlestr == p.puzzlestr);
+        if (elm && p.depth > elm.p.depth) {
+          pq.queue(elm);
+        } else {
+          pq.queue({ p: p, h: p.depth + h(p) });
+        }
+      } else {
+        pq.queue({ p: p, h: p.depth + h(p) });
         visited[p.puzzlestr] = true;
       }
     });
