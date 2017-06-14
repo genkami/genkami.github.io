@@ -1,7 +1,7 @@
 <main-view>
   <puzzle board={ puzzle }></puzzle>
   <form onSubmit={ runSearch }>
-    <select value={ algIndex }>
+    <select value={ algIndex } onChange={ setAlgIndex }>
       <option each={ alg, i in algorithms } value={ i }>{ alg.desc }</option>
     </select>
     <input type="submit" value="サーチを実行する">
@@ -13,6 +13,8 @@
       節点展開回数: { how_many_loop },
       保存している節点の最大数: { max_queue_size },
       盤面の深さの最大値: { max_depth }
+    </div>
+    <div>
       <button onClick={ cancel }>中止</button>
     </div>
     <div>
@@ -34,11 +36,13 @@
          h: 'manhattan' }
      ];
      this.algIndex = 0;
-     this.initial = new Puzzle('304E21675', 0, 0, 1);
-     this.goal = new Puzzle('012345678E', 0, 2, 2);
+     // this.initial = new Puzzle('01234567E', 0, 2, 2);
+     this.initial = new Puzzle('3026147E5', 0, 0, 1);
+     this.goal = new Puzzle('01234567E', 0, 2, 2);
      this.message = '';
      this.cmp = (a, b) => a.h - b.h;
-     this.interval = 1;
+     this.interval = 50;
+     this.started = false;
 
      makeInitialPQ() {
        return new PriorityQueue({
@@ -60,6 +64,11 @@
 
      this.initialize();
 
+     setAlgIndex (e) {
+       this.algIndex = e.target.selectedIndex;
+       this.alg = this.algorithms[this.algIndex];
+     }
+
      runSearch(e) {
        e.preventDefault();
        this.alg = this.algorithms[this.algIndex];
@@ -69,20 +78,21 @@
          this.h = Puzzle.heuristic.countIncorrectPiece(this.goal);
        }
        this.initialize();
+       this.started = true;
        this.timer = setInterval(this.step, this.interval);
      }
 
      step() {
+       if (!this.started) return;
        if (this.pq.length == 0) {
          if (this.alg.type == 'A*') {
-           console.log('nannyate');
            this.message = '探索に失敗しました: 存在し得ない盤面です。';
+           this.started = false;
            clearInterval(this.timer);
            this.update();
            return;
          } else {
            // IDA*
-           console.log('fukakusuru');
            this.pq = this.makeInitialPQ();
            this.cutoff++;
            this.visited = {};
@@ -92,11 +102,15 @@
        this.max_queue_size = Math.max(this.max_queue_size, this.pq.length);
        var first = this.pq.dequeue();
        this.puzzle = first.p;
+       console.log(first.p.puzzlestr);
        this.how_many_loop++;
        this.max_depth = Math.max(this.max_depth, first.p.depth);
 
        if (first.p.puzzlestr === this.goal.puzzlestr) {
+         console.log(first.p.puzzlestr);
+         console.log(this.puzzle.puzzlestr);
          this.message = '探索が終了しました。';
+         this.started = false;
          clearInterval(this.timer);
          this.update();
          return;
@@ -112,6 +126,7 @@
      }
 
      cancel() {
+       this.started = false;
        clearInterval(this.timer);
        this.initialize();
        this.update();

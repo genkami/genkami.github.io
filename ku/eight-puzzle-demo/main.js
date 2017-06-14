@@ -125,11 +125,13 @@
         var c = goal.puzzlestr[i];
         var j = 0;
         for (; j < p.puzzlestr.length; j++) {
-          if (p.puzzlestr[j] == c) break;
+          if (p.puzzlestr[j] == c) {
+            break;
+          }
         }
-        var p = Puzzle.fromStrIndex(i);
-        var q = Puzzle.fromStrIndex(j);
-        dist += Math.abs(p[0] - q[0]) + Math.abs(p[1] - q[1]);
+        var a = Puzzle.fromStrIndex(i);
+        var b = Puzzle.fromStrIndex(j);
+        dist += Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]);
       }
       return dist;
     };
