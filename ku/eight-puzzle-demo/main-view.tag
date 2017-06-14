@@ -67,7 +67,7 @@
 
      this.initialize();
 
-     setInterval(() => this.update(), 300);
+     setInterval(() => this.update(), 166);
 
      setAlgIndex (e) {
        this.algIndex = e.target.selectedIndex;
