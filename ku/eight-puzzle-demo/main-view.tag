@@ -41,7 +41,7 @@
      this.goal = new Puzzle('01234567E', 0, 2, 2);
      this.message = '';
      this.cmp = (a, b) => a.h - b.h;
-     this.interval = 50;
+     this.interval = 10;
      this.started = false;
 
      makeInitialPQ() {
@@ -64,6 +64,8 @@
 
      this.initialize();
 
+     setInterval(() => this.update(), 300);
+
      setAlgIndex (e) {
        this.algIndex = e.target.selectedIndex;
        this.alg = this.algorithms[this.algIndex];
@@ -77,6 +79,7 @@
        } else {
          this.h = Puzzle.heuristic.countIncorrectPiece(this.goal);
        }
+       this.message = '';
        this.initialize();
        this.started = true;
        this.timer = setInterval(this.step, this.interval);
@@ -89,7 +92,6 @@
            this.message = '探索に失敗しました: 存在し得ない盤面です。';
            this.started = false;
            clearInterval(this.timer);
-           this.update();
            return;
          } else {
            // IDA*
@@ -112,7 +114,6 @@
          this.message = '探索が終了しました。';
          this.started = false;
          clearInterval(this.timer);
-         this.update();
          return;
        }
 
@@ -122,7 +123,6 @@
          // IDA*
          Puzzle.idaStarStep(first.p, this.h, this.pq, this.visited, this.goal, this.cutoff);
        }
-       this.update();
      }
 
      cancel() {
