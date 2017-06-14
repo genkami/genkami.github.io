@@ -38,7 +38,9 @@
      ];
      this.algIndex = 0;
      // this.initial = new Puzzle('01234567E', 0, 2, 2);
-     this.initial = new Puzzle('3026147E5', 0, 0, 1);
+     // this.initial = new Puzzle('302E14675', 0, 0, 1);
+     // this.initial = new Puzzle('3026E4715', 0, 1, 1);
+     this.initial = new Puzzle('6327E4105', 0, 1, 1);
      this.goal = new Puzzle('01234567E', 0, 2, 2);
      this.message = '';
      this.cmp = (a, b) => a.h - b.h;

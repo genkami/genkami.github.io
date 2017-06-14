@@ -117,7 +117,6 @@
 
   // ヒューリスティック関数 h を用いて IDA* アルゴリズムにより盤面の検索を1ステップ行う。
   // この際、探索に優先度付きキュー pq を用いる。
-  // また、 visited にキーが存在するような盤面は探索を行わない。
   // 副作用として、 pq, visited の値を更新する。
   Puzzle.idaStarStep = function (puzzle, h, pq, visited, goal, max_depth) {
     puzzle.possibleNextSteps().forEach((p) => {
@@ -125,7 +124,7 @@
         elm = pq.popElem((elm) => elm.p.puzzlestr == p.puzzlestr);
         if (elm && p.depth > elm.p.depth) {
           pq.queue(elm);
-        } else {
+        } else if (elm) {
           pq.queue({ p: p, h: p.depth + h(p) });
         }
       } else if (p.depth <= max_depth) {
@@ -137,7 +136,6 @@
 
   // ヒューリスティック関数 h を用いて A* アルゴリズムにより盤面の検索を1ステップ行う。
   // この際、探索に優先度付きキュー pq を用いる。
-  // また、 visited にキーが存在するような盤面は探索を行わない。
   // 副作用として、 pq, visited の値を更新する。
   Puzzle.aStarStep = function (puzzle, h, pq, visited, goal) {
     puzzle.possibleNextSteps().forEach((p) => {
@@ -145,7 +143,7 @@
         elm = pq.popElem((elm) => elm.p.puzzlestr == p.puzzlestr);
         if (elm && p.depth > elm.p.depth) {
           pq.queue(elm);
-        } else {
+        } else if (elm) {
           pq.queue({ p: p, h: p.depth + h(p) });
         }
       } else {
