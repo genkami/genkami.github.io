@@ -2,7 +2,14 @@
 layout: default
 ---
 <h1><a href="{{ site.url }}{{ site.baseurl }}{{ page.url }}">{{ page.title }}</a></h1>
-<p><time>{{ page.date | date: "%Y年%m月%d日" }}</time></p>
+<p class="article-metadata">
+  <time style="float: left;">{{ page.date | date: "%Y年%m月%d日" }}</time>
+  <ul class="tag-list">
+    {% for tag in page.tags %}
+    <li>{{ tag }}</li>
+    {% endfor %}
+  </ul>
+</p>
 {% include share-button.html %}
 <hr>
 <div class="article-body">
@@ -13,3 +20,24 @@ layout: default
 {% else %}
 {% include comments.html %}
 {% endif %}
+
+<style>
+ .article-metadata {
+ }
+
+ ul.tag-list {
+   display: inline;
+   list-style: none;
+   padding: 0px;
+   margin: 0px 0px 0px 20px;
+ }
+
+ ul.tag-list li {
+   display: inline;
+   border: 1px solid #e5e5e5;
+   font-size: 0.8em;
+   border-radius: 3px;
+   padding: 2px 10px 2px 10px;
+   margin-left: 5px;
+ }
+</style>
