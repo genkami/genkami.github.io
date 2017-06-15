@@ -1,0 +1,20 @@
+<h1><a style="text-decoration: none" href="/">{{ site.title | default: site.github.repository_name }}</a></h1>
+<h3>Profile</h3>
+<a href="{{ site.baseurl }}/about.html">Genta Kamitani</a>
+
+<h3>Recent Posts</h3>
+{% for post in site.posts limit:5 %}
+<div>
+  <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title | slice: 0, 17 }}{% if post.title.size > 18 %}...{% endif %}</a>
+</div>
+{% endfor %}
+<div>
+  <a href="/articles.html">[more]</a>
+</div>
+
+<h3>Tags</h3>
+<ul>
+  {% for tag in site.tags %}
+  <li><a href="{{ site.baseurl }}/tags.html#{{ tag[0] }}">{{ tag[0] }}</a></li>
+  {% endfor %}
+</ul>

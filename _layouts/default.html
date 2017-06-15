@@ -1,53 +1,12 @@
 <!doctype html>
 <html lang="{{ site.lang | default: "en-US" }}">
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>{{ page.title }} - {{ site.title | default: site.github.repository_name }}</title>
-
-    <link rel="stylesheet" href="{{ '/assets/css/style.css?v=' | append: site.github.build_revision | relative_url }}">
-    <link rel="stylesheet" href="/css/hatena.css">
-    <link rel="stylesheet" href="/css/style.css">
-    <meta name="viewport" content="width=device-width">
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <meta itemprop="name" content="{{ page.title }} - {{ site.title | default: site.github.repository_name }}">
-    <meta itemprop="image" content="{{ site.baseurl }}/img/Octocat.jpg">
-    <meta property="og:title" content="{{ page.title }} - {{ site.title | default: site.github.repository_name }}">
-    <meta property="og:image" content="{{ site.baseurl }}/img/Octocat.jpg">
-    <meta property="og:description" content="{{ page.content | strip_html | strip_newlines | slice: 0, 100 }}...">
-    <meta property="og:site_name" content="{{ site.title | default: site.github.repository_name }}">
-    <meta property="og:url" content="{{ site.url }}{{ site.baseurl }}{{ page.url }}">
-    <meta property="og:type" content="article">
-    <meta name="twitter:title" content="{{ site.title | default: site.github.repository_name }}">
-    <meta name="description" content="{{ page.content | strip_html | strip_newlines | slice: 0, 100 }}...">
-    <meta name="twitter:site" content="@{{ site.twitter.user }}">
-    <meta name="twitter:card" content="summary">
+    {% include head.html %}
   </head>
   <body>
     <div class="wrapper">
       <header>
-        <h1><a style="text-decoration: none" href="/">{{ site.title | default: site.github.repository_name }}</a></h1>
-        <h3>Profile</h3>
-        <a href="{{ site.baseurl }}/about.html">Genta Kamitani</a>
-
-        <h3>Recent Posts</h3>
-        {% for post in site.posts limit:5 %}
-        <div>
-          <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title | slice: 0, 17 }}{% if post.title.size > 18 %}...{% endif %}</a>
-        </div>
-        {% endfor %}
-        <div>
-          <a href="/articles.html">[more]</a>
-        </div>
-
-        <h3>Tags</h3>
-        <ul>
-          {% for tag in site.tags %}
-          <li><a href="{{ site.baseurl }}/tags.html#{{ tag[0] }}">{{ tag[0] }}</a></li>
-          {% endfor %}
-        </ul>
+        {% include header.html %}
       </header>
       <section>
 
