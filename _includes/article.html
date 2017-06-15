@@ -1,4 +1,4 @@
-<article>
+<article class="{% for t in include.page.tags %} tag-{{ t }} {% endfor %}">
   <h1><a href="{{ site.url }}{{ site.baseurl }}{{ include.page.url }}">{{ include.page.title }}</a></h1>
   <div class="article-metadata">
     <time style="float: left;">{{ include.page.date | date: "%Y年%m月%d日" }}</time>
@@ -8,11 +8,14 @@
       {% endfor %}
     </ul>
   </div>
+  {% if include.donotshowall %}
+  {% else %}
   {% include share-button.html %}
+  {% endif %}
   <hr>
   <div class="article-body">
-    {% if include.count %}
-    {{ include.page.content | strip_html | slice: 0, include.count }}
+    {% if include.donotshowall %}
+    {{ include.page.content | strip_html | slice: 0, 200 }}...
     {% else %}
     {{ include.page.content }}
     {% endif %}
