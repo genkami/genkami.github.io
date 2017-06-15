@@ -1,3 +1,24 @@
 header h2, h3, h4, h5, h6 {
     margin-top: 20px;
 }
+
+ .article-metadata {
+   margin-top: 5px;
+   margin-bottom: 5px;
+ }
+
+ ul.tag-list {
+   display: inline;
+   list-style: none;
+   padding: 0px;
+   margin: 0px 0px 0px 20px;
+ }
+
+ ul.tag-list li {
+   display: inline;
+   border: 1px solid #e5e5e5;
+   font-size: 0.8em;
+   border-radius: 3px;
+   padding: 2px 10px 2px 10px;
+   margin-left: 5px;
+ }
