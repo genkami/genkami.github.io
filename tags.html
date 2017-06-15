@@ -19,13 +19,22 @@ title: tags
 
 <script>
  (function () {
+   var parseTagAndPage = (hash) => {
+     var match = hash.match(/#([a-zA-Z0-9 _-]*)\/?(\d*)/);
+     if (!match) return { tag: null, page: 0 }
+     return {
+       tag: match[1] ? match[1] : null,
+       page: match[2] ? match[2] : 0
+     }
+   }
+
    var filterTags = () => {
      Array.prototype.forEach.call(
        document.getElementsByClassName('tag'),
        (e) => e.style.display = 'none'
      );
 
-     var currentTag = location.hash.substring(1);
+     var currentTag = parseTagAndPage(location.hash).tag;
      var articles = document.getElementsByClassName('tag-' + currentTag);
 
      Array.prototype.forEach.call(
