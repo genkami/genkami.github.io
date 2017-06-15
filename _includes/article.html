@@ -3,7 +3,8 @@
   <div class="article-metadata">
     <time style="float: left;">{{ include.page.date | date: "%Y年%m月%d日" }}</time>
     <ul class="tag-list">
-      {% for tag in include.page.tags %}
+      {% assign tags = include.page.tags | sort %}
+      {% for tag in tags %}
       <li>{{ tag }}</li>
       {% endfor %}
     </ul>
