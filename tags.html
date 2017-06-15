@@ -3,18 +3,26 @@ layout: default
 title: tags
 ---
 <h1><span class="show-only-tag-exists" style="display: none;">タグ '<span class="tag-name"></span>' の</span>記事一覧</h1>
-{% for tag in site.tags %}
-<div class="tag tag-{{ tag[0] }}" style="display: none;">
-  <ul>
-    {% for post in tag[1] %}
-    <li style="list-style: none;"><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></li>
-    {% endfor %}
-  </ul>
+<div class="articles">
+  {% for post in site.posts %}
+  <article class="{% for t in post.tags %} tag-{{ t }} {% endfor %}"
+           style="padding-top: 20px; padding-bottom: 20px; display: none;">
+    <h2><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></h2>
+    <div>
+      {{ post.content | strip_html | slice: 0, 500 }}
+    </div>
+    <hr>
+  </article>
+  {% endfor %}
 </div>
-{% endfor %}
-
-<div class="tag tag-unknown">
+<div id="tag-unknown">
   <span class="tag-name"></span>にマッチする記事はありません。
+</div>
+<div id="prev-page" style="float: left; display: none;">
+  <a href="" id="prev-page-link">←新しい記事</a>
+</div>
+<div id="next-page" style="text-align: right; display: none;">
+  <a href="" id="next-page-link">古い記事→</a>
 </div>
 
 <script>
@@ -38,23 +46,60 @@ title: tags
    };
 
    var parseTagAndPage = (hash) => {
-     var match = hash.match(/#([a-zA-Z0-9 _-]*)\/?(\d*)/);
-     if (!match) return { tag: null, page: 0 }
-     return {
-       tag: match[1] ? match[1] : null,
-       page: match[2] ? match[2] : 0
+     // #PAGE
+     var match = hash.match(/^#(\d+)\/?$/);
+     if (match) {
+       return { tag: null, page: match[1] ? parseInt(match[1]) : 0 };
      }
+     // #TAG/PAGE
+     match = hash.match(/^#([a-zA-Z0-9 _-]+)(\/(\d*)\/?)?$/);
+     if (match) return {
+         tag: match[1] ? match[1] : null,
+         page: match[3] ? parseInt(match[3]) : 0
+     };
+     return { tag: null, page: 0 };
+   };
+
+   var showPage = (articles, page) => {
+     var startIndex = offset * page;
+     Array.prototype.slice.call(articles, startIndex, startIndex + offset)
+          .forEach(showElement);
+   };
+
+   var urlFor = (tag, page) => {
+     if (tag) return `#${tag}/${page}`;
+     else return `#${page}`;
    }
 
+   var setNavigation = (articles, tag, page) => {
+     if (page > 0) {
+       document.getElementById('prev-page-link')
+               .setAttribute('href', urlFor(tag, page - 1));
+       showElement(document.getElementById('prev-page'));
+     } else {
+       hideElement(document.getElementById('prev-page'));
+     }
+     if (offset * (page + 1) < articles.length) {
+       document.getElementById('next-page-link')
+               .setAttribute('href', urlFor(tag, page + 1));
+       showElement(document.getElementById('next-page'));
+     } else {
+       hideElement(document.getElementById('next-page'));
+     }
+   };
+
    var filterTags = () => {
-     forEach(document.getElementsByClassName('tag'), hideElement);
+     forEach(document.getElementsByTagName('article'), hideElement);
+     hideElement(document.getElementById('tag-unknown'));
+     forEach(document.getElementsByClassName('show-only-tag-exists'), hideElement);
 
      var loc = parseTagAndPage(location.hash);
      var currentTag = loc.tag;
      var currentPage = loc.page;
-     var articles = document.getElementsByClassName('tag-' + currentTag);
+     var articles;
 
      if (currentTag) {
+       articles = document.getElementsByClassName(`tag-${currentTag}`);
        forEach(
          document.getElementsByClassName('tag-name'),
          (e) => e.innerText = currentTag
@@ -64,6 +109,7 @@ title: tags
          showInlineElement
        );
      } else {
+       articles = document.getElementsByTagName('article');
        forEach(
          document.getElementsByClassName('show-only-tag-exists'),
          hideElement
@@ -71,9 +117,10 @@ title: tags
      }
 
      if (articles.length > 0) {
-       forEach(articles, showElement);
-     } else {
-       forEach(document.getElementsByClassName('tag-unknown'), showElement);
+       showPage(articles, currentPage);
+       setNavigation(articles, currentTag, currentPage);
+     } else if (currentTag) {
+       showElement(document.getElementById('tag-unknown'));
      }
    }
 
