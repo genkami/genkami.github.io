@@ -2,7 +2,7 @@
 layout: default
 title: tags
 ---
-<h1>タグ '<span class="tag-name"></span>' の記事一覧</h1>
+<h1><span class="show-only-tag-exists" style="display: none;">タグ '<span class="tag-name"></span>' の</span>記事一覧</h1>
 {% for tag in site.tags %}
 <div class="tag tag-{{ tag[0] }}" style="display: none;">
   <ul>
@@ -25,6 +25,10 @@ title: tags
      e.style.display = 'block';
    };
 
+   var showInlineElement = (e) => {
+     e.style.display = 'inline';
+   };
+
    var hideElement = (e) => {
      e.style.display = 'none';
    };
@@ -45,13 +49,26 @@ title: tags
    var filterTags = () => {
      forEach(document.getElementsByClassName('tag'), hideElement);
 
-     var currentTag = parseTagAndPage(location.hash).tag;
+     var loc = parseTagAndPage(location.hash);
+     var currentTag = loc.tag;
+     var currentPage = loc.page;
      var articles = document.getElementsByClassName('tag-' + currentTag);
 
-     forEach(
-       document.getElementsByClassName('tag-name'),
-       (e) => e.innerText = currentTag
-     );
+     if (currentTag) {
+       forEach(
+         document.getElementsByClassName('tag-name'),
+         (e) => e.innerText = currentTag
+       );
+       forEach(
+         document.getElementsByClassName('show-only-tag-exists'),
+         showInlineElement
+       );
+     } else {
+       forEach(
+         document.getElementsByClassName('show-only-tag-exists'),
+         hideElement
+       );
+     }
 
      if (articles.length > 0) {
        forEach(articles, showElement);
