@@ -45,6 +45,23 @@ use_mathjax: true
 
 というようにして必要のないときに読み込まれないようにしています。
 
+### 絵文字
+Font Awesome<i class="fa fa-bug" aria-hidden="true"></i>を使っています。これも上述した理由により[CDN](https://www.bootstrapcdn.com/fontawesome/)を使ったほうがいいでしょう。
+
+使える絵文字の一覧は以下のサイトを見ると楽です。
+[http://fontawesome.io/icons/](http://fontawesome.io/icons/)
+
+### 絵文字(2)
+`_config.yml`に以下のように設定を加えることで、`:hoge:`形式の絵文字を使うことができるようになります。
+
+```
+gems:
+  - jemoji
+```
+
+使える絵文字の一覧は以下のサイトを見ると楽です :joy: :joy: :joy: :joy: :joy: :joy:
+[https://www.webpagefx.com/tools/emoji-cheat-sheet/](https://www.webpagefx.com/tools/emoji-cheat-sheet/)
+
 ## はてなスター
 実は外部サイトでもはてなスターは使えます。
 
