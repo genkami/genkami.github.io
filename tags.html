@@ -4,7 +4,7 @@ title: tags
 ---
 <h1>タグ '<span class="tag-name"></span>' の記事一覧</h1>
 {% for tag in site.tags %}
-<div class="tag tag-{{ tag[0] }}">
+<div class="tag tag-{{ tag[0] }}" style="display: none;">
   <ul>
     {% for post in tag[1] %}
     <li style="list-style: none;"><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></li>
@@ -17,23 +17,45 @@ title: tags
   <span class="tag-name"></span>にマッチする記事はありません。
 </div>
 
-<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 <script>
  (function () {
    var filterTags = () => {
-     $('.tag').hide();
+     Array.prototype.forEach.call(
+       document.getElementsByClassName('tag'),
+       (e) => e.style.display = 'none'
+     );
+
      var currentTag = location.hash.substring(1);
-     var articles = $('.tag-' + currentTag);
-     $('.tag-name').text(currentTag);
+     var articles = document.getElementsByClassName('tag-' + currentTag);
+
+     Array.prototype.forEach.call(
+       document.getElementsByClassName('tag-name'),
+       (e) => e.innerText = currentTag
+     );
+
      if (articles.length > 0) {
-       articles.show();
+       Array.prototype.forEach.call(
+         articles,
+         (e) => e.style.display = 'block'
+       );
      } else {
-       $('.tag-unknown').show();
+       Array.prototype.forEach.call(
+         document.getElementsByClassName('tag-unknown'),
+         (e) => e.style.display = 'block'
+       );
      }
    }
 
-   $(document).ready(() => filterTags());
-   $(window).on('hashchange', () => filterTags());
+   if (document.readyState !== 'loading') {
+     filterTags();
+   } else {
+     document.addEventListener('DOMContentLoaded', () => filterTags());
+   }
+
+   window.addEventListener('hashchange', () => {
+     filterTags();
+     window.scrollTo(0, 0);
+   });
  })();
 </script>
 
