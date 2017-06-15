@@ -13,4 +13,5 @@ google_analytics: UA-100936400-1
 
 lang: ja
 
-
+gems:
+  - jekyll-sitemap
