@@ -2,10 +2,11 @@
 layout: default
 title: 記事一覧
 ---
-<h1>記事一覧</h1>
+<h1><span class="show-only-tag-exists" style="display: none;">タグ '<span class="tag-name"></span>' の</span>記事一覧</h1>
 <div class="articles">
   {% for post in site.posts %}
-  <article style="padding-top: 20px; padding-bottom: 20px;">
+  <article class="{% for t in post.tags %} tag-{{ t }} {% endfor %}"
+           style="padding-top: 20px; padding-bottom: 20px; display: none;">
     <h2><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></h2>
     <div>
       {{ post.content | strip_html | slice: 0, 500 }}
@@ -14,59 +15,125 @@ title: 記事一覧
   </article>
   {% endfor %}
 </div>
-<div id="prev-page" style="float: left;"><a href="" id="prev-page-link">←新しい記事</a></div>
-<div id="next-page" style="text-align: right;"><a href="" id="next-page-link">古い記事→</a></div>
-
+<div id="tag-unknown">
+  <span class="tag-name"></span>にマッチする記事はありません。
+</div>
+<div id="prev-page" style="float: left; display: none;">
+  <a href="" id="prev-page-link">←新しい記事</a>
+</div>
+<div id="next-page" style="text-align: right; display: none;">
+  <a href="" id="next-page-link">古い記事→</a>
+</div>
 
 <script>
  (function () {
    var offset = 10;
 
-   var movePage = () => {
-     var currentPage;
-     if (location.hash === '' || location.hash === '#') {
-       currentPage = 0;
-     } else {
-       currentPage = parseInt(location.hash.substring(1));
-     }
-     if (isNaN(currentPage)) {
-       location.href = '/';
-       return;
-     }
+   var showElement = (e) => {
+     e.style.display = 'block';
+   };
 
-     Array.prototype.forEach.call(document.getElementsByTagName('article'),
-                                  (e) => e.style.display = 'none');
+   var showInlineElement = (e) => {
+     e.style.display = 'inline';
+   };
 
-     var start_index = offset * currentPage;
-     Array.prototype.slice.call(document.getElementsByTagName('article'),
-                                start_index, start_index + offset)
-          .forEach((e) => e.style.display = 'block');
-     if (currentPage > 0) {
+   var hideElement = (e) => {
+     e.style.display = 'none';
+   };
+
+   var forEach = (arrLike, fn) => {
+     Array.prototype.forEach.call(arrLike, fn);
+   };
+
+   var parseTagAndPage = (hash) => {
+     // #PAGE
+     var match = hash.match(/^#(\d+)\/?$/);
+     if (match) {
+       return { tag: null, page: match[1] ? parseInt(match[1]) : 0 };
+     }
+     // #TAG/PAGE
+     match = hash.match(/^#([a-zA-Z0-9 _-]+)(\/(\d*)\/?)?$/);
+     if (match) return {
+         tag: match[1] ? match[1] : null,
+         page: match[3] ? parseInt(match[3]) : 0
+     };
+     return { tag: null, page: 0 };
+   };
+
+   var showPage = (articles, page) => {
+     var startIndex = offset * page;
+     Array.prototype.slice.call(articles, startIndex, startIndex + offset)
+          .forEach(showElement);
+   };
+
+   var urlFor = (tag, page) => {
+     if (tag) return `#${tag}/${page}`;
+     else return `#${page}`;
+   }
+
+   var setNavigation = (articles, tag, page) => {
+     if (page > 0) {
        document.getElementById('prev-page-link')
-               .setAttribute('href', '#' + (currentPage - 1));
-       document.getElementById('prev-page').style.display = 'block';
+               .setAttribute('href', urlFor(tag, page - 1));
+       showElement(document.getElementById('prev-page'));
      } else {
-       document.getElementById('prev-page').style.display = 'none';
+       hideElement(document.getElementById('prev-page'));
      }
-     var num_articles = document.getElementsByTagName('article').length;
-     if (offset * (currentPage + 1) < num_articles) {
+     if (offset * (page + 1) < articles.length) {
        document.getElementById('next-page-link')
-               .setAttribute('href', '#' + (currentPage + 1));
-       document.getElementById('next-page').style.display = 'block';
+               .setAttribute('href', urlFor(tag, page + 1));
+       showElement(document.getElementById('next-page'));
      } else {
-       document.getElementById('next-page').style.display = 'none';
+       hideElement(document.getElementById('next-page'));
      }
    };
 
+   var filterTags = () => {
+     forEach(document.getElementsByTagName('article'), hideElement);
+     hideElement(document.getElementById('tag-unknown'));
+     forEach(document.getElementsByClassName('show-only-tag-exists'), hideElement);
+
+     var loc = parseTagAndPage(location.hash);
+     var currentTag = loc.tag;
+     var currentPage = loc.page;
+     var articles;
+
+     if (currentTag) {
+       articles = document.getElementsByClassName(`tag-${currentTag}`);
+       forEach(
+         document.getElementsByClassName('tag-name'),
+         (e) => e.innerText = currentTag
+       );
+       forEach(
+         document.getElementsByClassName('show-only-tag-exists'),
+         showInlineElement
+       );
+     } else {
+       articles = document.getElementsByTagName('article');
+       forEach(
+         document.getElementsByClassName('show-only-tag-exists'),
+         hideElement
+       );
+     }
+
+     if (articles.length > 0) {
+       showPage(articles, currentPage);
+       setNavigation(articles, currentTag, currentPage);
+     } else if (currentTag) {
+       showElement(document.getElementById('tag-unknown'));
+     }
+   }
+
    if (document.readyState !== 'loading') {
-     movePage();
+     filterTags();
    } else {
-     document.addEventListener('DOMContentLoaded', () => movePage());
+     document.addEventListener('DOMContentLoaded', () => filterTags());
    }
 
    window.addEventListener('hashchange', () => {
-     movePage();
+     filterTags();
      window.scrollTo(0, 0);
    });
  })();
 </script>
+
