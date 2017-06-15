@@ -113,23 +113,18 @@ header {
 header ul {
   list-style:none;
   padding:0;
-  width:270px;
 }
 
 header li {
-  width:89px;
   float:left;
-  height:40px;
 }
 
 header ul a {
   line-height:1;
   font-size:11px;
   color:#676767;
-  display:block;
   text-align:center;
   padding-top:6px;
-  height:34px;
 }
 
 header ul a:hover, header ul a:focus {
@@ -147,7 +142,6 @@ strong {
 
 header ul li + li + li {
   border-right:none;
-  width:89px;
 }
 
 header ul a strong {
@@ -243,9 +237,6 @@ footer {
     width:99%;
   }
 
-  header li, header ul li + li + li {
-    width:33%;
-  }
 }
 
 @media print {

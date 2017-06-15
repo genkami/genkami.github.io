@@ -29,9 +29,9 @@
 </div>
 
 <h3>Tags</h3>
-<ul>
+<ul class="tag-list">
   {% assign tags = site.tags | sort %}
   {% for tag in tags %}
-  <li><a href="{{ site.baseurl }}/articles.html#{{ tag[0] }}">{{ tag[0] }}</a></li>
+  <li><a href="{{ site.baseurl }}/articles.html#{{ tag[0] }}">{{ tag[0] }} ({{ tag[1].size }})</a></li>
   {% endfor %}
 </ul>
