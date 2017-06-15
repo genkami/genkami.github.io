@@ -1,0 +1,44 @@
+<article>
+  <h1><a href="{{ site.url }}{{ site.baseurl }}{{ include.page.url }}">{{ include.page.title }}</a></h1>
+  <div class="article-metadata">
+    <time style="float: left;">{{ include.page.date | date: "%Y年%m月%d日" }}</time>
+    <ul class="tag-list">
+      {% for tag in include.page.tags %}
+      <li>{{ tag }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% include share-button.html %}
+  <hr>
+  <div class="article-body">
+    {% if include.count %}
+    {{ include.page.content | strip_html | slice: 0, include.count }}
+    {% else %}
+    {{ include.page.content }}
+    {% endif %}
+  </div>
+</article>
+
+<style>
+ .article-metadata {
+   margin-top: 5px;
+   margin-bottom: 5px;
+ }
+
+ ul.tag-list {
+   display: inline;
+   list-style: none;
+   padding: 0px;
+   margin: 0px 0px 0px 20px;
+ }
+
+ ul.tag-list li {
+   display: inline;
+   border: 1px solid #e5e5e5;
+   font-size: 0.8em;
+   border-radius: 3px;
+   padding: 2px 10px 2px 10px;
+   margin-left: 5px;
+ }
+</style>
+
