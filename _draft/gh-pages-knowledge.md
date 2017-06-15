@@ -13,6 +13,9 @@ tags:
 
 なので、このサイトの[記事一覧](/articles.html)や[カテゴリごとの記事一覧](/articles.html#Haskell)では、一度全記事を表示してからJavaScriptで必要な範囲以外を非表示にするという強引な手段を取っています。
 
+## テーマ
+[Githubが公式に提供しているやつ]https://pages.github.com/themes/)をそのまま引っ張ってきて、魔改造して使っています。
+
 ## コメント欄
 [Disqus](https://disqus.com/)というサイトを使うと簡単にコメント欄を設置できます。
 
