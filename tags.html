@@ -19,6 +19,20 @@ title: tags
 
 <script>
  (function () {
+   var offset = 10;
+
+   var showElement = (e) => {
+     e.style.display = 'block';
+   };
+
+   var hideElement = (e) => {
+     e.style.display = 'none';
+   };
+
+   var forEach = (arrLike, fn) => {
+     Array.prototype.forEach.call(arrLike, fn);
+   };
+
    var parseTagAndPage = (hash) => {
      var match = hash.match(/#([a-zA-Z0-9 _-]*)\/?(\d*)/);
      if (!match) return { tag: null, page: 0 }
@@ -29,29 +43,20 @@ title: tags
    }
 
    var filterTags = () => {
-     Array.prototype.forEach.call(
-       document.getElementsByClassName('tag'),
-       (e) => e.style.display = 'none'
-     );
+     forEach(document.getElementsByClassName('tag'), hideElement);
 
      var currentTag = parseTagAndPage(location.hash).tag;
      var articles = document.getElementsByClassName('tag-' + currentTag);
 
-     Array.prototype.forEach.call(
+     forEach(
        document.getElementsByClassName('tag-name'),
        (e) => e.innerText = currentTag
      );
 
      if (articles.length > 0) {
-       Array.prototype.forEach.call(
-         articles,
-         (e) => e.style.display = 'block'
-       );
+       forEach(articles, showElement);
      } else {
-       Array.prototype.forEach.call(
-         document.getElementsByClassName('tag-unknown'),
-         (e) => e.style.display = 'block'
-       );
+       forEach(document.getElementsByClassName('tag-unknown'), showElement);
      }
    }
 
