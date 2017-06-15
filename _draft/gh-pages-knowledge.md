@@ -4,6 +4,7 @@ title: ブログをGithub Pagesに移行して溜まった知見
 tags:
 - Others
 - Jekyll
+use_mathjax: true
 ---
 
 ブログをGithub Pagesに移行してしばらく経ったので、溜まった知見を共有しておきます。
@@ -14,7 +15,7 @@ tags:
 なので、このサイトの[記事一覧](/articles.html)や[カテゴリごとの記事一覧](/articles.html#Haskell)では、一度全記事を表示してからJavaScriptで必要な範囲以外を非表示にするという強引な手段を取っています。
 
 ## テーマ
-[Githubが公式に提供しているやつ]https://pages.github.com/themes/)をそのまま引っ張ってきて、魔改造して使っています。
+[Githubが公式に提供しているやつ](https://pages.github.com/themes/)をそのまま引っ張ってきて、魔改造して使っています。
 
 ## コメント欄
 [Disqus](https://disqus.com/)というサイトを使うと簡単にコメント欄を設置できます。
@@ -41,19 +42,27 @@ use_mathjax: true
 
 というように指定しておいて、MathJaxを読み込む側では
 
+{% raw %}
 ``` html
 {% if page.use_mathjax %}
-<script type="text/javascript" async
-        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS_CHTML"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS_CHTML"></script>
 {% endif %}
 ```
+{% endraw %}
 
 というようにして必要のないときに読み込まれないようにしています。
+
+これで数式も表示できるようになりました。
+
+\\[ \int \delta(x) \phi(x) dx = \phi(0) \\]
+
+ただし、markdownの文法か何かと衝突してしまうっぽいのでバックスラッシュは二重に書かないといけない場合があります。
 
 ### 絵文字
 Font Awesome<i class="fa fa-bug" aria-hidden="true"></i>を使っています。これも上述した理由により[CDN](https://www.bootstrapcdn.com/fontawesome/)を使ったほうがいいでしょう。
 
 使える絵文字の一覧は以下のサイトを見ると楽です。
+
 [http://fontawesome.io/icons/](http://fontawesome.io/icons/)
 
 ### 絵文字(2)
@@ -65,6 +74,7 @@ gems:
 ```
 
 使える絵文字の一覧は以下のサイトを見ると楽です :joy: :joy: :joy: :joy: :joy: :joy:
+
 [https://www.webpagefx.com/tools/emoji-cheat-sheet/](https://www.webpagefx.com/tools/emoji-cheat-sheet/)
 
 ## はてなスター
@@ -75,9 +85,11 @@ gems:
 ## ファイル分割
 割りと細かめにファイル分けをしていて、なるべく一つのファイル内に必要なCSSとかJSも全部書き込んでいます。使いたい側からは
 
+{% raw %}
 ```
 {% include foo.html hoge=fuga bar=baz %}
 ```
+{% endraw %}
 
 というようにして呼び出しています。Web Componentsの劣化版みたいな感じです。
 
