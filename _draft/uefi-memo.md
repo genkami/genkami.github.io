@@ -76,3 +76,20 @@ https://ja.wikibooks.org/wiki/UEFI%E3%82%A2%E3%83%97%E3%83%AA%E3%82%B1%E3%83%BC%
     NULL,
     &SimpleFileSystem
     );
+
+
+ http://orumin.blogspot.jp/2014/12/4.html
+ https://stackoverflow.com/questions/31188047/uefi-loadimage-from-memory
+ https://stackoverflow.com/questions/31317566/uefi-loadimage-hangs
+
+ Device Path Protocolの配列としてファイルの位置などを表す
+ ASCIIZみたいな感じで、配列の終端は特殊な値を使って終端であることを明示する
+   ImgPath[1].Header.Type = END_DEVICE_PATH_TYPE;
+  ImgPath[1].Header.SubType = END_ENTIRE_DEVICE_PATH_SUBTYPE;
+  ImgPath[1].Header.Length[0] = (UINT8)sizeof(EFI_DEVICE_PATH);
+  ImgPath[1].Header.Length[1] = (UINT8)(sizeof(EFI_DEVICE_PATH) >> 8);
+
+EFI_DEVICE_PATHは基本の方で、通常はその後ろに追加のデータがくっついた方を使う。
+例えばメモリ上を表すDevice PathならMEMMAP_DEVICE_PATHとか
+
+ Protocol\DevicePath.hに特定用途用デバイスパスの構造体と、Type, SubTypeの定数が定義されている
