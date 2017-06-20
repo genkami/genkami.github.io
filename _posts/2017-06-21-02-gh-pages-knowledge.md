@@ -2,7 +2,6 @@
 layout: post
 title: ブログをGithub Pagesに移行して溜まった知見
 tags:
-- Others
 - Jekyll
 use_mathjax: true
 ---
@@ -56,12 +55,12 @@ use_mathjax: true
 
 \\[ \int \delta(x) \phi(x) dx = \phi(0) \\]
 
-ただし、markdownの文法か何かと衝突してしまうっぽいのでバックスラッシュは二重に書かないといけない場合があります。
+ただし、markdownの文法と衝突してしまうっぽいので、`\( \)`とか`\[ \]`とかのバックスラッシュは二重に書かないといけない場合があります。
 
 ### 絵文字
-Font Awesome<i class="fa fa-bug" aria-hidden="true"></i>を使っています。これも上述した理由により[CDN](https://www.bootstrapcdn.com/fontawesome/)を使ったほうがいいでしょう。
+Font Awesomeを使っています。これも上述した理由により[CDN](https://www.bootstrapcdn.com/fontawesome/)を使ったほうがいいでしょう。
 
-使える絵文字の一覧は以下のサイトを見ると楽です。
+使える絵文字の一覧は以下のサイトを見ると楽です<i class="fa fa-bug" aria-hidden="true"></i>
 
 [http://fontawesome.io/icons/](http://fontawesome.io/icons/)
 
