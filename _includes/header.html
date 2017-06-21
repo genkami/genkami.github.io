@@ -8,11 +8,11 @@
 
 <h3>Recent Posts</h3>
 {% for post in site.posts limit:5 %}
-<div>
-  <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title | slice: 0, 17 }}{% if post.title.size > 18 %}...{% endif %}</a>
+<div class="recent-post">
+  <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a>
 </div>
 {% endfor %}
-<div>
+<div class="recent-post">
   <a href="/articles.html">more <i class="fa fa-chevron-right"></i></a>
 </div>
 

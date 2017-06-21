@@ -154,6 +154,12 @@ header a, header a:hover, header a:focus, header a:active, header a:link, header
   color:#727272;
 }
 
+header .recent-post {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
 section {
   width:500px;
   float:right;
