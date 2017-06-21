@@ -16,3 +16,8 @@ lang: ja
 gems:
   - jekyll-sitemap
   - jemoji
+
+# rss
+name: genkami.github.io
+description: blog
+url: https://genkami.github.io/
