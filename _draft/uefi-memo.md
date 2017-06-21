@@ -93,3 +93,8 @@ EFI_DEVICE_PATHは基本の方で、通常はその後ろに追加のデータ�
 例えばメモリ上を表すDevice PathならMEMMAP_DEVICE_PATHとか
 
  Protocol\DevicePath.hに特定用途用デバイスパスの構造体と、Type, SubTypeの定数が定義されている
+
+ EFI_HANDLE があらゆるものの実体で、それらがインターフェースとして PROTOCOL を持っている感じ？
+
+EFI_STATUS一覧
+ http://wiki.phoenix.com/wiki/index.php/EFI_STATUS
