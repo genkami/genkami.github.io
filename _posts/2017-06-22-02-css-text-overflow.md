@@ -13,7 +13,7 @@ tags:
 </p>
 <style>
 #box {
-  width: 400px;
+  width: 200px;
   border: 1px solid #000;
 
 
@@ -31,7 +31,7 @@ tags:
 </p>
 <style>
 #box {
-  width: 400px;
+  width: 200px;
   border: 1px solid #000;
 
 
