@@ -1,18 +1,16 @@
-LocateHandleBufferしてwhileで回すのがめんどいので前のやつより手抜き
+---
+layout: post
+title: メモリ上の.efiイメージをロードして実行する
+tags:
+- UEFI
+- C
+---
 
-EFI_DEVICE_PATH_PROTOCOLはベースとなる型
-それらのしたにいくつかフィールドを追加した型が定義されており、通常はそれらを使う
-メモリ上ならMEMMAP_DEVICE_PATH
-構造体のサイズはEFI_DEIVCE_PATH_PROTOCOL.Lengthで指定
-Device PathはEFI_DEVICE_PATH_PROTOCOLの配列で表される
-EFI_DEVICE_PATH_PROTOCOL DevPath[] = { HOGE, FUGA, FOO, END } みたいになってたら
-\hoge\fuga\foo を表す
-末尾はパスの終端を表す特殊な値。文字列でいう\0みたいなやつ
+`EFI_BOOT_SERVICES.LoadImage()`は、メモリ上の.efiイメージも読み込むことができます。
 
-あと重要なのはGetInfo
-必要な容量が最初はわからないので、最初は適当に容量をとってGetInfoに失敗したらやり直すみたいなのがかしこい？
-GetInfoはバッファが足りなくて失敗すると第三引数に必要な容量をセットしてくれる
+*LoadMem.efi*
 
+``` c
 #include <Uefi.h>
 #include <Library/UefiApplicationEntryPoint.h>
 #include <Library/UefiLib.h>
@@ -75,6 +73,7 @@ ExecuteEfiFile (
     gBS->AllocatePool(EfiLoaderData, InfoSize, &Info);
     Status = Executable->GetInfo(Executable, &InfoType, &InfoSize, Info);
     if (Status == EFI_BUFFER_TOO_SMALL) {
+      // GetInfoはバッファが足りなくて失敗すると第三引数に必要な容量をセットしてくれる
       gBS->FreePool(Info);
       continue;
     }
@@ -119,12 +118,46 @@ UefiMain (
   IN EFI_SYSTEM_TABLE  *SystemTable
   )
 {
-	gIH = ImageHandle;
-	gST = SystemTable;
-	gBS = SystemTable->BootServices;
+  gIH = ImageHandle;
+  gST = SystemTable;
+  gBS = SystemTable->BootServices;
 
   ExecuteEfiFile(L"\\MyHelloWorld.efi");
 
-	return EFI_SUCCESS;
+  return EFI_SUCCESS;
 }
+```
 
+[前回](/2017/06/23/01-load-image.html)みたいに`LocateHandleBuffer`して`while`で回したりはしていません。若干手抜きです。
+
+少し難しいのがDevice Pathの指定の方法です。`OpenProtocol`とか`DevicePathFromHandle`とかで取得する分には何も考えなくていいのですが、今回はメモリ上の位置を表すDevice Pathを自分で作ってあげなければいけません。
+
+Device Pathは`EFI_DEVICE_PATH_PROTOCOL`かもしくはその派生型の配列となっており、文字列がNULL終端となっているのと似たような感じで、最後の要素にはDevice Pathの終端を表す特殊な要素をおいておきます。今回はメモリ上なので、`MEMMAP_DEVICE_PATH`を使用しています。
+
+もう一つ重要なのは`EFI_FILE_PROTOCOL.GetInfo`の使い方です。`GetInfo`によって取得できる`EFI_FILE_INFO`の容量は可変なので、呼び出し前に確保しておくべき容量がわかりません。そこで、最初は適当に容量をとって、`GetInfo`に失敗したらやり直すみたいなやり方をしています。
+
+読み込むファイルは前回と同じです。
+
+*MyHelloWorld.c*
+
+``` c
+#include <Uefi.h>
+#include <Library/UefiApplicationEntryPoint.h>
+#include <Library/UefiLib.h>
+
+
+EFI_STATUS
+EFIAPI
+UefiMain (
+  IN EFI_HANDLE        ImageHandle,
+  IN EFI_SYSTEM_TABLE  *SystemTable
+  )
+{
+  Print(L"Helo, World\n");
+  return EFI_SUCCESS;
+}
+```
+
+実行結果:
+
+![/img/post/2017-06-23-load-from-mem.png](/img/post/2017-06-23-load-from-mem.png)
