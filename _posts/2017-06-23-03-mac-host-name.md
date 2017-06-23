@@ -12,7 +12,7 @@ Macでのホスト名の設定は2種類あるようです。
 
 
 ``` shell
-$ sudo scutil –set HostName NEW_HOST_NAME
+$ sudo scutil -–set HostName NEW_HOST_NAME
 ```
 
 おわり。
