@@ -17,9 +17,7 @@ http://linux2.g.hatena.ne.jp/lnznt/20120203/1328259914
 
 iPXEがmakeできない
 
-http://ipxe.org/download
-$ cd src/
-$ make bin-x86-efi/ipxe.efi
+
 /tmp/ccjtNZ1n.s: Assembler messages:
 /tmp/ccjtNZ1n.s:21: Error: junk at end of line, first unrecognized character is `"'
 /tmp/ccjtNZ1n.s:37: Error: unknown pseudo-op: `.previous'
@@ -40,3 +38,7 @@ make: *** [Makefile.housekeeping:916: bin/null_sanboot.o] エラー 1
 
 
 http://forum.ipxe.org/showthread.php?tid=10007
+
+http://ipxe.org/download
+$ cd src/
+$ make bin-x86-efi/ipxe.efi
