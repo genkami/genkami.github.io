@@ -31,19 +31,14 @@ UefiMain (
 
   EFI_HANDLE *Handles;
   UINTN NoHandles;
-  Status = gBS->LocateHandleBuffer(
+  gBS->LocateHandleBuffer(
     ByProtocol,
     &gEfiDhcp4ServiceBindingProtocolGuid,
     NULL,
     &NoHandles,
     &Handles
     );
-  if (Status != EFI_SUCCESS) {
-    Print(L"can't locate dhcp4 protocol\n");
-    return Status;
-  } else if (NoHandles == 0) {
-    Print(L"dhcp4 protocol not found\n");
-  }
+
   EFI_SERVICE_BINDING_PROTOCOL *Dhcp4Binding;
   EFI_HANDLE Dhcp4Handle;
   EFI_DHCP4_PROTOCOL *Dhcp4 = NULL;
@@ -78,6 +73,7 @@ UefiMain (
     if (Status != EFI_SUCCESS) {
       Dhcp4Binding->DestroyChild(Dhcp4Binding, Dhcp4Handle);
       gBS->CloseProtocol(Handles[i], &gEfiDhcp4ServiceBindingProtocolGuid, gIH, NULL);
+      continue;
     }
     break;
   }
@@ -97,24 +93,11 @@ UefiMain (
     .OptionCount = 0,
     .OptionList = NULL
   };
-  Status = Dhcp4->Configure(Dhcp4, &Dhcp4Config);
-  if (Status != EFI_SUCCESS) {
-    Print(L"can't configure dhcp4\n");
-    return Status;
-  }
-
-  Status = Dhcp4->Start(Dhcp4, NULL);
-  if (Status != EFI_SUCCESS) {
-    Print(L"can't complete dhcp4 configuration process\n");
-    return Status;
-  }
+  Dhcp4->Configure(Dhcp4, &Dhcp4Config);
+  Dhcp4->Start(Dhcp4, NULL);
 
   EFI_DHCP4_MODE_DATA ModeData;
-  Status = Dhcp4->GetModeData(Dhcp4, &ModeData);
-  if (Status != EFI_SUCCESS) {
-    Print(L"GetModeData failed\n");
-    return Status;
-  }
+  Dhcp4->GetModeData(Dhcp4, &ModeData);
 
   Print(L"got ipv4 address\n");
   Print(
@@ -126,10 +109,11 @@ UefiMain (
     );
 
   Dhcp4->Release(Dhcp4);
-
   Dhcp4Binding->DestroyChild(Dhcp4Binding, Dhcp4Handle);
   gBS->FreePool(Handles);
   Print(L"Done.\n"); 
   return EFI_SUCCESS;
 }
 ```
+
+Startは非同期にもできる
