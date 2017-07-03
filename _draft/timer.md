@@ -62,13 +62,11 @@ UefiMain (
   gST = SystemTable;
   gBS = SystemTable->BootServices;
 
-  EFI_STATUS Status;
-
-  Status = gBS->CreateEvent(0, TPL_CALLBACK, NULL, NULL, &TimerStopped);
+  gBS->CreateEvent(0, TPL_CALLBACK, NULL, NULL, &TimerStopped);
 
   EFI_EVENT TimerEvent;
   EVENT_CONTEXT EventContext = { .Count = 0 };
-  Status = gBS->CreateEvent(
+  gBS->CreateEvent(
     EVT_TIMER | EVT_NOTIFY_SIGNAL,
     TPL_CALLBACK,
     EventNotify,
@@ -76,7 +74,7 @@ UefiMain (
     &TimerEvent
     );
   
-  Status = gBS->SetTimer(TimerEvent, TimerPeriodic, 500 * MSEC);
+  gBS->SetTimer(TimerEvent, TimerPeriodic, 500 * MSEC);
 
   UINTN EventIndex;
   gBS->WaitForEvent(1, &TimerStopped, &EventIndex);
