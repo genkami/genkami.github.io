@@ -1,4 +1,9 @@
-uefi-tftp
+---
+layout: post
+title: 
+tags:
+- 
+---
 
 ``` sh
 $ cat /path/to/tftp_root/hello.txt
@@ -298,7 +303,7 @@ CheckPacket
 ``` c
 typedef
 EFI_STATUS
-(EFIAPI *EFI_MTFTP4_CHECK_PACKET)(
+(EFIAPI *EFI_MTFTP4_CHECK_PACKET) (
   IN EFI_MTFTP4_PROTOCOL *This,
   IN EFI_MTFTP4_TOKEN *Token,
   IN UINT16 PacketLen,
@@ -311,7 +316,7 @@ TimeoutCallback
 ``` c
 typedef
 EFI_STATUS
-(EFIAPI *EFI_MTFTP4_TIMEOUT_CALLBACK)(
+(EFIAPI *EFI_MTFTP4_TIMEOUT_CALLBACK) (
   IN EFI_MTFTP4_PROTOCOL *This,
   IN EFI_MTFTP4_TOKEN *Token
 );
@@ -324,7 +329,7 @@ PacketNeeded
 ``` c
 typedef
 EFI_STATUS
-(EFIAPI *EFI_MTFTP4_PACKET_NEEDED)(
+(EFIAPI *EFI_MTFTP4_PACKET_NEEDED) (
   IN EFI_MTFTP4_PROTOCOL *This,
   IN EFI_MTFTP4_TOKEN *Token,
   IN OUT UINT16 *Length,
