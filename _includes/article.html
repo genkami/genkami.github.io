@@ -1,5 +1,5 @@
 <article class="{% for t in include.page.tags %} tag-{{ t }} {% endfor %}">
-  <h1><a href="{{ site.url }}{{ site.baseurl }}{{ include.page.url }}">{{ include.page.title }}</a></h1>
+  <h1><a href="{{ include.page.url }}">{{ include.page.title }}</a></h1>
   <div class="article-metadata">
     <time style="float: left;">{{ include.page.date | date: "%Y年%m月%d日" }}</time>
     <ul class="tag-list">
