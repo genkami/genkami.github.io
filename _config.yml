@@ -6,6 +6,8 @@ kramdown:
 
 title: genkami.github.io
 
+baseurl:
+
 twitter:
   user: cloudear8
 
