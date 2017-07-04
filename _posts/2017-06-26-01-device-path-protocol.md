@@ -3,6 +3,7 @@ layout: post
 title: 特定のプロトコルをサポートするハンドラをリストアップする
 tags:
 - UEFI
+- C
 ---
 UEFIのプロトコルを使うときは、基本的に`LocateHandleBuffer`でプロトコルをサポートするハンドラをみつけて、`OpenProtocol`していくのが一般的なやり方のようです。
 
