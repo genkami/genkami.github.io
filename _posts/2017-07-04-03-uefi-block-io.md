@@ -1,30 +1,39 @@
-uefi-block-io
+---
+layout: post
+title: UEFIでブロックデバイスにアクセスする
+tags:
+- C
+- UEFI
+---
 
-https://en.wikipedia.org/wiki/GUID_Partition_Table
+`EFI_BLOCK_IO_PROTOCOL`を使うと、ハードディスクなどのブロックデバイスの読み書きができます。
 
-http://www.ntfs.com/guid-part-table.htm
-ここを参考にGPTパーティションの情報を取得
+ただ読むだけでは面白くないので、GPTパーティションのヘッダを読んで見ることにしました。
 
-LBA 1の先頭から順に以下のようなデータが並んでいる
+[http://www.ntfs.com/guid-part-table.htm](http://www.ntfs.com/guid-part-table.htm)
+
+上のサイトをによると、GTPのヘッダの情報はハードディスクの1番目のLBA の先頭から順に以下のように並んでいるようです。
 
 ``` c
 typedef struct GPT_HEADER {
-  UINT64 Signature;
-  UINT32 Revision;
-  UINT32 Size;
-  CHAR8 CRC32Header[4];
-  CHAR8 Reserved[4];
-  UINT64 CurrentLBA;
-  UINT64 BackupLBA;
-  UINT64 UsableLBAStart;
-  UINT64 UsableLBAEnd;
-  CHAR8 Guid[16];
-  UINT64 PartitionLBAStart;
-  UINT32 NumPartitions;
-  UINT32 PartitionEntrySize;
-  CHAR8 CRC32Partition[4];
+  UINT64 Signature;           // GPTのシグネチャ。 0x5452415020494645
+  UINT32 Revision;            // リビジョン
+  UINT32 Size;                // ヘッダのサイズ
+  CHAR8 CRC32Header[4];       // ヘッダ全体のCRC32
+  CHAR8 Reserved[4];          // 予約領域
+  UINT64 CurrentLBA;          // ヘッダのLBA
+  UINT64 BackupLBA;           // バックアップのLBA
+  UINT64 UsableLBAStart;      // パーティションに使えるLBAの開始位置
+  UINT64 UsableLBAEnd;        // ↑の終了位置
+  CHAR8 Guid[16];             // ハードディスクのGUID
+  UINT64 PartitionLBAStart;   // パーティションエントリの開始位置
+  UINT32 NumPartitions;       // パーティションエントリの数
+  UINT32 PartitionEntrySize;  // パーティションエントリのサイズ
+  CHAR8 CRC32Partition[4];    // パーティションエントリのCRC32
 } GPT_HEADER;
 ```
+
+このデータを実際にハードディスクの頭から取ってきます。
 
 
 ``` c
@@ -44,7 +53,11 @@ EFI_BOOT_SERVICES *gBS;
 
 #define INPUT_BUF_SIZE 64
 
-EFI_STATUS 
+/*
+ * ConIn から1行読む。↓のコピペ
+ * https://genkami.github.io//2017/06/21/04-uefi-text-io.html
+ */
+EFI_STATUS
 EFIAPI
 GetLine (
   OUT CHAR16 *Buf,
@@ -73,7 +86,10 @@ GetLine (
   return EFI_BUFFER_TOO_SMALL;
 }
 
-EFI_STATUS 
+/*
+ * 10進数の文字列を数値に変換(雑)
+ */
+EFI_STATUS
 EFIAPI
 ParseInt (
   IN CHAR16 *String,
@@ -94,6 +110,9 @@ ParseInt (
   return EFI_SUCCESS;
 }
 
+/*
+ * CHAR8を2桁の16進数で表示
+ */
 void
 EFIAPI
 PrintHex (
@@ -134,6 +153,10 @@ UefiMain (
     return Status;
   }
 
+  /*
+   * ブロックデバイスが多すぎてどれがどれかわからないので、Device Pathを表示して
+   * それっぽいのを手動で選択する方式
+   */
   Print(L"block io devices:\n");
   for (UINTN i = 0; i < NoHandles; i++) {
     EFI_DEVICE_PATH_PROTOCOL *Path = DevicePathFromHandle(Handles[i]);
@@ -156,7 +179,7 @@ UefiMain (
 
     UINTN LineSize = INPUT_BUF_SIZE;
     Status = GetLine(Line, &LineSize);
-    if (Status != EFI_SUCCESS) continue;
+    if (Status != EFI_SUCCESS) continue; // 入力文字列が長すぎた?
 
     Status = ParseInt(Line, &DeviceIndex);
     if (Status != EFI_SUCCESS) {
@@ -166,6 +189,10 @@ UefiMain (
       break;
     }
   }
+
+  /*
+   * ここからが本番
+   */
 
   EFI_BLOCK_IO_PROTOCOL *BlockIo;
   Status = gBS->OpenProtocol(
@@ -184,6 +211,7 @@ UefiMain (
   gBS->FreePool(Line);
   gBS->FreePool(Handles);
 
+  // BlockIo->Mediaに、そのデバイスの情報が書かれている
   Print(L"removable media: %c\n", BlockIo->Media->RemovableMedia ? 'Y' : 'N');
   Print(L"logical partition: %c\n", BlockIo->Media->LogicalPartition ? 'Y' : 'N');
 
@@ -228,5 +256,14 @@ UefiMain (
 }
 ```
 
-signatureは上のサイトに書かれている値 (= 0x5452415020494645) に一致
-エンディアンの違い(?)で順番はずれてるけどGPTの情報を取得できてる
+実行結果がこちら
+
+![/img/post/2017-07-04-read-gpt.png](/img/post/2017-07-04-read-gpt.png)
+
+シグネチャが上のサイトに書かれている値 (= 0x5452415020494645) に一致しているので、正しく読めていそうです。
+
+ちなみに、DiskPartでディスクの情報を調べてみた結果がこちら
+
+![/img/post/2017-07-04-disk-info.png](/img/post/2017-07-04-disk-info.png)
+
+GUIDの並びがずれていますが、多分エンディアンの違い的なアレでしょう。
