@@ -3,6 +3,7 @@ layout: post
 title: UEFIで自作プロトコルをインストールする
 tags:
 - UEFI
+- C
 ---
 
 今までは用意された`EFI_HOGE_PROTOCOL`みたいなのを使うだけでしたが、自分で新しいプロトコルを作ることもできます。
@@ -11,9 +12,6 @@ tags:
 
 1. プロトコルのGUID
 2. プロトコルを表す構造体
-
-1InstallMultipleProtocolInterfaces、
-
 
 GUIDについては、[guidgen.com](http://guidgen.com/)などを使って生成したものを使うといいでしょう。
 

@@ -1,14 +1,16 @@
-RegisterProtocolNotifyを使うと、指定したプロトコルが新たにインストールされた時に通知できる
+---
+layout: post
+title: プロトコルがインストールされたことを通知する
+tags:
+- UEFI
+- C
+---
+
+`RegisterProtocolNotify`を使うと、指定したプロトコルが新たにインストールされた時に通知できます。
+
+インストールするプロトコルは[前のやつ](/2017/07/07/03-uefi-create-protocol.html)と同じ、`HELLO_WORLD_PROTOCOL`を使います。
 
 ``` c
-#include <Uefi.h>
-#include <Library/UefiApplicationEntryPoint.h>
-#include <Library/UefiLib.h>
-
-EFI_HANDLE gIH;
-EFI_SYSTEM_TABLE *gST;
-EFI_BOOT_SERVICES *gBS;
-
 #define HELLO_WORLD_PROTOCOL_GUID \
   { 0x1020e163, 0x691d, 0x4202, { 0xa7, 0x76, 0x70, 0x73, 0x64, 0x36, 0x23, 0xbd } }
 
@@ -29,6 +31,20 @@ MyHelloWorld (
 {
   return gST->ConOut->OutputString(gST->ConOut, L"Hello, world!\r\n");
 }
+```
+
+プロトコルのインストールの通知には、[例によって`Event`を使います。](/2017/07/03/01-uefi-event.html)
+
+`CreateEvent()`で作った`Event`を`RegisterProtocolNotify()`に渡すことによって、指定されたGUIDのプロトコルがインストールされた時にイベントを発火させるようにすることができます。
+
+``` c
+#include <Uefi.h>
+#include <Library/UefiApplicationEntryPoint.h>
+#include <Library/UefiLib.h>
+
+EFI_HANDLE gIH;
+EFI_SYSTEM_TABLE *gST;
+EFI_BOOT_SERVICES *gBS;
 
 void
 EFIAPI
@@ -75,3 +91,7 @@ UefiMain (
   return EFI_SUCCESS;
 }
 ```
+
+実行結果:
+
+![/img/post/2017-07-07-register-protocol-notify.png](/img/post/2017-07-07-register-protocol-notify.png)
