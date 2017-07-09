@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+import os, sys, re
+from datetime import date
+import subprocess
+
+base_dir = os.path.dirname(os.path.dirname(__file__))
+draft_dir = os.path.join(base_dir, '_draft')
+post_dir = os.path.join(base_dir, '_posts')
+
+def next_number(day):
+    post_in_day = re.compile(r'%s-(\d+)-.*\.md$' % day.strftime('%Y-%m-%d'))
+    max_num = 0
+    for path in os.listdir(post_dir):
+        filename = os.path.basename(path)
+        m = re.match(post_in_day, filename)
+        if m:
+            max_num = max(max_num, int(m.group(1)))
+    return max_num + 1
+
+def to_published_path(draft_path, day):
+    draft_file = os.path.basename(draft_path)
+    published_file = '%s-%02d-%s' % (day.strftime('%Y-%m-%d'), next_number(day), draft_file)
+    return os.path.join(post_dir, published_file)
+
+def usage():
+    sys.stderr.write('Usage: _bin/publish _draft/draft-file.md\n')
+
+def is_controlled_by_git(path):
+    path = os.path.abspath(path)
+    process = subprocess.run(['git', 'ls-files'], stdout=subprocess.PIPE)
+    for line in process.stdout.decode(sys.getdefaultencoding()).splitlines():
+        line = os.path.abspath(line)
+        if line == path:
+            return True
+    return False
+
+def move(src, dst):
+    if is_controlled_by_git(src):
+        subprocess.run(['git', 'mv', src, dst])
+    else:
+        os.rename(src, dst)
+
+def main():
+    try:
+        draft_path = sys.argv[1]
+    except IndexError:
+        usage()
+    published_path = to_published_path(draft_path, date.today())
+    move(draft_path, published_path)
+    print('%s -> %s' % (draft_path, published_path))
+
+if __name__ == '__main__':
+    main()
+
+
