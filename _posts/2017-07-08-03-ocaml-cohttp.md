@@ -37,7 +37,6 @@ let () = Lwt_main.run (show_body "http://dokodeglobal.com/")
 
 ```
 $ ocamlfind ocamlopt -o httptest.native -linkpkg -package cohttp,lwt,cohttp.lwt httptest.ml
-admin@porkadot [~/gomicode/OCaml] 2017/07/08 21:27:02
 $ ./httptest.native
 <!doctype html>
 <html lang="ja">
@@ -77,7 +76,22 @@ let post =
 let post =
   Client.post_form (Uri.of_string "http://example.com/")
                    ~params:[("hoge", ["fuga"]); ("foo", ["bar"])]
-                   ~headers:Header.of_list [("User-Agent", "Mozilla/5.0")]
-
+                   ~headers:(Header.of_list [("User-Agent", "Mozilla/5.0")])
 ```
+
+## エラー処理
+
+エラー処理は`Lwt`の機能を使って行います。
+
+``` ocaml
+let alwaysfails =
+  Client.get (Uri.of_string "http://this-page-does-not-exist.com/")
+
+let () = Lwt_main.run (catch (fun () -> alwaysfails >>= fun (_, _) ->
+                                        print_endline "ok"; return ())
+                             (function
+                              | Failure msg -> print_endline ("error: " ^ msg);
+                                               return ()))
+```
+
 
