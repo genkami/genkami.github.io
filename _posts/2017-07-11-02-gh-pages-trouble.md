@@ -37,14 +37,18 @@ jekyll 3.4.5 | Error:  undefined method `encoding' for nil:NilClass
 
 そこで調べてみると、`_includes`の中に
 
+{% raw %}
 ```html
 {{ page.url | cgi_escape}}
 ```
+{% endraw %}
 
 みたいなやつを書いているところが何個かあったので、これを`nil`のときでも大丈夫なように、
 
+{% raw %}
 ```html
 {{ page.url | default: "" | cgi_escape}}
 ```
+{% endraw %}
 
 とすることによって、動くようになってくれました。
