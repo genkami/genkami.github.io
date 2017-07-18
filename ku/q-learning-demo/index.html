@@ -1,0 +1,34 @@
+---
+layout: default
+title: Q-learning Demo
+---
+<h1>Q-learning</h1>
+<hr>
+
+<div class="race-map">
+  <canvas id="car-1" width="300" height="150"></canvas>
+  <canvas id="bg-1" width="300" height="150"></canvas>
+</div>
+<div>
+  <button id="round-100000">100000ラウンド回す</button>
+</div>
+
+<style>
+ .race-map {
+   position: realative;
+ }
+
+ .race-map:after {
+   content: "";
+   width: 300px;
+   height: 150px;
+   clear: both;
+   display: block;
+ }
+
+ .race-map canvas {
+   position: absolute;
+ }
+</style>
+
+<script src="./main.js"></script>
