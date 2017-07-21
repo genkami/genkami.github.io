@@ -31,7 +31,7 @@ header h2, h3, h4, h5, h6 {
     margin: 2px 0px 2px 5px;
 }
 
-.tag-list:after, footer:after {
+.tag-list:after {
     content: "";
     display: block;
     clear: both;
@@ -44,11 +44,24 @@ header h2, h3, h4, h5, h6 {
 .footer-content {
     float: left;
     padding-right: 10px;
+    padding-bottom: 15px;
     width: 270px;
 }
 
 .footer-content:last-child {
     padding-right: 0px
+}
+
+.footer-last-content {
+    clear: both;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e5e5e5;
+}
+
+.copyright {
+    color: #777;
+    text-align: center;
 }
 
 .tag-list ul {
