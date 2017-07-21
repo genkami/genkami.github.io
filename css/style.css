@@ -112,6 +112,11 @@ header h2, h3, h4, h5, h6 {
         word-wrap: break-word;
     }
 
+    .MJXc-display {
+        width: 90%;
+        overflow: scroll;
+    }
+
     pre, code, h1 {
         word-wrap: normal;
     }
@@ -122,11 +127,6 @@ header h2, h3, h4, h5, h6 {
         margin-left: 5px;
         margin-right: 5px;
         border-style: none;
-    }
-
-    .MJXc-display {
-        width: 90%;
-        overflow: scroll;
     }
 
     .footer-content {
