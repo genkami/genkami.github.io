@@ -25,6 +25,10 @@ header h2, h3, h4, h5, h6 {
     margin-bottom: 5px;
 }
 
+.article-nav {
+    margin: 0px 30px;
+}
+
 .tag-list ul {
     display: inline;
     list-style: none;
@@ -49,6 +53,12 @@ header h2, h3, h4, h5, h6 {
 
 #share-btns>a, #share-btns>div {
     display: inline-block;
+}
+
+#share-btns a i.fa, #share-btns a:hover i.fa,
+#share-btns a:focus i.fa, #share-btns a:active i.fa,
+#share-btns a:link i.fa, #share-btns a:visited i.fa {
+    color:#727272;
 }
 
 .footer-content {
@@ -154,6 +164,10 @@ header h2, h3, h4, h5, h6 {
 
     .footer-content {
         width: 90%;
+    }
+
+    .article-nav {
+        margin: 0px 10px;
     }
 }
 
