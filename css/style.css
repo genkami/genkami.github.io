@@ -1,6 +1,9 @@
 .wrapper {
     width: auto;
-    margin: 0px 200px;
+    margin: 15px 200px;
+    padding: 15px;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
 }
 
 header h2, h3, h4, h5, h6 {
@@ -28,7 +31,7 @@ header h2, h3, h4, h5, h6 {
     margin: 2px 0px 2px 5px;
 }
 
-.tag-list:after {
+.tag-list:after, footer:after {
     content: "";
     display: block;
     clear: both;
@@ -90,19 +93,22 @@ header h2, h3, h4, h5, h6 {
 
 @media print, screen and (max-width: 1200px) {
     .wrapper {
-        margin: 0px 150px;
+        margin-left: 150px;
+        margin-right: 150px;
     }
 }
 
 @media print, screen and (max-width: 960px) {
     .wrapper {
-        margin: 0px 100px;
+        margin-left: 100px;
+        margin-right: 100px;
     }
 }
 
 @media print, screen and (max-width: 720px) {
     .wrapper {
-        margin: 0px 50px;
+        margin-left: 50px;
+        margin-right: 50px;
     }
 
     body {
@@ -116,7 +122,8 @@ header h2, h3, h4, h5, h6 {
 
 @media print, screen and (max-width: 480px) {
     .wrapper {
-        margin: 0px 15px;
+        margin-left: 15px;
+        margin-right: 15px;
     }
 }
 
