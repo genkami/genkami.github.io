@@ -19,7 +19,7 @@
   </div>
 </div>
 
-<div class="footer-content footer-content-fixed">
+<div class="footer-content">
   <h3>Recent Posts</h3>
   {% assign num_recent_posts = site.num_recent_posts | default: 5 %}
   {% for post in site.posts limit: num_recent_posts %}
@@ -32,7 +32,7 @@
   </div>
 </div>
 
-<div class="footer-content footer-content-fixed">
+<div class="footer-content">
   <h3>Tags</h3>
   <div class="tag-list">
     <ul>

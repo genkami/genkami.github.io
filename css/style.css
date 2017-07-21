@@ -43,15 +43,12 @@ header h2, h3, h4, h5, h6 {
 
 .footer-content {
     float: left;
-    padding: 0px 10px;
-}
-
-.footer-content-fixed {
-    width: 350px;
-}
-
-.search-box {
+    padding-right: 10px;
     width: 270px;
+}
+
+.footer-content:last-child {
+    padding-right: 0px
 }
 
 .tag-list ul {
@@ -130,6 +127,10 @@ header h2, h3, h4, h5, h6 {
     .MJXc-display {
         width: 90%;
         overflow: scroll;
+    }
+
+    .footer-content {
+        width: 90%;
     }
 }
 
