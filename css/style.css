@@ -77,9 +77,9 @@ header h2, h3, h4, h5, h6 {
 }
 
 .tag-list ul a strong {
-  font-size:14px;
-  display:block;
-  color:#222;
+  font-size: 14px;
+  display: block;
+  color: #222;
 }
 
 .recent-post {
