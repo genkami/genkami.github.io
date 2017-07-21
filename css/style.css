@@ -81,3 +81,9 @@ header h2, h3, h4, h5, h6 {
   display:block;
   color:#222;
 }
+
+.recent-post {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
