@@ -55,6 +55,12 @@ header h2, h3, h4, h5, h6 {
     display: inline-block;
 }
 
+#share-btns a i.fa, #share-btns a:hover i.fa,
+#share-btns a:focus i.fa, #share-btns a:active i.fa,
+#share-btns a:link i.fa, #share-btns a:visited i.fa {
+    color:#727272;
+}
+
 .footer-content {
     float: left;
     padding-right: 10px;
