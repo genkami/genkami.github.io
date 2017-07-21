@@ -126,10 +126,6 @@ hr {
 
 @media print, screen and (max-width: 960px) {
 
-  header {
-    padding-right:320px;
-  }
-
   section {
     border:1px solid #e5e5e5;
     border-width:1px 0;
@@ -150,17 +146,6 @@ hr {
   pre, code, h1 {
     word-wrap:normal;
   }
-}
-
-@media print, screen and (max-width: 480px) {
-  body {
-    padding:15px;
-  }
-
-  header ul {
-    width:99%;
-  }
-
 }
 
 @media print {
