@@ -6,6 +6,16 @@
     border-radius: 8px;
 }
 
+header {
+    margin-top: 20px;
+    margin-bottom: 30px;
+    margin-left: auto;
+}
+
+header h1 {
+    text-align: center;
+}
+
 header h2, h3, h4, h5, h6 {
     margin-top: 20px;
 }
