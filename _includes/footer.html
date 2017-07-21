@@ -1,39 +1,45 @@
-<h3>Profile</h3>
-<a href="{{ site.baseurl }}/about.html">Genta Kamitani</a>
+<div class="footer-content">
+  <h3>Profile</h3>
+  <a href="{{ site.baseurl }}/about.html">Genta Kamitani</a>
 
-<h3>Recent Posts</h3>
-{% assign num_recent_posts = site.num_recent_posts | default: 5 %}
-{% for post in site.posts limit: num_recent_posts %}
-<div class="recent-post">
-  <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a>
-</div>
-{% endfor %}
-<div class="recent-post">
-  <a href="/articles.html">more <i class="fa fa-chevron-right"></i></a>
-</div>
-
-<h3>Search</h3>
-<div>
-  <script>
-   (function() {
-     var cx = '002259772166117728422:2nr58qwu92i';
-     var gcse = document.createElement('script');
-     gcse.type = 'text/javascript';
-     gcse.async = true;
-     gcse.src = 'https://cse.google.com/cse.js?cx=' + cx;
-     var s = document.getElementsByTagName('script')[0];
-     s.parentNode.insertBefore(gcse, s);
-   })();
-  </script>
-  <gcse:searchbox-only></gcse:searchbox-only>
+  <h3>Search</h3>
+  <div class="search-box">
+    <script>
+     (function() {
+       var cx = '002259772166117728422:2nr58qwu92i';
+       var gcse = document.createElement('script');
+       gcse.type = 'text/javascript';
+       gcse.async = true;
+       gcse.src = 'https://cse.google.com/cse.js?cx=' + cx;
+       var s = document.getElementsByTagName('script')[0];
+       s.parentNode.insertBefore(gcse, s);
+     })();
+    </script>
+    <gcse:searchbox-only></gcse:searchbox-only>
+  </div>
 </div>
 
-<h3>Tags</h3>
-<div class="tag-list">
-  <ul>
-    {% assign tags = site.tags | sort %}
-    {% for tag in tags %}
-    <li><a href="{{ site.baseurl }}/articles.html#{{ tag[0] }}">{{ tag[0] }} ({{ tag[1].size }})</a></li>
-    {% endfor %}
-  </ul>
+<div class="footer-content footer-content-fixed">
+  <h3>Recent Posts</h3>
+  {% assign num_recent_posts = site.num_recent_posts | default: 5 %}
+  {% for post in site.posts limit: num_recent_posts %}
+  <div class="recent-post">
+    <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a>
+  </div>
+  {% endfor %}
+  <div class="recent-post">
+    <a href="/articles.html">more <i class="fa fa-chevron-right"></i></a>
+  </div>
+</div>
+
+<div class="footer-content footer-content-fixed">
+  <h3>Tags</h3>
+  <div class="tag-list">
+    <ul>
+      {% assign tags = site.tags | sort %}
+      {% for tag in tags %}
+      <li><a href="{{ site.baseurl }}/articles.html#{{ tag[0] }}">{{ tag[0] }} ({{ tag[1].size }})</a></li>
+      {% endfor %}
+    </ul>
+  </div>
 </div>

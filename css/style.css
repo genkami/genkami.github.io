@@ -1,3 +1,8 @@
+.wrapper {
+    width: auto;
+    margin: 0px 200px 0px 200px;
+}
+
 header h2, h3, h4, h5, h6 {
     margin-top: 20px;
 }
@@ -29,6 +34,19 @@ header h2, h3, h4, h5, h6 {
     clear: both;
 }
 
- #share-btns>a, #share-btns>div {
-   display: inline-block;
- }
+#share-btns>a, #share-btns>div {
+    display: inline-block;
+}
+
+.footer-content {
+    float: left;
+    padding: 0px 10px;
+}
+
+.footer-content-fixed {
+    width: 350px;
+}
+
+.search-box {
+    width: 270px;
+}
