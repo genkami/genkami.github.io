@@ -104,44 +104,9 @@ img {
   max-width:100%;
 }
 
-header ul, footer ul {
-  list-style:none;
-  padding:0;
-}
-
-header li, footer li {
-  float:left;
-}
-
-header ul a, footer ul a {
-  line-height:1;
-  font-size:11px;
-  color:#676767;
-  text-align:center;
-  padding-top:6px;
-}
-
-header ul a:hover, header ul a:focus, footer ul a:hover, footer ul a:focus {
-  color:#675C5C;
-}
-
-header ul a:active, footer ul a:active {
-  background-color:#f0f0f0;
-}
-
 strong {
   color:#222;
   font-weight:700;
-}
-
-header ul li + li + li, footer ul li + li + li {
-  border-right:none;
-}
-
-header ul a strong, footer ul a strong {
-  font-size:14px;
-  display:block;
-  color:#222;
 }
 
 a i.fa, a:hover i.fa, a:focus i.fa, a:active i.fa, a:link i.fa, a:visited i.fa {

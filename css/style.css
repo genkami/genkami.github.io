@@ -50,3 +50,34 @@ header h2, h3, h4, h5, h6 {
 .search-box {
     width: 270px;
 }
+
+.tag-list ul {
+    list-style: none;
+    padding: 0;
+}
+
+.tag-list li {
+    float: left;
+}
+
+.tag-list ul a {
+    line-height: 1;
+    font-size: 11px;
+    color: #676767;
+    text-align: center;
+    padding-top: 6px;
+}
+
+.tag-list ul a:hover, .tag-list ul a:focus {
+    color: #675C5C;
+}
+
+.tag-list ul a:active {
+  background-color: #f0f0f0;
+}
+
+.tag-list ul a strong {
+  font-size:14px;
+  display:block;
+  color:#222;
+}
