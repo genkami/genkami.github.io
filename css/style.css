@@ -28,3 +28,7 @@ header h2, h3, h4, h5, h6 {
     display: block;
     clear: both;
 }
+
+ #share-btns>a, #share-btns>div {
+   display: inline-block;
+ }
