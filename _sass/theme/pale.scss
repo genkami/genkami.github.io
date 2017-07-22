@@ -14,11 +14,11 @@ $table-border-color: #e5e5e5;
 $code-background-color: #f8f8f8;
 $code-font-color: #333333;
 
-$tag-font-color: #ff9ca8;
+$tag-font-color: $inner-background-color;
 $tag-font-hover-color: $tag-font-color;
 $tag-font-active-color: $tag-font-color;
-$tag-background-color: $inner-background-color;
-$tag-border-color: $tag-font-color;
+$tag-background-color: $outer-background-color;
+$tag-border-color: $tag-background-color;
 
 $h1-color: #292929;
 $h2-color: #393939;
