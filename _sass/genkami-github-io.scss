@@ -41,7 +41,7 @@ h1, h2, h3, h4, h5, h6 {
 .wrapper {
     width: auto;
     margin: 15px 170px;
-    padding: 15px;
+    padding: 15px 25px;
     border: 1px solid $border-color;
     border-radius: 8px;
     background-color: $inner-background-color;
@@ -266,6 +266,8 @@ a:hover, a:focus {
     .wrapper {
         margin-left: 5px;
         margin-right: 5px;
+        padding-left: 10px;
+        padding-right: 10px;
     }
 
     .footer-content {
