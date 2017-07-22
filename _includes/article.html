@@ -8,12 +8,14 @@
   </h1>
   <div class="article-metadata">
     <time>{{ include.page.date | date: "%Y年%m月%d日" }}</time>
-    <ul class="tag-list">
-      {% assign tags = include.page.tags | sort %}
-      {% for tag in tags %}
-      <li>{{ tag }}</li>
-      {% endfor %}
-    </ul>
+    <div class="tag-list">
+      <ul>
+        {% assign tags = include.page.tags | sort %}
+        {% for tag in tags %}
+        <li>{{ tag }}</li>
+        {% endfor %}
+      </ul>
+    </div>
   </div>
   {% if include.donotshowall %}
   {% else %}

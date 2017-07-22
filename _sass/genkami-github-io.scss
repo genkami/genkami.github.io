@@ -1,14 +1,20 @@
 @import "jekyll-theme-minimal";
 @import "theme/simple";
 
+@mixin clear-float() {
+    &:after {
+        content: "";
+        display: block;
+        clear: both;
+    }
+}
+
 body {
     background-color: $outer-background-color;
     padding: 50px;
     font: 14px/1.5 "Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
     color: $font-color;
     font-weight: normal;
-
-
 }
 
 h1, h2, h3 {
@@ -102,10 +108,15 @@ a:hover, a:focus {
 .article-metadata {
     margin-top: 5px;
     margin-bottom: 5px;
+    @include clear-float;
 }
 
 .article-metadata time {
     float: left;
+}
+
+.article-metadata .tag-list {
+    float: right;
 }
 
 .article-nav {
@@ -117,6 +128,7 @@ a:hover, a:focus {
     list-style: none;
     padding: 0px;
     margin: 0px 0px 0px 20px;
+    @include clear-float;
 }
 
 .tag-list li {
@@ -126,12 +138,6 @@ a:hover, a:focus {
     border-radius: 3px;
     padding: 2px 10px 2px 10px;
     margin: 2px 0px 2px 5px;
-}
-
-.tag-list:after {
-    content: "";
-    display: block;
-    clear: both;
 }
 
 #share-btns>a, #share-btns>div {
@@ -208,7 +214,7 @@ a:hover, a:focus {
 
 #disqus-wrapper {
     margin: 0px auto;;
-    padding: 0px;
+    padding: 0px 0px 20px 0px;
     width: 680px;
 }
 
