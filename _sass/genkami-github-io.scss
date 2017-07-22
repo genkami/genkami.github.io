@@ -42,10 +42,12 @@ article {
     margin-bottom: 50px;
  }
 
+$wrapper-padding-bottom: 15px;
+
 .wrapper {
     width: auto;
     margin: 15px 170px;
-    padding: 15px 25px;
+    padding: $wrapper-padding-bottom 25px;
     border: 1px solid $border-color;
     border-radius: 8px;
     background-color: $inner-background-color;
@@ -168,9 +170,10 @@ a:hover, a:focus {
 
 .footer-last-content {
     clear: both;
-    margin-top: 15px;
-    padding-top: 15px;
+    margin-top: 30px;
     border-top: 1px solid $hr-color;
+    padding-top: 30px;
+    padding-bottom: 30px - $wrapper-padding-bottom;
 }
 
 .copyright {
