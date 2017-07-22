@@ -7,7 +7,7 @@
     {% endif %}
   </h1>
   <div class="article-metadata">
-    <time style="float: left;">{{ include.page.date | date: "%Y年%m月%d日" }}</time>
+    <time>{{ include.page.date | date: "%Y年%m月%d日" }}</time>
     <ul class="tag-list">
       {% assign tags = include.page.tags | sort %}
       {% for tag in tags %}
