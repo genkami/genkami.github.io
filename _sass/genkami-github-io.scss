@@ -202,6 +202,12 @@ a:hover, a:focus {
     overflow: hidden;
 }
 
+#disqus-wrapper {
+    margin: 0px auto;;
+    padding: 0px;
+    width: 680px;
+}
+
 @media print, screen and (max-width: 1200px) {
     .wrapper {
         margin-left: 120px;
@@ -213,6 +219,10 @@ a:hover, a:focus {
     .wrapper {
         margin-left: 70px;
         margin-right: 70px;
+    }
+
+    #disqus-wrapper {
+        width: auto;
     }
 }
 
@@ -233,6 +243,10 @@ a:hover, a:focus {
 
     pre, code, h1 {
         word-wrap: normal;
+    }
+
+    #disqus-wrapper {
+        width: auto;
     }
 }
 
