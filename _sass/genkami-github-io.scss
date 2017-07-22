@@ -7,6 +7,25 @@ body {
     font: 14px/1.5 "Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
     color: $font-color;
     font-weight: normal;
+
+
+}
+
+h1, h2, h3 {
+    line-height: 1.1;
+}
+
+h1 {
+    font-size: 28px;
+    color: $h1-color;
+}
+
+h2 {
+    color: $h2-color;
+}
+
+h3, h4, h5, h6 {
+    color: $h3-color;
 }
 
 h1, h2, h3, h4, h5, h6 {
