@@ -1,0 +1,292 @@
+@import "jekyll-theme-minimal";
+@import "theme/pale";
+
+@mixin clear-float() {
+    &:after {
+        content: "";
+        display: block;
+        clear: both;
+    }
+}
+
+body {
+    background-color: $outer-background-color;
+    padding: 50px;
+    font: 14px/1.5 "Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: $font-color;
+    font-weight: normal;
+}
+
+h1, h2, h3 {
+    line-height: 1.1;
+}
+
+h1 {
+    font-size: 28px;
+    color: $h1-color;
+}
+
+h2 {
+    color: $h2-color;
+}
+
+h3, h4, h5, h6 {
+    color: $h3-color;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin: 0 0 20px;
+}
+
+article {
+    margin-bottom: 50px;
+ }
+
+.wrapper {
+    width: auto;
+    margin: 15px 170px;
+    padding: 15px 25px;
+    border: 1px solid $border-color;
+    border-radius: 8px;
+    background-color: $inner-background-color;
+}
+
+header {
+    margin-top: 20px;
+    margin-bottom: 30px;
+    margin-left: auto;
+}
+
+header h1 {
+    text-align: center;
+}
+
+header h2, h3, h4, h5, h6 {
+    margin-top: 20px;
+}
+
+blockquote {
+    border-left: 1px solid $border-color;
+    margin: 0px;
+    padding: 0px 0px 0px 20px;
+    font-style: italic;
+}
+
+pre {
+    padding: 8px 15px;
+    background-color: $code-background-color;
+    border-radius: 5px;
+    border: 1px solid $border-color;
+    overflow-x: auto;
+}
+
+code, pre {
+    font-family: Monaco, Bitstream Vera Sans Mono, Lucida Console, Terminal, Consolas, Liberation Mono, DejaVu Sans Mono, Courier New, monospace;
+    color: $code-font-color;
+    font-size: 12px;
+}
+
+
+th, td {
+    text-align: left;
+    padding: 5px 10px;
+    border-bottom: 1px solid $table-border-color;
+}
+
+hr {
+    border: 0;
+    background-color: $hr-color;
+    height: 1px;
+    margin: 0 0 20px;
+}
+
+a {
+    color: $link-color;
+    text-decoration: none;
+}
+
+a:hover, a:focus {
+    color: $link-hover-color;
+}
+
+.article-metadata {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    @include clear-float;
+}
+
+.article-metadata time {
+    float: left;
+}
+
+.article-metadata .tag-list {
+    float: right;
+}
+
+.article-nav {
+    margin: 0px 30px;
+}
+
+.tag-list ul {
+    display: inline;
+    list-style: none;
+    padding: 0px;
+    margin: 0px 0px 0px 20px;
+    @include clear-float;
+}
+
+.tag-list li {
+    display: inline;
+    border: 1px solid $tag-border-color;
+    background-color: $tag-background-color;
+    font-size: 0.8em;
+    border-radius: 3px;
+    padding: 2px 10px 2px 10px;
+    margin: 2px 0px 2px 5px;
+}
+
+#share-btns>a, #share-btns>div {
+    display: inline-block;
+}
+
+#share-btns a i.fa, #share-btns a:hover i.fa,
+#share-btns a:focus i.fa, #share-btns a:active i.fa,
+#share-btns a:link i.fa, #share-btns a:visited i.fa {
+    color: $font-color;
+}
+
+.footer-content {
+    float: left;
+    padding-right: 10px;
+    padding-bottom: 15px;
+    width: 270px;
+}
+
+.footer-content:last-child {
+    padding-right: 0px
+}
+
+.footer-last-content {
+    clear: both;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid $hr-color;
+}
+
+.copyright {
+    color: $copyright-color;
+    text-align: center;
+}
+
+.tag-list ul {
+    list-style: none;
+    padding: 0;
+}
+
+.tag-list li {
+    float: left;
+    color: $tag-font-color;
+}
+
+.tag-list ul a {
+    line-height: 1;
+    font-size: 11px;
+    color: $tag-font-color;
+    text-align: center;
+    padding-top: 6px;
+}
+
+.tag-list ul a:hover, .tag-list ul a:focus {
+    color: $tag-font-hover-color;
+}
+
+.tag-list ul a:active {
+    background-color: $tag-font-active-color;
+}
+
+.recent-post ul {
+    list-style: none;
+    margin: 0px;
+    padding: 0px;
+    width: 100%;
+}
+
+.recent-post ul li {
+    width: 100%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+#disqus-wrapper {
+    margin: 0px auto;;
+    padding: 0px 0px 20px 0px;
+    width: 680px;
+}
+
+@media print, screen and (max-width: 1200px) {
+    .wrapper {
+        margin-left: 120px;
+        margin-right: 120px;
+    }
+}
+
+@media print, screen and (max-width: 960px) {
+    .wrapper {
+        margin-left: 70px;
+        margin-right: 70px;
+    }
+
+    #disqus-wrapper {
+        width: auto;
+    }
+}
+
+@media print, screen and (max-width: 720px) {
+    .wrapper {
+        margin-left: 20px;
+        margin-right: 20px;
+    }
+
+    body {
+        word-wrap: break-word;
+    }
+
+    .MJXc-display {
+        width: 90%;
+        overflow: scroll;
+    }
+
+    pre, code, h1 {
+        word-wrap: normal;
+    }
+
+    #disqus-wrapper {
+        width: auto;
+    }
+}
+
+@media print, screen and (max-width: 480px) {
+    .wrapper {
+        margin-left: 5px;
+        margin-right: 5px;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .footer-content {
+        width: 90%;
+    }
+
+    .article-nav {
+        margin: 0px 10px;
+    }
+}
+
+@media print {
+    body {
+        padding:0.4in;
+        font-size:12pt;
+        color:#444;
+    }
+}
