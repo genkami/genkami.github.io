@@ -1,5 +1,5 @@
-@import "jekyll-theme-minimal";
 @import "theme/pale";
+@import "jekyll-theme-minimal";
 
 @mixin clear-float() {
     &:after {
@@ -66,7 +66,7 @@ header h2, h3, h4, h5, h6 {
 }
 
 blockquote {
-    border-left: 1px solid $border-color;
+    border-left: 1px solid $code-border-color;
     margin: 0px;
     padding: 0px 0px 0px 20px;
     font-style: italic;
@@ -76,7 +76,7 @@ pre {
     padding: 8px 15px;
     background-color: $code-background-color;
     border-radius: 5px;
-    border: 1px solid $border-color;
+    border: 1px solid $code-border-color;
     overflow-x: auto;
 }
 
