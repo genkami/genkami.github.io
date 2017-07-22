@@ -8,11 +8,12 @@ $font-color: #727272;
 $link-color: #267cb9;
 $link-hover-color: #006699;
 
-$hr-color: #ff9ca8;
+$hr-color: #d3f9ff; // #ff9ca8
 $table-border-color: #e5e5e5;
 
-$code-background-color: #f8f8f8;
+$code-background-color: $inner-background-color;
 $code-font-color: #333333;
+$code-border-color: $hr-color;
 
 $tag-font-color: $outer-background-color;
 $tag-font-hover-color: $tag-font-color;
