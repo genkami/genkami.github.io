@@ -40,7 +40,7 @@
     <ul>
       {% assign tags = site.tags | sort %}
       {% for tag in tags %}
-      <li><a href="{{ site.baseurl }}/articles.html#{{ tag[0] }}">{{ tag[0] }} ({{ tag[1].size }})</a></li>
+      <li><a href="{{ '/articles.html' | relative_url }}#{{ tag[0] }}">{{ tag[0] }} ({{ tag[1].size }})</a></li>
       {% endfor %}
     </ul>
   </div>
