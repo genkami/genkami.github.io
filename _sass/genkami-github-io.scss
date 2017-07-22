@@ -91,7 +91,7 @@ th, td {
 
 hr {
     border: 0;
-    background-color: $border-color;
+    background-color: $hr-color;
     height: 1px;
     margin: 0 0 20px;
 }
@@ -133,7 +133,8 @@ a:hover, a:focus {
 
 .tag-list li {
     display: inline;
-    border: 1px solid $border-color;
+    border: 1px solid $tag-border-color;
+    background-color: $tag-background-color;
     font-size: 0.8em;
     border-radius: 3px;
     padding: 2px 10px 2px 10px;
@@ -169,7 +170,7 @@ a:hover, a:focus {
 }
 
 .copyright {
-    color: #777;
+    color: $copyright-color;
     text-align: center;
 }
 
@@ -180,6 +181,7 @@ a:hover, a:focus {
 
 .tag-list li {
     float: left;
+    color: $tag-font-color;
 }
 
 .tag-list ul a {
