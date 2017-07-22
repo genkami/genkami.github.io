@@ -24,9 +24,9 @@
       return { tag: null, page: match[1] ? parseInt(match[1]) : 0 };
     }
     // #TAG/PAGE
-    match = hash.match(/^#([a-zA-Z0-9 _-]+)(\/(\d*)\/?)?$/);
+    match = hash.match(/^#([^\/]+)(\/(\d*)\/?)?$/);
     if (match) return {
-      tag: match[1] ? match[1] : null,
+      tag: match[1] ? decodeURI(match[1]) : null,
       page: match[3] ? parseInt(match[3]) : 0
     };
     return { tag: null, page: 0 };
