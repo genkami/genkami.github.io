@@ -167,3 +167,19 @@ google.search.F.element.sq=function(a,b){if(!google.search.F.element.To&&(google
 c&&k.push("gl."+f);k=k.concat(["el."+e,"mc."+g,a+"s."+b,a+"e."+d]);google.loader.recordCsiStat(["element_"+(c+h)],k)}}};
 ```
 
+ちょっと方法を変えてみる。
+ページのスクリプトを少しずつ消していって、どこまで消した段階で動くようになるか。
+
+まずは記事一覧を動かすために読み込んでいるスクリプトをすべてコメントアウトしてみる。
+→動かない。なぜ？？？？？
+
+次に`<script>`タグを全部コメントアウトしてみる。
+これでも動かない。本当に謎。
+
+検索バーのスクリプトは他のスクリプト`cse.js`を引っ張ってきてDOMに追加する。
+通常の記事ページは`<head>`の中に`cse.js`を読み込むタグが追加されるっぽい。
+
+記事一覧ページでは`<section>`内の`<script>`の隣にスクリプトが追加される位置が変わる。
+これが何かまずいことを引き起こしている?
+
+しかし、例えば[/ku/q-learning-demo/](/ku/q-learning-demo/)も`<section>`内に`cse.js`を読み込む`<script>`がおいてあるが、こちらは正常に動作する。これだけが原因とは考えられない。
