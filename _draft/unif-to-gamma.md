@@ -2,7 +2,7 @@
 layout: post
 title: 棄却法を使ってガンマ分布を作る
 tags:
-- 統計
+- Algorithm
 - R
 use_mathjax: true
 ---

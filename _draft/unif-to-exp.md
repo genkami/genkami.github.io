@@ -2,7 +2,7 @@
 layout: post
 title: 逆関数法で一様分布から指数分布を作る
 tags:
-- 統計
+- Algorithm
 - R
 ---
 
