@@ -51,6 +51,7 @@ $wrapper-padding-bottom: 15px;
     border: 1px solid $border-color;
     border-radius: 8px;
     background-color: $inner-background-color;
+    box-shadow: 0px 0px 4px 0px $shadow-color;
 }
 
 header {
@@ -75,8 +76,8 @@ pre {
     padding: 8px 15px;
     background-color: $code-background-color;
     border-radius: 5px;
-    border: 1px solid $code-border-color;
     overflow-x: auto;
+    box-shadow: inset 0px 0px 2px 0px $shadow-color;
 }
 
 code, pre {
@@ -108,6 +109,28 @@ a:hover, a:focus {
     color: $link-hover-color;
 }
 
+.top-nav {
+    @include clear-float;
+    display: flex;
+    margin: 30px 50px;
+}
+
+.top-nav h1 {
+    margin-right: auto;
+}
+
+.top-nav ul li {
+    display: block;
+    list-style: none;
+    border-bottom: 1px solid $hr-color;
+    font-size: 18px;
+    padding: 20px;
+}
+
+.top-nav ul li:last-child {
+    border-bottom: none;
+}
+
 .article-metadata {
     margin-top: 5px;
     margin-bottom: 5px;
@@ -120,6 +143,9 @@ a:hover, a:focus {
 
 .article-metadata .tag-list {
     float: right;
+}
+
+.article-body {
 }
 
 .article-nav {
@@ -263,6 +289,10 @@ a:hover, a:focus {
 
     #disqus-wrapper {
         width: auto;
+    }
+
+    .top-nav {
+        display: block;
     }
 }
 

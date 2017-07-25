@@ -1,54 +1,24 @@
 ---
-layout: default
+layout: null
 title: top
 ---
-<div class="content-group">
-  <div class="content content-header">
-    <h1>コンテンツ</h1>
-  </div>
-
-  <div class="content">
-    <h2><a href="/articles.html">ブログ</a></h2>
-    主に技術的なことを中心に書いています。
-  </div>
-
-  <div class="content"></div>
-  <div class="content"></div>
-</div>
-
-<div class="content-group">
-  <div class="content content-header">
-    <h1>リンク</h1>
-  </div>
-
-  <div class="content">
-    <h2><a href="http://monamonamonad.github.io/lifegame/">ライフゲーム</a></h2>
-    <p>唐突にライフゲームがしたくなったので作りました。</p>
-  </div>
-
-  <div class="content">
-    <h2><a href="http://monamonamonad.github.io/tetris/">テトリス</a></h2>
-    <p>1時間でテトリスを作る動画かなんかをみて自分もやってみようと思ったら2時間かかりました。</p>
-  </div>
-
-  <div class="content">
-    <h2><a href="http://monamonamonad.github.io/jk/">じゃんけん</a></h2>
-    <p>スマホがあればどこでも誰とでもじゃんけんができます。</p>
-  </div>
-
-  <div class="content">
-    <h2><a href="http://dokodeglobal.com/av_classifier/">AV女優判定機</a></h2>
-    <p>TwitterのユーザーがAV女優かどうか判定してくれます。</p>
-  </div>
-</div>
-
-<style>
- .content-group {
-   padding-top: 50px;
- }
-
- .content {
-   padding: 20px;
- }
-</style>
-
+<!doctype html>
+<html lang="{{ site.lang | default: 'en-US' }}">
+  <head>
+    {% include head.html %}
+  </head>
+  <body>
+    <div class="wrapper">
+      <section>
+        <nav class="top-nav">
+          <h1>genkami.github.io</h1>
+          <ul>
+            <li><a href="/about.html">Profile</a></li>
+            <li><a href="/articles.html">Posts</a></li>
+            <li><a href="/products.html">Products</a></li>
+          </ul>
+        </nav>
+      </section>
+    </div>
+  </body>
+</html>

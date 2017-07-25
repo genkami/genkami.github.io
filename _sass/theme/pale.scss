@@ -1,14 +1,15 @@
-$outer-background-color: #40a3eb;
+$outer-background-color: #6eb7db;
 $inner-background-color: #ffffff;
+$shadow-color: #454e53;
 
-$border-color: $outer-background-color;
+$border-color: $inner-background-color;
 
 $font-color: #727272;
 
-$link-color: #267cb9;
-$link-hover-color: #006699;
+$link-color: #1e98b9;
+$link-hover-color: #6bbed5;
 
-$hr-color: $border-color; // #ff9ca8
+$hr-color: $outer-background-color;
 $table-border-color: #e5e5e5;
 
 $code-background-color: $inner-background-color;
@@ -19,7 +20,7 @@ $tag-font-color: $font-color;
 $tag-font-hover-color: $tag-font-color;
 $tag-font-active-color: $tag-font-color;
 $tag-background-color: $inner-background-color;
-$tag-border-color: $border-color; // #d3f9ff;
+$tag-border-color: $outer-background-color;
 
 $h1-color: #292929;
 $h2-color: #393939;
