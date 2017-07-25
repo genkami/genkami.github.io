@@ -3,9 +3,19 @@
   <a href="{{ site.baseurl }}/about.html">Genta Kamitani</a>
 
   <h3>Search</h3>
-  <div class="search-box">
+  <div id="search-box">
     <script>
      (function() {
+       var insertSearchBox = () => {
+         var sb = document.getElementById('search-box');
+         sb.appendChild(document.createElement('gcse:searchbox-only'));
+       };
+       if (document.readyState != 'loading') {
+         insertSearchBox();
+       } else {
+         document.addEventListener('DOMContentLoaded', () => insertSearchBox());
+       }
+
        var cx = '002259772166117728422:2nr58qwu92i';
        var gcse = document.createElement('script');
        gcse.type = 'text/javascript';
@@ -15,7 +25,6 @@
        s.parentNode.insertBefore(gcse, s);
      })();
     </script>
-    <gcse:searchbox-only></gcse:searchbox-only>
   </div>
 </div>
 
