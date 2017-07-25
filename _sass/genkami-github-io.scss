@@ -290,6 +290,10 @@ a:hover, a:focus {
     #disqus-wrapper {
         width: auto;
     }
+
+    .top-nav {
+        display: block;
+    }
 }
 
 @media print, screen and (max-width: 480px) {
