@@ -112,10 +112,11 @@ a:hover, a:focus {
 .top-nav {
     @include clear-float;
     display: flex;
-    margin: 30px 50px;
+    margin: 30px 100px;
 }
 
 .top-nav h1 {
+    margin-top: 75px;
     margin-right: auto;
 }
 
@@ -266,6 +267,12 @@ a:hover, a:focus {
     #disqus-wrapper {
         width: auto;
     }
+
+    .top-nav {
+        margin-left: 50px;
+        margin-right: 50px;
+    }
+
 }
 
 @media print, screen and (max-width: 720px) {
@@ -293,6 +300,20 @@ a:hover, a:focus {
 
     .top-nav {
         display: block;
+        margin: 30px 30px;
+    }
+
+    .top-nav h1 {
+        text-align: center;
+    }
+
+    .top-nav ul {
+        margin: 0px;
+        padding: 0px;
+    }
+
+    .top-nav ul li {
+        text-align: center;
     }
 }
 
