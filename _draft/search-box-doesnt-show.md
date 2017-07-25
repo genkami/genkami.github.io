@@ -183,3 +183,89 @@ c&&k.push("gl."+f);k=k.concat(["el."+e,"mc."+g,a+"s."+b,a+"e."+d]);google.loader
 これが何かまずいことを引き起こしている?
 
 しかし、例えば[/ku/q-learning-demo/](/ku/q-learning-demo/)も`<section>`内に`cse.js`を読み込む`<script>`がおいてあるが、こちらは正常に動作する。これだけが原因とは考えられない。
+
+その後、サイトのデザインを弄っていたらあるタイミング以降どのページでも検索バーがでなくなっていることに気づいた。
+コミットの間を手動二分探索して、問題のコミットを特定
+しかし、そのコミットは記事を一つ追加しているだけだった。
+
+[/2017/07/24/01-emacs-emoji.html](/2017/07/24/01-emacs-emoji.html)
+
+てっきり問題はどこかの`<script>`タグにあると思っていたので、以外
+
+もしかすると、jemojiが絵文字に見えるようなJSのコードを勝手に変換している…？？
+コロン使う所とかもあるし怪しい
+
+というわけで、サイト内検索用の埋め込みスクリプトの部分がどのようにレンダリングされてるか確認し直してみると……
+
+```html
+    <script>
+     (function() {
+       var cx = 'XXXXXXX';
+       var gcse = document.createElement('script');
+       gcse.type = 'text/javascript';
+       gcse.async = true;
+       gcse.src = 'https://cse.google.com/cse.js?cx=' + cx;
+       var s = document.getElementsByTagName('script')[0];
+       s.parentNode.insertBefore(gcse, s);
+     })();
+    </script>
+    <searchbox-only></searchbox-only>
+```
+
+ビンゴ
+
+本来なら一番最後のタグは`<gcse:searchbox-only>`
+
+jemojiに絵文字っぽい部分(`gcse:`)が消されてしまっている？
+
+実際、HTMLの適当な場所に`<my:element>`みたいなタグを突っ込んでみたところ、`my:`の部分が消されてしまうことがわかった。
+
+この部分全体を
+
+```html
+{% raw %}
+{% raw %}
+...
+{% endraw %}
+{% endraw %}
+```
+
+で囲ってみたが、効果なし。
+
+jemojiのソースコードを読んでみると、
+
+```ruby
+Jekyll::Hooks.register [:pages, :documents], :post_render do |doc|
+  Jekyll::Emoji.emojify(doc) if Jekyll::Emoji.emojiable?(doc)
+end
+```
+
+ここが原因。絵文字の書き換えのタイミングが`:post_render`なので、rawとか関係なしにemojifyされてしまう。
+
+というか、そもそもjekyllの仕様としてプラグインによるフィルタリングはレンダリング前か後にしかできないので、rawとか関係ない。
+
+だからコロンつきのhtmlタグも勝手に絵文字だと思いこんで変換されている？？
+
+と思ったけど、jemojiが内部で呼んでいる`Html::Pipeline::EmojiFilter`はちゃんと`:.*:`とかじゃなくてちゃんと特定の絵文字にマッチする正規表現(`:(smlie|joy|cat|..):`みたいなの)を生成してるので、コロンで始まってるだけとかでは誤処理されないはず。
+
+何にせよ、テンプレートのレンダリングのタイミングでJekyll周りの何者かに書き換えられてしまっていることは確か
+
+ここでJekyllなりjemojiなりを修正したところで、変更がマージされてGithub Pagesが公式に修正済みのバージョンを使うようになるまで待たないと行けない。
+
+とりあえず場当たり的な対応。`#search-box`みたいな適当な`div`タグを検索ボックスを埋め込みたいところにおいておいて、
+
+```javascript
+     (function() {
+       var insertSearchBox = () => {
+         var sb = document.getElementById('search-box');
+         sb.appendChild(document.createElement('gcse:searchbox-only'));
+       };
+       if (document.readyState != 'loading') {
+         insertSearchBox();
+       } else {
+         document.addEventListener('DOMContentLoaded', () => insertSearchBox());
+         }
+     })();
+```
+
+これでとりあえずは解決。
