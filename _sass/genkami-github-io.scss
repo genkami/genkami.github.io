@@ -1,13 +1,6 @@
-@import "theme/pale";
+@import "theme";
 @import "jekyll-theme-minimal";
-
-@mixin clear-float() {
-    &:after {
-        content: "";
-        display: block;
-        clear: both;
-    }
-}
+@import "common";
 
 body {
     background-color: $outer-background-color;
@@ -107,28 +100,6 @@ a {
 
 a:hover, a:focus {
     color: $link-hover-color;
-}
-
-.top-nav {
-    @include clear-float;
-    display: flex;
-    margin: 30px 50px;
-}
-
-.top-nav h1 {
-    margin-right: auto;
-}
-
-.top-nav ul li {
-    display: block;
-    list-style: none;
-    border-bottom: 1px solid $hr-color;
-    font-size: 18px;
-    padding: 20px;
-}
-
-.top-nav ul li:last-child {
-    border-bottom: none;
 }
 
 .article-metadata {
@@ -289,10 +260,6 @@ a:hover, a:focus {
 
     #disqus-wrapper {
         width: auto;
-    }
-
-    .top-nav {
-        display: block;
     }
 }
 
