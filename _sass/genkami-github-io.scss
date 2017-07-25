@@ -51,6 +51,7 @@ $wrapper-padding-bottom: 15px;
     border: 1px solid $border-color;
     border-radius: 8px;
     background-color: $inner-background-color;
+    box-shadow: 0px 0px 4px 0px $shadow-color;
 }
 
 header {
@@ -75,8 +76,8 @@ pre {
     padding: 8px 15px;
     background-color: $code-background-color;
     border-radius: 5px;
-    border: 1px solid $code-border-color;
     overflow-x: auto;
+    box-shadow: inset 0px 0px 2px 0px $shadow-color;
 }
 
 code, pre {
@@ -120,6 +121,9 @@ a:hover, a:focus {
 
 .article-metadata .tag-list {
     float: right;
+}
+
+.article-body {
 }
 
 .article-nav {
