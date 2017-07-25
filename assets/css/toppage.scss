@@ -3,6 +3,13 @@
 @import "common";
 @import "theme";
 
+.wrapper.top-wrapper {
+    margin-top: 100px;
+    width: 860px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 .top-nav {
     @include clear-float;
     display: flex;
@@ -26,12 +33,24 @@
     border-bottom: none;
 }
 
+@media print, screen and (max-width: 1200px) {
+    .wrapper.top-wrapper {
+        width: auto;
+        margin-left: 120px;
+        margin-right: 120px;
+    }
+}
+
 @media print, screen and (max-width: 960px) {
     .top-nav {
         margin-left: 50px;
         margin-right: 50px;
     }
 
+    .wrapper.top-wrapper {
+        margin-left: 70px;
+        margin-right: 70px;
+    }
 }
 
 @media print, screen and (max-width: 720px) {
@@ -51,5 +70,20 @@
 
     .top-nav ul li {
         text-align: center;
+    }
+
+    .wrapper.top-wrapper {
+        margin-top: 15px;
+        margin-left: 20px;
+        margin-right: 20px;
+    }
+}
+
+@media print, screen and (max-width: 480px) {
+    .wrapper.top-wrapper {
+        margin-left: 5px;
+        margin-right: 5px;
+        padding-left: 10px;
+        padding-right: 10px;
     }
 }
