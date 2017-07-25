@@ -109,6 +109,28 @@ a:hover, a:focus {
     color: $link-hover-color;
 }
 
+.top-nav {
+    @include clear-float;
+    display: flex;
+    margin: 30px 50px;
+}
+
+.top-nav h1 {
+    margin-right: auto;
+}
+
+.top-nav ul li {
+    display: block;
+    list-style: none;
+    border-bottom: 1px solid $hr-color;
+    font-size: 18px;
+    padding: 20px;
+}
+
+.top-nav ul li:last-child {
+    border-bottom: none;
+}
+
 .article-metadata {
     margin-top: 5px;
     margin-bottom: 5px;
