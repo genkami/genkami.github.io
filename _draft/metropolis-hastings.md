@@ -4,14 +4,26 @@ title: Metropolis-Hastings法で任意の分布の乱数を生成する
 tags:
 - Algorithm
 - R
-- use_mathjax: true
+use_mathjax: true
 ---
 
-Mtropolis−Hastings法はマルコフ連鎖モンテカルロ法の一種。
+Mtropolis−Hastings法はマルコフ連鎖モンテカルロ法の一種で、既存の適当な乱数からほしい分布の乱数を生成することができます。
 
-既存の適当な乱数からほしい分布の乱数を生成する。
+マルコフ連鎖モンテカルロ法自体は、以下のような手順で表すことができます。
 
-マルコフ連鎖モンテカルロ法自体は以下のようなコードで表すことができる。
+手順
+
+Metropolis-Hastings法は、この判定部分に以下のような方法を使います
+
+説明
+
+
+基本的には[棄却法](/2017/07/27/01-unif-to-gamma.html)と似たような感じですが、生成される乱数が現在の状態に依存するという性質を持っています。
+
+
++ \\(f(x)\\): 欲しい乱数の確率密度関数(の定数倍)
++ \\(g(x \vert \mathrm{state})\\): fの近似としての、求まりやすい乱数の確率密度関数(パラメータとして現在の状態を取る \\(g(x \vert \mathrm{state})\\))
++ g: 先ほどのrand.gの条件付き分布
 
 ```r
 # state: 現在の状態。乱数自体も表す
@@ -27,16 +39,7 @@ mcmc <- function (state, rand.g, accept) {
   }
   new.state
 }
-```
 
-棄却法と似たような感じ。生成される乱数が現在の状態に依存するところが異なる。
-
-
-\\(f(x)\\): 欲しい乱数の確率密度関数(の定数倍)
-\\(g(x \vert \mathrm{state})\\): fの近似としての、求まりやすい乱数の確率密度関数(パラメータとして現在の状態を取る \\(g(x \vert \mathrm{state})\\))
-gは先ほどのrand.gの条件付き分布
-
-```r
 # state: 現在の状態
 # f(x): 欲しい乱数の確率密度関数
 # g(x | state): 適当な乱数の条件付き確率密度関数
@@ -132,7 +135,7 @@ ggplot(df.plot, aes(x = value, fill = key)) +
   geom_histogram(bins = 30, position = "identity", alpha = 0.5)
 ```
 
-![/img/post/2017-07-25-matropolis-hastings.png](/img/post/2017-07-25-matropolis-hastings.png)
+![/img/post/2017-07-25-metropolis-hastings.png](/img/post/2017-07-25-metropolis-hastings.png)
 
 あまり一致度は高くない。
 
