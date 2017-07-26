@@ -10,16 +10,22 @@
 <!--[if lt IE 9]>
   <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
 <![endif]-->
+<meta name="description" content="{{ page.content | strip_html | strip_newlines | slice: 0, 100 }}...">
 <meta itemprop="name" content="{{ page.title }} - {{ site.title | default: site.github.repository_name }}">
 <meta itemprop="image" content="{{ '/img/Octocat.jpg' | relative_url }}">
+
 <meta property="og:title" content="{{ page.title }} - {{ site.title | default: site.github.repository_name }}">
 <meta property="og:image" content="{{ site.baseurl }}/img/Octocat.jpg">
 <meta property="og:description" content="{{ page.content | strip_html | strip_newlines | slice: 0, 100 }}...">
 <meta property="og:site_name" content="{{ site.title | default: site.github.repository_name }}">
 <meta property="og:url" content="{{ site.url }}{{ site.baseurl }}{{ page.url }}">
+<meta property="og:locale" content="ja_JP">
 <meta property="og:type" content="article">
+
+
 <meta name="twitter:title" content="{{ site.title | default: site.github.repository_name }}">
-<meta name="description" content="{{ page.content | strip_html | strip_newlines | slice: 0, 100 }}...">
 <meta name="twitter:site" content="@{{ site.twitter.user }}">
+<meta name="twitter:creator" content="@{{ site.twitter.user }}">
 <meta name="twitter:card" content="summary">
+<meta namd="twitter:image" content="{{ site.baseurl }}/img/Octocat.jpg">
 {% feed_meta %}
