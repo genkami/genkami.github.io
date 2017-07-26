@@ -1,6 +1,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="chrome=1">
 {% capture title %}{{ page.title }} - {{ site.title | default: site.github.repository_name }}{% endcapture %}
+{% assign thumbnail = page.thumbnail | default: '/img/Octocat.jpg' %}
 <title>{{ title }}</title>
 
 <link rel="shortcut icon" href="/favicon.ico">
@@ -13,10 +14,10 @@
 <![endif]-->
 <meta name="description" content="{{ page.content | strip_html | strip_newlines | slice: 0, 100 }}...">
 <meta itemprop="name" content="{{ title }}">
-<meta itemprop="image" content="{{ '/img/Octocat.jpg' | relative_url }}">
+<meta itemprop="image" content="{{ thumbnail | relative_url }}">
 
 <meta property="og:title" content="{{ title }}">
-<meta property="og:image" content="{{ site.baseurl }}/img/Octocat.jpg">
+<meta property="og:image" content="{{ thumbnail | relative_url }}">
 <meta property="og:description" content="{{ page.content | strip_html | strip_newlines | slice: 0, 100 }}...">
 <meta property="og:site_name" content="{{ site.title | default: site.github.repository_name }}">
 <meta property="og:url" content="{{ site.url }}{{ site.baseurl }}{{ page.url }}">
@@ -28,5 +29,5 @@
 <meta name="twitter:site" content="@{{ site.twitter.user }}">
 <meta name="twitter:creator" content="@{{ site.twitter.user }}">
 <meta name="twitter:card" content="summary">
-<meta namd="twitter:image" content="{{ site.baseurl }}/img/Octocat.jpg">
+<meta namd="twitter:image" content="{{ thumbnail | relative_url }}">
 {% feed_meta %}
