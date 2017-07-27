@@ -1,3 +1,0 @@
-[submodule "game-of-life"]
-	path = game-of-life
-	url = git@github.com:genkami/game-of-life.git
