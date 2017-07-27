@@ -21,7 +21,7 @@ gems:
 
 # rss
 name: genkami.github.io
-description: blog
+description: プログラミング関係のメモ等
 url: https://genkami.github.io/
 
 num_recent_posts: 10
