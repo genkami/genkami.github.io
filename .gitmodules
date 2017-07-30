@@ -1,3 +1,6 @@
 [submodule "game-of-life"]
 	path = game-of-life
 	url = https://github.com/genkami/game-of-life.git
+[submodule "tetris"]
+	path = tetris
+	url = https://github.com/genkami/tetris.git
