@@ -6,6 +6,7 @@ tags:
 ---
 
 まずはubuntuを入れる
+Dockerのほうがらくかも
 
 以下ubuntuでの操作
 

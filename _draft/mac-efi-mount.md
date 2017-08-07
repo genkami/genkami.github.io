@@ -7,5 +7,7 @@ tags:
 
 diskutil list
 
+ふつうはdisk0s1とか
 
-mount /dev/disk0sN /path/to/mountpoint
+
+sudo mount -t msdos /dev/disk0s1 /path/to/mountpoint
