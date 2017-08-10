@@ -10,6 +10,26 @@ Dockerのほうがらくかも
 
 以下ubuntuでの操作
 
+build-essential, mercurial, mingw-w64あたりが必要
+
+FROM ubuntu:xenial
+
+RUN apt -y update &&
+    apt -y install \
+        build-essential \
+        mingw-w64
+
+VOLUME /work
+
+WORKDIR /work
+
+CMD make
+
+sudo docker build .
+sudo docker run --rm -v /path/to/bitvisor:/work -it NAME
+sudo docker run --rm -v /path/to/bitvisor:/work -it NAME
+
+
 https://www.bitvisor.org/
 
 ダウンロード
