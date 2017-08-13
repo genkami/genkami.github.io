@@ -1,9 +1,11 @@
 ---
 layout: post
-title: 
+title: VirtualBoxでホスト-ゲスト間のファイル共有
 tags:
-- 
+- Others
 ---
+
+
 
 http://qiita.com/skyzhao/items/20e04dff1cf277d330a1
 mount -t vboxsf share ./share
