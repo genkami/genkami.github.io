@@ -2,7 +2,7 @@
 layout: post
 title: 
 tags:
-- Haskell
+- 
 ---
 
-LiquidHaskellの入門
+2.5 UEFI Driver Model

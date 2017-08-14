@@ -79,5 +79,6 @@ PBR = 株価 / BPS
 
 
 
+
 参考
 [バリュー投資入門―バフェットを超える割安株選びの極意](https://www.amazon.co.jp/dp/4532350212/ref=cm_sw_r_tw_dp_x_LUFGzb3X4X13C)
