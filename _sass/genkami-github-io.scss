@@ -45,8 +45,8 @@ article img:not(.emoji) {
 $wrapper-padding-bottom: 15px;
 
 .wrapper {
-    width: auto;
-    margin: 15px 170px;
+    width: 860px;
+    margin: 15px auto;
     padding: $wrapper-padding-bottom 25px;
     border: 1px solid $border-color;
     border-radius: 8px;
@@ -230,6 +230,7 @@ a:hover, a:focus {
 
 @media print, screen and (max-width: 1200px) {
     .wrapper {
+        width: auto;
         margin-left: 120px;
         margin-right: 120px;
     }
