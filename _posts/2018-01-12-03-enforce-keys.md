@@ -22,7 +22,7 @@ end
 ```
 
 よくみると，このコードには明らかなバグがあります．
-struct `Game.User` は2つのフィールド `name`, `level` を持ちますが， `Game.User.new`が返すstructには，`level`フィールドが抜けています．
+struct `Game.User` は2つのフィールド `name`, `level` を持ちますが， `Game.User.new/2`が返すstructには，`level`フィールドが抜けています．
 
 この場合，コンパイル時に警告は表示されるものの，普通に実行することができてしまいます．
 
