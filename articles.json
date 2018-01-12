@@ -13,7 +13,7 @@
   {
     "title": "{{ post.title | url_encode }}",
     "date": "{{ post.date | date: "%Y/%m/%d" }}",
-    "url": "{{ post.url}}",
+    "url": "{{ post.url }}",
     "tags": [
       {% assign first_tag = true %}
       {% for tag in post.tags %}

@@ -2,29 +2,35 @@
 layout: default
 title: 記事一覧
 ---
-<h1><span class="show-only-tag-exists" style="display: none;">タグ '<span class="tag-name"></span>' の</span>記事一覧</h1>
-<div class="articles">
-  {% for post in site.posts %}
-  {% include article.html page=post donotshowall=true %}
-  {% endfor %}
-</div>
-
-<div id="tag-unknown">
-  <span class="tag-name"></span>にマッチする記事はありません。
-</div>
-
-<div class="article-nav">
-  <div id="prev-page" style="float: left; display: none;">
-    <a href="" id="prev-page-link"><i class="fa fa-chevron-left"></i>新しい記事</a>
-  </div>
-  <div id="next-page" style="text-align: right; display: none;">
-    <a href="" id="next-page-link">古い記事<i class="fa fa-chevron-right"></i></a>
-  </div>
-</div>
+<article-paginator></article-paginator>
 
 <script>
  window.GlobalConfig = {
    offset: {{ site.num_articles_per_page | default: 10 }}
  };
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/2.0.3/fetch.min.js"></script>
 <script src="{{ '/assets/js/article-paginator.js' | relative_url }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/riot@3.8.1/riot+compiler.min.js"></script>
+<script type="riot/tag" src="/assets/tag/article-paginator.tag"></script>
+<script type="riot/tag" src="/assets/tag/article-list.tag"></script>
+<script type="riot/tag" src="/assets/tag/article-entry.tag"></script>
+<script>
+ const observable = riot.observable();
+ riot.compile(() => {
+   riot.mount('*', { observable: observable });
+ });
+
+ if (document.readyState !== 'loading') {
+   observable.trigger('HashChanged');
+ } else {
+   document.addEventListener('DOMContentLoaded', () => {
+     observable.trigger('HashChanged');
+   });
+ }
+
+ window.addEventListener('hashchange', () => {
+   observable.trigger('HashChanged');
+   window.scrollTo(0, 0);
+ });
+</script>
