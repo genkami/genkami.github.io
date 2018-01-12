@@ -148,6 +148,20 @@ a:hover, a:focus {
     margin: 2px 0px 2px 5px;
 }
 
+#prev-page {
+    float: left;
+}
+
+#next-page {
+    text-align: right;
+}
+
+.article-nav:after {
+    content: "";
+    display: block;
+    clear: both;
+}
+
 #share-btns>a, #share-btns>div {
     display: inline-block;
 }
