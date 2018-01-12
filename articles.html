@@ -3,25 +3,6 @@ layout: default
 title: 記事一覧
 ---
 <article-paginator></article-paginator>
-<h1><span class="show-only-tag-exists" style="display: none;">タグ '<span class="tag-name"></span>' の</span>記事一覧</h1>
-<div class="articles">
-  {% for post in site.posts %}
-  {% include article.html page=post donotshowall=true %}
-  {% endfor %}
-</div>
-
-<div id="tag-unknown">
-  <span class="tag-name"></span>にマッチする記事はありません。
-</div>
-
-<div class="article-nav">
-  <div id="prev-page" style="float: left; display: none;">
-    <a href="" id="prev-page-link"><i class="fa fa-chevron-left"></i>新しい記事</a>
-  </div>
-  <div id="next-page" style="text-align: right; display: none;">
-    <a href="" id="next-page-link">古い記事<i class="fa fa-chevron-right"></i></a>
-  </div>
-</div>
 
 <script>
  window.GlobalConfig = {
