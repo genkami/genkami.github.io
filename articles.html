@@ -35,7 +35,21 @@ title: 記事一覧
 <script type="riot/tag" src="/assets/tag/article-list.tag"></script>
 <script type="riot/tag" src="/assets/tag/article-entry.tag"></script>
 <script>
+ const observable = riot.observable();
  riot.compile(() => {
-   riot.mount('*');
+   riot.mount('*', { observable: observable });
+ });
+
+ if (document.readyState !== 'loading') {
+   observable.trigger('HashChanged');
+ } else {
+   document.addEventListener('DOMContentLoaded', () => {
+     observable.trigger('HashChanged');
+   });
+ }
+
+ window.addEventListener('hashchange', () => {
+   observable.trigger('HashChanged');
+   window.scrollTo(0, 0);
  });
 </script>

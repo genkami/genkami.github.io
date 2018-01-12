@@ -28,6 +28,8 @@
    }
 
    this.filter = this.makeFilter(opts.filters);
+   this.articles = [];
+   this.targetArticles = [];
 
    if (this.opts.tag == null) {
      this.title = '記事一覧';
