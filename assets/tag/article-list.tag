@@ -9,11 +9,11 @@
      }).then((articles) => {
        this.articles = articles.map((article) => {
          return {
-           "title": decodeURI(article.title),
+           "title": this.decode(article.title),
            "date": article.date,
            "url": article.url,
-           "tags" : article.tags.map((t) => decodeURI(t)),
-           "summary": decodeURI(article.summary)
+           "tags" : article.tags.map((t) => this.decode(t)),
+           "summary": this.decode(article.summary)
          };
        });
        this.trigger('articlesLoaded');
@@ -25,6 +25,10 @@
        .filter((a) => args.tag === null ||
                     a.tags.find((elt) => elt === args.tag))
        .slice(args.page * args.offset, (args.page + 1) * args.offset);
+   decode (data) {
+     return decodeURIComponent(data.replace('+', ' '));
+   }
+
    }
 
    this.filter = this.makeFilter(opts.filters);
