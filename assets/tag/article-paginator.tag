@@ -18,11 +18,9 @@
    };
 
    this.src = '/articles.json';
-   this.filters = {
-     tag: null,
-     page: 0,
-     offset: GlobalConfig.offset
-   };
+   this.filters = this.route(location.hash);
+   this.filters.offset = GlobalConfig.offset;
+   console.log(this.filters);
 
    opts.observable.on('HashChanged', () => {
      filters = this.route(location.hash);
