@@ -1,21 +1,7 @@
 <article-paginator>
   <article-list source={ src } filters={ filters }></article-list>
 
-  <div class="article-nav">
-    <div id="prev-page" style="float: left;">
-      <a href="" id="prev-page-link"><i class="fa fa-chevron-left"></i>新しい記事</a>
-    </div>
-    <div id="next-page" style="text-align: right;">
-      <a href="" id="next-page-link">古い記事<i class="fa fa-chevron-right"></i></a>
-    </div>
-  </div>
-
   <script>
-   urlFor(tag, page) {
-     if (tag) return `#${tag}/${page}`;
-     else return `#${page}`;
-   }
-
    route(hash) {
      // #PAGE
      var match = hash.match(/^#(\d+)\/?$/);
@@ -39,9 +25,11 @@
    };
 
    opts.observable.on('HashChanged', () => {
+     filters = this.route(location.hash);
      filters.offset = GlobalConfig.offset;
      this.filters = filters;
      console.log(this.filters);
+     this.update();
    });
   </script>
 </article-paginator>
