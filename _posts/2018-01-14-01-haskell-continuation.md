@@ -258,6 +258,6 @@ Left "division by zero"
 [Haskellでループのbreak - Qiita](https://qiita.com/tanakh/items/55441a27f1df878b853e)
 
 
-今回は継続渡しスタイルそのものの説明でした．長くなったので続きは以下に分割しました．
+今回はモナドを使わない，継続渡しスタイルそのものの説明でした．長くなったので続きは以下に分割します．
 
-[Contモナドで継続の便利さを理解する](/2018/01/15/01-haskell-cont-monad.md)
+[Contモナドを実装する](/2018/01/15/01-haskell-cont-monad.md)
