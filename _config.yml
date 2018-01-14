@@ -26,6 +26,7 @@ url: https://genkami.github.io/
 
 num_recent_posts: 10
 num_articles_per_page: 10
+num_related_posts: 5
 
 exclude:
   - vendor

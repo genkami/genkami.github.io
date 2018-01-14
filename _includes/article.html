@@ -27,6 +27,7 @@
     {{ include.page.content | strip_html | slice: 0, 200 }}...
     {% else %}
     {{ include.page.content }}
+    {% include related-posts.html page=include.page %}
     {% endif %}
   </div>
 </article>
