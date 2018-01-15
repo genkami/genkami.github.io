@@ -7,7 +7,7 @@ tags:
 
 `@enforce_keys`を使うことで，structが特定のフィールドを持つことを強制することができます．
 
-例は[先ほど](/2018/01/12/02-alias-myself.html)の`Game.User`で．
+例は[先ほど]({% post_url 2018-01-12-02-alias-myself %})の`Game.User`で．
 
 ```elixir
 defmodule Game.User do

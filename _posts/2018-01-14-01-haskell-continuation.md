@@ -260,5 +260,5 @@ Left "division by zero"
 
 今回はモナドを使わない，継続渡しスタイルそのものの説明でした．長くなったので続きは以下に分割します．
 
-+ [Contモナドを実装する](/2018/01/15/01-haskell-cont-monad.html)
-+ [Contモナドとcall/cc](/2018/01/15/03-haskell-callcc.html)
++ [Contモナドを実装する]({% post_url 2018-01-15-01-haskell-cont-monad %})
++ [Contモナドとcall/cc]({% post_url 2018-01-15-03-haskell-callcc %})

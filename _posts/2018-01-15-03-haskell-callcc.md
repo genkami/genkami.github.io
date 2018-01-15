@@ -7,8 +7,8 @@ tags:
 
 前回:
 
-+ [モナドから始めない継続入門](/2018/01/14/01-haskell-continuation.html)
-+ [Contモナドを実装する](/2018/01/15/01-haskell-cont-monad.html)
++ [モナドから始めない継続入門]({% post_url 2018-01-14-01-haskell-continuation %})
++ [Contモナドを実装する]({% post_url 2018-01-15-01-haskell-cont-monad %})
 
 前回で継続の説明と継続渡しを暗黙的に行う`Cont`モナドが作れたので，今回は`call/cc`の実装を行います．
 

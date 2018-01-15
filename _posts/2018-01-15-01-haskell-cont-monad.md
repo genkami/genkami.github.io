@@ -5,7 +5,7 @@ tags:
 - Haskell
 ---
 
-[モナドから始めない継続入門](/2018/01/14/01-haskell-continuation.html)
+[モナドから始めない継続入門]({% post_url 2018-01-14-01-haskell-continuation %})
 
 上の記事では，モナドの登場しない継続の説明を書きましたが，今回はこのとき使った継続を`Cont`モナドというモナドに変換していきます．
 
@@ -208,4 +208,4 @@ x <- hogeCont
 
 次回:
 
-+ [Contモナドとcall/cc](/2018/01/15/03-haskell-callcc.html)
++ [Contモナドとcall/cc]({% post_url 2018-01-15-03-haskell-callcc %})
