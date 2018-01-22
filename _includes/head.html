@@ -5,7 +5,7 @@
 {% if page.description %}
 {% assign summary = page.description %}
 {% else %}
-{% assign summary = page.content | strip_html | strip_newlines | slice: 0, 100 | strip %}
+{% assign summary = page.content | strip_html | strip_newlines | slice: 0, 160 | strip %}
 {% endif %}
 <title>{{ title }}</title>
 
