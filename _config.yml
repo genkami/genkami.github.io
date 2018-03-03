@@ -22,7 +22,7 @@ gems:
 # rss
 name: Сегодня я узнал
 description: プログラミング関係のメモ等
-url: https://genkami.github.io/
+url: https://genkami.github.io
 
 num_recent_posts: 10
 num_articles_per_page: 10

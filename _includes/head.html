@@ -19,10 +19,10 @@
 <![endif]-->
 <meta name="description" content="{{ summary }}...">
 <meta itemprop="name" content="{{ title }}">
-<meta itemprop="image" content="{{ thumbnail | relative_url }}">
+<meta itemprop="image" content="{{ site.url }}{{ site.baseurl }}{{ thumbnail | relative_url }}">
 
 <meta property="og:title" content="{{ title }}">
-<meta property="og:image" content="{{ thumbnail | relative_url }}">
+<meta property="og:image" content="{{ site.url }}{{ site.baseurl }}{{ thumbnail | relative_url }}">
 <meta property="og:description" content="{{ summary }}...">
 <meta property="og:site_name" content="{{ site.title | default: site.github.repository_name }}">
 <meta property="og:url" content="{{ site.url }}{{ site.baseurl }}{{ page.url }}">
@@ -35,5 +35,5 @@
 <meta name="twitter:creator" content="@{{ site.twitter.user }}">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:description" content="{{ summary }}...">
-<meta name="twitter:image:src" content="{{ thumbnail | relative_url }}">
+<meta name="twitter:image:src" content="{{ site.url }}{{ site.baseurl }}{{ thumbnail | relative_url }}">
 {% feed_meta %}
