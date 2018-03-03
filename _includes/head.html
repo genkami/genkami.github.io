@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="chrome=1">
-{% capture title %}{{ page.title }} - {{ site.title | default: site.github.repository_name }}{% endcapture %}
+{% capture title %}{{ page.title | xml_escape }} - {{ site.title | default: site.github.repository_name }}{% endcapture %}
 {% assign thumbnail = page.thumbnail | default: '/img/Octocat.jpg' %}
 {% if page.description %}
 {% assign summary = page.description %}
