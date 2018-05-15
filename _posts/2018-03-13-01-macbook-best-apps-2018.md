@@ -26,6 +26,354 @@ Rustを応援したいのでFirefox派です。
 
 「システム環境設定」→「キーボード」→「ユーザー辞書」にスペルチェック関連の設定があるので、全てのチェックを外す。
 
+### Karabiner-Elements
+諸事情により日本語配列のMacBookを買ってしまったけど、やっぱりUS配列で使いたくなってしまったので、Karabiner-Elementsを使ってUS配列に変更します。
+
+まずは[公式](https://pqrs.org/osx/karabiner/) からダウンロードし、インストール
+
+インストールが終わったら、 `~/.config/karabiner/karabiner.json` の `profiles[0].rules` に、以下のJSONを追記します。
+
+``` json
+{
+    "description": "Remap Japanese Keyboard to US",
+    "manipulators": [
+        {
+            "from": {
+                "key_code": "2",
+                "modifiers": {
+                    "mandatory": [
+                        "shift"
+                    ],
+                    "optional": [
+                        "caps_lock"
+                    ]
+                }
+            },
+            "to": [
+                {
+                    "key_code": "open_bracket"
+                }
+            ],
+            "type": "basic"
+        },
+        {
+            "from": {
+                "key_code": "6",
+                "modifiers": {
+                    "mandatory": [
+                        "shift"
+                    ],
+                    "optional": [
+                        "caps_lock"
+                    ]
+                }
+            },
+            "to": [
+                {
+                    "key_code": "equal_sign"
+                }
+            ],
+            "type": "basic"
+        },
+        {
+            "from": {
+                "key_code": "7",
+                "modifiers": {
+                    "mandatory": [
+                        "shift"
+                    ],
+                    "optional": [
+                        "caps_lock"
+                    ]
+                }
+            },
+            "to": [
+                {
+                    "key_code": "6",
+                    "modifiers": [
+                        "left_shift"
+                    ]
+                }
+            ],
+            "type": "basic"
+        },
+        {
+            "from": {
+                "key_code": "8",
+                "modifiers": {
+                    "mandatory": [
+                        "shift"
+                    ],
+                    "optional": [
+                        "caps_lock"
+                    ]
+                }
+            },
+            "to": [
+                {
+                    "key_code": "quote",
+                    "modifiers": [
+                        "left_shift"
+                    ]
+                }
+            ],
+            "type": "basic"
+        },
+        {
+            "from": {
+                "key_code": "9",
+                "modifiers": {
+                    "mandatory": [
+                        "shift"
+                    ],
+                    "optional": [
+                        "caps_lock"
+                    ]
+                }
+            },
+            "to": [
+                {
+                    "key_code": "8",
+                    "modifiers": [
+                        "left_shift"
+                    ]
+                }
+            ],
+            "type": "basic"
+        },
+        {
+            "from": {
+                "key_code": "0",
+                "modifiers": {
+                    "mandatory": [
+                        "shift"
+                    ],
+                    "optional": [
+                        "caps_lock"
+                    ]
+                }
+            },
+            "to": [
+                {
+                    "key_code": "9",
+                    "modifiers": [
+                        "left_shift"
+                    ]
+                }
+            ],
+            "type": "basic"
+        },
+        {
+            "from": {
+                "key_code": "hyphen",
+                "modifiers": {
+                    "mandatory": [
+                        "shift"
+                    ],
+                    "optional": [
+                        "caps_lock"
+                    ]
+                }
+            },
+            "to": [
+                {
+                    "key_code": "international1"
+                }
+            ],
+            "type": "basic"
+        },
+        {
+            "from": {
+                "key_code": "equal_sign"
+            },
+            "to": [
+                {
+                    "key_code": "hyphen",
+                    "modifiers": [
+                        "left_shift"
+                    ]
+                }
+            ],
+            "type": "basic"
+        },
+        {
+            "from": {
+                "key_code": "equal_sign",
+                "modifiers": {
+                    "mandatory": [
+                        "shift"
+                    ],
+                    "optional": [
+                        "caps_lock"
+                    ]
+                }
+            },
+            "to": [
+                {
+                    "key_code": "semicolon",
+                    "modifiers": [
+                        "left_shift"
+                    ]
+                }
+            ],
+            "type": "basic"
+        },
+        {
+            "from": {
+                "key_code": "international3",
+                "modifiers": {
+                    "optional": [
+                        "any"
+                    ]
+                }
+            },
+            "to": [
+                {
+                    "key_code": "grave_accent_and_tilde"
+                }
+            ],
+            "type": "basic"
+        },
+        {
+            "from": {
+                "key_code": "open_bracket",
+                "modifiers": {
+                    "optional": [
+                        "any"
+                    ]
+                }
+            },
+            "to": [
+                {
+                    "key_code": "close_bracket"
+                }
+            ],
+            "type": "basic"
+        },
+        {
+            "from": {
+                "key_code": "close_bracket",
+                "modifiers": {
+                    "optional": [
+                        "any"
+                    ]
+                }
+            },
+            "to": [
+                {
+                    "key_code": "non_us_pound"
+                }
+            ],
+            "type": "basic"
+        },
+        {
+            "from": {
+                "key_code": "semicolon",
+                "modifiers": {
+                    "mandatory": [
+                        "shift"
+                    ],
+                    "optional": [
+                        "caps_lock"
+                    ]
+                }
+            },
+            "to": [
+                {
+                    "key_code": "quote"
+                }
+            ],
+            "type": "basic"
+        },
+        {
+            "from": {
+                "key_code": "quote"
+            },
+            "to": [
+                {
+                    "key_code": "7",
+                    "modifiers": [
+                        "left_shift"
+                    ]
+                }
+            ],
+            "type": "basic"
+        },
+        {
+            "from": {
+                "key_code": "quote",
+                "modifiers": {
+                    "mandatory": [
+                        "shift"
+                    ],
+                    "optional": [
+                        "caps_lock"
+                    ]
+                }
+            },
+            "to": [
+                {
+                    "key_code": "2",
+                    "modifiers": [
+                        "left_shift"
+                    ]
+                }
+            ],
+            "type": "basic"
+        },
+        {
+            "from": {
+                "key_code": "non_us_pound"
+            },
+            "to": [
+                {
+                    "key_code": "international3",
+                    "modifiers": [
+                        "left_option"
+                    ]
+                }
+            ],
+            "type": "basic"
+        },
+        {
+            "from": {
+                "key_code": "non_us_pound",
+                "modifiers": {
+                    "mandatory": [
+                        "shift"
+                    ],
+                    "optional": [
+                        "caps_lock"
+                    ]
+                }
+            },
+            "to": [
+                {
+                    "key_code": "international3",
+                    "modifiers": [
+                        "left_shift"
+                    ]
+                }
+            ],
+            "type": "basic"
+        }
+    ]
+}
+```
+
+(JSONは[こちら](https://github.com/tekezo/Karabiner-Elements/issues/167)のものを引用)
+
+その後Karabinerを再起動すれば、US配列風になっています。
+
+ちなみに、さらに自分はSimple Modificationを設定して、英数キーとかなキーをoptionに割り当てています。
+
+## Alfred
+コマンド入力型のランチャーです。
+
+[公式](https://www.alfredapp.com/)からダウンロードし、インストール。
+
+そのままでも十分便利ですが、自分は設定の「Features」→「Dictionary」から「Define a word」を「def」に設定して、「def hogehoge」で単語hogeの意味を調べることができるように設定しています。
+
 ## iTerm2
 これがないとお話にならない。
 
