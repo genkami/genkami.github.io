@@ -1,0 +1,765 @@
+---
+layout: post
+title: Elixir基礎文法最速マスター
+tags:
+- Elixir
+---
+
+Elixirのすべての機能は紹介しきれないけど、とりあえずこれだけわかればfizzbuzzくらいは書けるでしょ程度の言語機能の一覧です。
+並行処理関連の話とかは全く書いてないので注意。
+
+リテラル
+
+数値
+整数は10進数、16進数、8進数、2進数が扱える
+
+
+ex(1)> 123
+123
+iex(2)> 0x123
+291
+iex(3)> 0o123
+83
+iex(8)> 0b1111011
+123
+
+浮動小数点数も通常通りの記法。
+
+iex(9)> 3.1415
+3.1415
+iex(10)> 1.2345e-3
+0.0012345
+
+アトム
+アトム。言語によってはシンボルとかキーワードとか呼ばれるやつ。RubyとかLispとかPrologとかやってない人にはあまり馴染みがないかもしれない。
+
+iex(13)> :hoge
+:hoge
+iex(14)> :hoge@fuga # なぜかアトムの名前には@も使える
+:hoge@fuga
+iex(15)> :foobar?
+:foobar?
+iex(16)> :baz!
+:baz!
+iex(17)> :"long name"
+:"long name"
+
+範囲
+a..bは閉区間[a, b]を表す範囲を意味する
+
+iex(18)> 1..3
+1..3
+iex(19)> Enum.to_list 1..3
+[1, 2, 3]
+
+真偽値
+true, false。これらはそれぞれ:true, :falseと等しい。
+
+iex(21)> true and false
+false
+iex(23)> :true or :false
+true
+
+nil
+nullみたいなやつ。ほとんどの場合では、nilとfalseのみが偽として扱われる。
+
+iex(24)> if nil, do: IO.puts "never called"
+nil
+
+タプル
+固定された個数の要素の組。波括弧使うのは斬新。
+
+iex(25)> { :ok, 3 }
+{:ok, 3}
+iex(26)> { "Taro", 22, "Hokkaido" }
+{"Taro", 22, "Hokkaido"}
+
+リスト
+角括弧で括られたカンマ区切りの式の列はリストになる。配列リテラルみたいなのはなさそう。
+
+iex(30)> [1, 2, 3, 4]
+[1, 2, 3, 4]
+iex(31)> ["hoge", true, 0.123] # 静的型付け言語じゃないからね……
+["hoge", true, 0.123]
+
+ちなみにLispと違ってnilと[]は別物。
+
+iex(29)> [] == nil
+false
+
+cons的な操作は[head | tail]と書く
+iex(32)> tail = [3, 4, 5]
+[3, 4, 5]
+iex(33)> [2 | tail]
+[2, 3, 4, 5]
+iex(34)> [1, 2 | tail]
+[1, 2, 3, 4, 5]
+
+いわゆるimproper listも作れるけど特に使い道はない
+
+iex(19)> [ 1, 2 | 3 ]
+[1, 2 | 3]
+
+キーワードリスト
+キーがアトムであるようなalistのことをキーワードリストという。キーワードリストはよく使われるので少し簡単に書けるようになっている。
+
+iex(36)> [hoge: 3, fuga: 2] # これは以下と同等
+[hoge: 3, fuga: 2]
+iex(35)> [{:hoge, 3}, {:fuga, 2}]
+[hoge: 3, fuga: 2]
+
+マップ
+いわゆる連想配列とかdictとか(悪い言い方だけど)ハッシュとか言われるやつ。
+
+iex(37)> %{"hoge" => "fuga", "foo" => "bar", "baz" => nil}
+%{"baz" => nil, "foo" => "bar", "hoge" => "fuga"}
+iex(38)> %{hoge: "fuga", foo: :bar, baz: nil} # キーがアトムのときは省略記法がある
+%{baz: nil, foo: :bar, hoge: "fuga"}
+
+ちなみに内部実装としてはいわゆるハッシュテーブルではなくて、ハッシュ値をtrie木で管理しているらしい。
+
+要素へのアクセスの方法は以下の通り。
+
+iex(39)> map = %{hoge: "fuga", foo: :bar, baz: nil}
+%{baz: nil, foo: :bar, hoge: "fuga"}
+iex(41)> map[:hoge]
+"fuga"
+iex(40)> map.hoge # キーがシンボルの場合はこんな風に書ける
+"fuga"
+
+バイナリ
+ビットの列。<<...>>のような形で書く。
+
+iex(43)> << 0, 1, 2, 3 >>
+<<0, 1, 2, 3>>
+
+バイナリの要素の型はbinary, bits, bitstring, bytes, float, integer, utf8, utf16, utf32が使える。また、修飾子として、
+* size(n): 要素のサイズ(ビット数)
+* signed, unsigned: 符号付きかどうか
+* big, little, naive: エンディアン
+をそれぞれ指定できる。
+
+iex(44)> << 0 :: size(8), 1 :: size(1), 2 :: size(3), 5 :: size(2) >>
+<<0, 41::size(6)>> # 後ろの3項がまとめられた
+iex(45)> 0b1_010_01 # == << 1, 2, 5 :: size(2) >>
+41
+iex(48)> << -5 :: signed-integer-size(16) >>
+<<255, 251>>
+iex(49)> << -5 :: unsigned-integer-size(8) >>
+<<251>>
+
+文字のリスト
+シングルクォートで括られた「文字列」は、各文字を表すコードポイントのリストとなる。
+
+iex(53)> 'abc' # これは以下と等しい
+'abc'
+iex(54)> [97, 98, 99]
+'abc'
+
+文字列
+ダブルクォートで括られた「文字列」は、UTF8エンコードされたバイト列(バイナリ)となる。Elixirでは通常こちらのほうを文字列と呼ぶ。リストとバイナリの両方のリテラルがあるのはたぶん歴史的経緯。
+
+iex(55)> "abc"
+"abc"
+iex(56)> << 97 :: utf8, 98 :: utf8, 99 :: utf8 >>
+"abc"
+
+ちなみに、文字のリストも文字列も#{...}で{...}の部分の評価結果を埋め込むことができる。
+
+iex(35)> name = "John"
+"John"
+iex(36)> "Hello, #{name}"
+"Hello, John"
+iex(37)> 'Hello, #{String.upcase(name)}'
+'Hello, JOHN'
+
+また、文字のリストも文字列も3つの引用符で括るヒアドキュメントが使える
+
+defmodule Hoge do
+  # 三重の引用符で囲むと、インデントの部分がキャンセルされる。
+  def heredoc_str do
+    """
+    This
+    is
+    a
+    very
+    long
+    text
+    """
+  end
+
+  def heredoc_list do
+    '''
+    This
+    is
+    also
+    a
+    very
+    long
+    text
+    '''
+  end
+end
+
+
+iex(28)> IO.puts Hoge.heredoc_str
+This
+is
+a
+very
+long
+text
+
+:ok
+iex(29)> IO.puts Hoge.heredoc_list
+This
+is
+also
+a
+very
+long
+text
+
+:ok
+
+代入
+左辺は変数ではなくパターン(パターンの詳細については後述)。なので、
+
+iex(1)> x = %{ hoge: 3, fuga: 4 }
+%{fuga: 4, hoge: 3}
+
+はもちろんOKな上に、
+
+iex(3)> 1 = 1
+1
+
+も、
+
+iex(4)> x
+%{fuga: 4, hoge: 3}
+iex(5)> %{ fuga: fuga } = x
+%{fuga: 4, hoge: 3}
+iex(6)> fuga
+4
+
+もOK
+
+パターン
+数値、リスト、マップ、タプル、構造体(後述)など、基本的なリテラルはパターンとして扱える。
+
+iex(20)> [ head | tail ] = Enum.to_list 1..5
+[1, 2, 3, 4, 5]
+iex(21)> head
+1
+iex(22)> tail
+[2, 3, 4, 5]
+iex(23)> { x, y } = { 3, 4 }
+{3, 4}
+iex(24)> x
+3
+iex(25)> y
+4
+
+いわゆるあずパターンは pat1 = pat2 の形で書く。左辺と右辺はたぶん等価
+
+iex(26)> [ %{ name: name, age: age } = head | tail ] = [ %{ name: "John Doe", age: 20 } ]
+[%{age: 20, name: "John Doe"}]
+iex(27)> [ head = %{ name: name, age: age } | tail ] = [ %{ name: "John Doe", age: 20 } ]
+[%{age: 20, name: "John Doe"}]
+
+バイナリはサイズ指定してパターンマッチできる
+
+iex(38)> << first_bit :: size(1), rest_bits :: size(31) >> = << 0xdeadbeef :: size(32) >>
+<<222, 173, 190, 239>>
+iex(39)> first_bit
+1
+iex(40)> rest_bits
+1588444911
+iex(41)> 0x5eadbeef
+1588444911
+
+pin operator
+パターンの中に特定の変数の値を使いたいときは、その変数の前に^(ピン演算子)を前置する。
+
+iex(110)> x = 3
+3
+iex(111)> %{ hoge: x } = %{ hoge: 4 } # この場合、xに4が束縛される
+%{hoge: 4}
+iex(112)> x
+4
+iex(113)> x = 3
+3
+iex(114)> %{ hoge: ^x } = %{ hoge: 4 } # ピン演算子を使うことで、 %{ hoge: 3 }を解釈される
+** (MatchError) no match of right hand side value: %{hoge: 4}
+
+iex(114)> %{ hoge: ^x } = %{ hoge: 3 }
+%{hoge: 3}
+iex(115)> x
+3
+
+関数
+基本的な定義方法
+モジュール内でのみ定義可。
+defmodule Hoge do
+  def func(x, y) do
+    x + y
+  end
+end
+
+ちなみに
+
+xyzzy do
+  ...
+end
+
+は、
+
+xyzzy do: ...
+
+のシンタックスシュガー。これはdef以外でも使えるので、自分でマクロ書く時とかに便利。
+関数の呼び方は以下の通り。
+
+iex(13)> Hoge.func(3, 2)
+5
+
+「(モジュール名を表すアトム).(関数名)」で関数を呼べる。ちょっと脱線するけど、大文字で始まるトークンNameは頭に"Elixir."とつけられたアトム:"Elixir.Name"として解釈される。
+
+iex(42)> IO.puts "hoge"
+hoge
+:ok
+iex(43)> :"Elixir.IO".puts "hoge"
+hoge
+:ok
+iex(44)> IO == :"Elixir.IO"
+true
+
+関数定義と呼び出しの括弧は省略できる。Rubyっぽい。
+
+defmodule Hoge do
+  def func x, y do
+    x + y
+  end
+end
+
+
+iex(14)> Hoge.func 3, 2
+5
+
+引数のパターンマッチ
+例によって引数はパターン。
+
+defmodule Hoge do
+  def norm(%{ x: x, y: y }), do: :math.sqrt(:math.pow(x, 2) + :math.pow(y, 2))
+end
+
+(ちなみに、ここで出て来る:mathはErlangのモジュール)
+
+パターンごとに関数の定義を分けることもできる。Haskellっぽい。
+
+defmodule Hoge do
+  def norm(%{ x: x, y: y, z: z }) do
+    :math.sqrt(:math.pow(x, 2) + :math.pow(y, 2) + :math.pow(z, 2))
+  end
+  def norm(%{ x: x, y: y }) do
+    :math.sqrt(:math.pow(x, 2) + :math.pow(y, 2))
+  end
+end
+
+iex(50)> Hoge.norm(%{ x: 3, y: 4 })
+5.0
+iex(51)> Hoge.norm(%{ x: 3, y: 4, z: 1 })
+5.0990195135927845
+
+ガードパターンは以下のように書く
+
+defmodule Hoge do
+  def describe(x) when is_integer(x), do: "integer"
+  def describe(x) when is_atom(x), do: "atom"
+end
+
+iex(53)> Hoge.describe(5)
+"integer"
+iex(54)> Hoge.describe(:hoge)
+"atom"
+
+ただし、ガードパターンに書ける述語は限られたものしか使えない。詳しくは以下を参照。
+https://hexdocs.pm/elixir/master/guards.html
+
+キーワード引数
+キーワードリストを渡すための特別なシンタックスシュガーがある。
+
+defmodule Hoge do
+  def hoge args do
+    IO.inspect args
+  end
+end
+
+iex(77)> Hoge.hoge fuga: "foo", bar: "baz"
+[fuga: "foo", bar: "baz"]
+[fuga: "foo", bar: "baz"]
+
+パラメータの側も同じような省略記法が使える
+
+defmodule Hoge do
+  def hoge fuga: fuga, foo: foo do
+    { fuga, foo }
+  end
+end
+
+iex(79)> Hoge.hoge fuga: "piyo", foo: "bar"
+{"piyo", "bar"}
+
+デフォルト引数
+引数を省略可能にして、デフォルト値をつけることができる。
+
+defmodule Hoge do
+  def incr(x, dx \\ 1), do: x + dx
+end
+
+iex(56)> Hoge.incr 3
+4
+iex(57)> Hoge.incr 3, 2
+5
+
+デフォルト引数のせいで引数の数とかが紛らわしいことになった場合はコンパイル時にエラーにしてくれる。
+
+defmodule Hoge do
+  def incr(x, dx \\ 1), do: x + dx
+  def incr(x), do: x + 1
+  # => def incr/1 conflicts with defaults from incr/2
+end
+
+プライベートな関数定義
+defpでプライベートな関数を定義できる。
+
+defmodule Hoge do
+  def you_may_call_it(x) do
+    IO.puts "ok :)"
+  end
+
+  defp _do_not_call_it(x) do
+    raise "fxxk!!!"
+  end
+end
+
+iex(59)> Hoge.you_may_call_it(3)
+ok :)
+:ok
+iex(60)> Hoge._do_not_call_it(5)
+** (UndefinedFunctionError) function Hoge._do_not_call_it/1 is undefined or private
+    Hoge._do_not_call_it(5)
+
+パイプ演算子
+x |> f(a1, .., aN) が f(x, a1, .., aN) と解釈される。
+
+iex(116)> Enum.each(1..10, fn x -> IO.puts x end)
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+:ok
+iex(117)> 1..10 |> Enum.each(fn x -> IO.puts x end) # これは上の式と同じ意味になる。
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+:ok
+
+Elmの|>演算子にも似てるけど、構文木自体が書き換えられるという点でちょっと違う。
+メソッドチェーンみたいに複数の関数を順番に適用したい時に便利。
+
+iex(118)> 1..3 |> Enum.map(fn x -> x * 2 end) |> Enum.each(fn x -> IO.puts x end)
+2
+4
+6
+:ok
+
+制御構文など
+if, unless
+あるけどそんな使わない。
+
+iex(60)> x = 3
+3
+iex(61)> if x > 3 do
+...(61)>   IO.puts "x > 3"
+...(61)> else
+...(61)>   IO.puts "x <= 3"
+...(61)> end
+x <= 3
+:ok
+
+cond
+Lispとかのやつと一緒。ただしelse節が無いので、最後はtrue -> ...でしめる。
+
+iex(63)> x = :hoge
+:hoge
+iex(65)> cond do
+...(65)>   is_integer(x) -> "integer"
+...(65)>   is_boolean(x) -> "bool"
+...(65)>   is_atom(x) -> "atom"
+...(65)>   true -> "other"
+...(65)> end
+"atom"
+
+case
+パターンマッチによる分岐。when節も使える。
+
+defmodule Hoge do
+  def print_name(name, country) do
+    case name do
+      %{ first: first, middle: middle, last: last } ->
+        IO.puts "#{first} #{middle} #{last}"
+      %{ first: first, last: last } when country == :jp ->
+        IO.puts "#{last} #{first}"
+      %{ first: first, last: last } ->
+        IO.puts "#{first} #{last}"
+    end
+  end
+end
+
+iex(67)> Hoge.print_name %{ first: "Taro", last: "Yamada" }, :en
+Taro Yamada
+:ok
+iex(68)> Hoge.print_name %{ first: "太郎", last: "山田" }, :jp
+山田 太郎
+:ok
+iex(69)> Hoge.print_name %{ first: "Taro", middle: "John", last: "Yamada" }, :en
+Taro John Yamada
+:ok
+
+with
+他の関数型言語でいうletみたいなもん。
+
+defmodule Hoge do
+  def hoge do
+    with x = 3,
+         y = 2
+      do x + y
+    end
+  end
+end
+
+iex(72)> Hoge.hoge
+5
+
+= じゃなくて <- で値を束縛することもできる。この場合、パターンにマッチしなかったらマッチしなかった値がそのまま返される。
+一種のmonadic bindみたいなもん。型はつかないけど。and-letとかにも似てる。
+
+defmodule Hoge do
+  def some_function_that_may_fail do
+    { :err, "Damn"}
+  end
+  def do_awesome_thing1 do
+    with { :ok, result } = some_function_that_may_fail,
+      do: result
+  end
+  def do_awesome_thing2 do
+    with { :ok, result } <- some_function_that_may_fail,
+      do: result
+  end
+end
+
+iex(75)> Hoge.do_awesome_thing1
+** (MatchError) no match of right hand side value: {:err, "Damn"}
+    hoge.exs:6: Hoge.do_awesome_thing1/0
+iex(75)> Hoge.do_awesome_thing2
+{:err, "Damn"}
+
+構造体
+構造体は一つのモジュールに一つだけ定義できる。構造体名はモジュール名と同名。
+
+defmodule Person do
+  defstruct name: "", age: 0
+end
+
+構造体はmapと似たような方法で扱える
+
+iex(82)> taro = %Person{ name: "Taro", age: 30 }
+%Person{age: 30, name: "Taro"}
+iex(83)> taro.name
+"Taro"
+
+というかそもそも構造体の正体はただのmap
+
+iex(86)> %{ __struct__: :"Elixir.Person", name: "Jiro", age: 5 }
+%Person{age: 5, name: "Jiro"}
+
+レコードの更新は以下のように行う。
+
+iex(7)> taro = %Person{ name: "Taro", age: 20 }
+%Person{age: 20, name: "Taro"}
+iex(8)> %Person{ taro | age: 21 }
+%Person{age: 21, name: "Taro"}
+
+Elmの記法に似てるけど、 | の左が識別子だけじゃなくて任意の式が使えるのでElmより使いやすい。
+ちなみに、同様の記法はmapでも使える。
+
+ラムダ関数
+さっきまでにもちらっと登場したけど、基本の書き方は以下の通り。
+
+fn arg1, arg2, .., argN -> body end
+
+ラムダ関数の呼び出しには func.(arg1, .., argN) のようにする。
+
+iex(119)> f = fn x, y -> x + y end
+#Function<12.99386804/2 in :erl_eval.expr/5>
+iex(120)> f.(2, 3)
+5
+
+略記法として、&(expr...)という形がある。この中ではi番目の引数を&iという名前で使うことができる。
+
+iex(121)> g = &(&1 + &2)
+&:erlang.+/2
+iex(122)> g.(2, 3)
+5
+
+さらに略記法として、 fn arg1, .., argN -> f(arg1, .., argN) end という形のラムダ関数は、単に &(モジュール名).(関数)/(arity) という形で書ける。
+
+iex(123)> h = &:erlang.+/2
+&:erlang.+/2
+iex(124)> h.(2, 3)
+5
+iex(125)> i = &IO.puts/1
+&IO.puts/1
+iex(126)> i.("hoge")
+hoge
+:ok
+
+Elixirでは同名の関数を引数の数ごとに複数定義できるので、一般に関数を指定するときはモジュール名、関数名、arityの3つを使って指定する。このへんPrologっぽい。
+
+モジュールの読み込み
+モジュールの読み込みはimport文で行える
+
+iex(127)> puts "hoge" # putsはIOモジュールの関数
+** (CompileError) iex:127: undefined function puts/1
+
+iex(127)> import IO
+IO
+iex(128)> puts "hoge"
+hoge
+:ok
+
+importの引数にonly:, except: をつけることでインポートする/しない関数を指定できる。
+
+defmodule Hoge do
+  def foo, do: :Foo
+  def bar, do: :Bar
+  def bar(x), do: to_string(x)
+end
+
+only:, except:の引数は、(関数名): (arity) という形のキーワードリスト
+
+iex(131)> import Hoge, only: [ foo: 0, bar: 1 ] # Hoge.foo/0, Hoge.bar/1をimport
+Hoge
+iex(132)> foo
+:Foo
+iex(133)> bar # Hoge.bar/0はimportされていない
+** (CompileError) iex:133: undefined function bar/0
+
+iex(133)> bar 3
+"3"
+
+iex(2)> import Hoge, except: [ bar: 1 ]
+Hoge
+iex(3)> foo
+:Foo
+iex(4)> bar
+:Bar
+iex(5)> bar 3
+** (CompileError) iex:5: undefined function bar/1
+
+また、aliasでモジュールに別名をつけることもできる。
+
+defmodule Very do
+  defmodule Long do
+    defmodule Module do
+      defmodule Name do
+        def hoge, do: "hogehoge"
+      end
+    end
+  end
+end
+
+defmodule Very do
+  defmodule Long do
+    defmodule Module do
+      defmodule Name do
+        def hoge, do: "hogehoge"
+      end
+      defmodule Name2 do
+        def fuga, do: "fugafuga"
+      end
+    end
+  end
+end
+
+defmodule UseVeryLongModule do
+  def hoge1 do
+    Very.Long.Module.Name.hoge
+  end
+
+  def hoge2 do
+    alias Very.Long.Module.Name, as: VLMN
+    VLMN.hoge
+  end
+
+  def hoge3 do
+    alias Very.Long.Module.Name # as: Name の省略
+    Name.hoge
+  end
+
+  def hoge4 do
+    alias Very.Long.Module.{Name, Name2} # 複数のモジュールに一括でaliasをつけられる
+    Name.hoge
+    Name2.fuga
+  end
+end
+
+内包表記
+Elixirでの内包表記の書き方は以下の通り
+
+for x1 <- list1, x2 <- list2, .., xN <- listN, do: expr
+
+x1, .., xNをlist1, .., listNの各値の組に束縛した状態でexprが呼ばれ、結果のリストが返される。
+
+iex(10)> for x <- 1..5, y <- 1..5, do: { x, y }
+[{1, 1}, {1, 2}, {1, 3}, {1, 4}, {1, 5}, {2, 1}, {2, 2}, {2, 3}, {2, 4}, {2, 5},
+ {3, 1}, {3, 2}, {3, 3}, {3, 4}, {3, 5}, {4, 1}, {4, 2}, {4, 3}, {4, 4}, {4, 5},
+ {5, 1}, {5, 2}, {5, 3}, {5, 4}, {5, 5}]
+
+into: 引数を指定すると、指定された引数に値を詰め込んだものを返す。
+
+iex(15)> for x <- 1..5, y <- 1..5, do: { x, y }, into: [1, 2, 3]
+[1, 2, 3, {1, 1}, {1, 2}, {1, 3}, {1, 4}, {1, 5}, {2, 1}, {2, 2}, {2, 3},
+ {2, 4}, {2, 5}, {3, 1}, {3, 2}, {3, 3}, {3, 4}, {3, 5}, {4, 1}, {4, 2}, {4, 3},
+ {4, 4}, {4, 5}, {5, 1}, {5, 2}, {5, 3}, {5, 4}, {5, 5}]
+
+ちなみに、into:に指定できるのはリストだけではなくCollectableプロトコル(Javaのインターフェースみたいなもん)を実装している任意の型。
+
+# mapはCollectableインターフェースを実装している
+iex(16)> for key <- ["hoge", "fuga", "foo"], into: %{}, do: { key, String.length(key) }
+%{"foo" => 3, "fuga" => 4, "hoge" => 4}
+
+ちなみに、<-の右にくるものもリストだけではなくEnumerableプロトコルを実装している任意の型が使える。
+
+iex(18)> map = %{ foo: :bar, baz: :quux }
+%{baz: :quux, foo: :bar}
+iex(20)> for { k, v } <- map, do: { k, v }
+[baz: :quux, foo: :bar]
+
+なお、<< ... >>で全体をくくることによってバイナリの内包表記も使える。
+
+iex(24)> for << char <- "hoge" >>, into: "", do: << char - 32 >>
+"HOGE"
