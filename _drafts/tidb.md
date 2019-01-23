@@ -5,6 +5,10 @@ tags:
 - DB
 ---
 
+https://medium.com/@PingCAP/how-we-build-tidb-ec6c3b1a3f2
+PingCAPがなぜTiDBを作ろうと思って、どのようにして作ったか
+これを最初に読むのが良いかも
+
 TiDB
 https://github.com/pingcap/tidb
 水平分散するように作られたデータベース。MySQLのプロトコルを喋れる。分散しているDBに対してトランザクションが張れる。MySQLのXAトランザクションとは何が違うんだろう？シャードの存在を意識しなくていいとか？
@@ -43,10 +47,6 @@ GoogleのF1の論文に書いてる方法らしいのでやっぱりこの論文
 
 ### HTAP
 要するにアプリケーション的な操作と解析系の操作を同じDB上でやれちゃうよというやつらしい。
-
-
-
-https://medium.com/@PingCAP/how-we-build-tidb-ec6c3b1a3f2
 
 
 https://www.slideshare.net/morgo/tidb-introduction
