@@ -6,3 +6,8 @@ tags:
 ---
 
 https://rocksdb.org/
+
+Facebookが作ってる
+
+TiDB, CockroachDBのバックエンド。
+

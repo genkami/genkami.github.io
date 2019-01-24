@@ -17,3 +17,5 @@ https://www.voltdb.com/why-voltdb/
 https://www.voltdb.com/product/data-architecture/
 https://www.voltdb.com/product/data-architecture/academic-research-behind-voltdb/
 
+in-memory にする利点とかはこの辺に
+https://qiita.com/kumagi/items/db11c1053f14f7e47784
