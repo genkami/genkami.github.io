@@ -49,9 +49,9 @@ GoogleのF1の論文に書いてる方法らしいのでやっぱりこの論文
 要するにアプリケーション的な操作と解析系の操作を同じDB上でやれちゃうよというやつらしい。
 
 
-https://www.slideshare.net/morgo/tidb-introduction
+[slide]: https://www.slideshare.net/morgo/tidb-introduction
 
-以下引用
+以下[slide][]の引用
 Row:
 Key: tablePrefix_rowPrefix_tableID_rowID
 Value: [col1, col2, col3, col4]
@@ -62,3 +62,13 @@ Value: [null]
 
 この構造からしてRocksDBは前方一致検索できるってことかな？まあ木構造で管理してるKVSっぽいしできそうな気はする。
 
+
+https://news.ycombinator.com/item?id=15499404
+> So how do they use a Spanner-like design without specialized hardware?
+すごい正確な時計がないとやっぱり現実的に使えない？
+
+> I'm skeptical of a database built over a generic KV-store. 
+過去にもKVSベースのDBは出たけど大して成功しなかったらしい。
+
+> I'm also skeptical of a database claiming to be good at both OLAP and OLTP. One requires a column store, the other a row store.
+そのとおり。[slide][]見た感じだとOLTPとしては使えそうだけどOLAPとして効率的な構造してるの？という疑問があるけどどうなんでしょ。
