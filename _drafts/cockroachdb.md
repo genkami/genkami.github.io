@@ -26,3 +26,5 @@ https://dbdb.io/db/cockroachdb
 https://ameblo.jp/principia-ca/entry-11968223741.html
 
 構造の違いとかはあるのかな？まだTiDBも理解してないのでわからない
+
+
