@@ -61,6 +61,16 @@ article {
     font-weight: bold;
 }
 
+.wrapper-title a {
+    color: $wrapper-title-text-color;
+    text-decoration: none;
+}
+
+.wrapper-title a:hover, a:focus {
+    color: $wrapper-title-text-color;
+}
+
+
 .wrapper-title-button {
     width: 14px;
     height: 14px;
