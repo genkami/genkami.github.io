@@ -10,19 +10,17 @@ description: プログラミング関係のメモ等
     <link rel="stylesheet" href="{{ '/assets/css/toppage.css' | relative_url }}">
   </head>
   <body>
-    <div class="wrapper top-wrapper">
+    <div class="wrapper">
       <div class="wrapper-title">
         <a href="/articles.html">BLOG.7NOBO.ME</a>
         <i class="wrapper-title-button"></i>
       </div>
-      <section>
-        <nav class="top-nav">
-          <ul>
-            <li><a href="/about.html">Profile</a></li>
-            <li><a href="/articles.html">Posts</a></li>
-          </ul>
-        </nav>
-      </section>
+      <header>
+        <h1>BLOG.7NOBO.ME</h1>
+        <button class="enter">
+          <a href="/articles.html">ENTER</a>
+        </button>
+      </header>
     </div>
     {% if site.google_analytics %}
     <script>

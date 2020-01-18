@@ -142,6 +142,12 @@ a:hover, a:focus {
     color: $link-hover-color;
 }
 
+button {
+    padding: 5px 10px;
+    background-color: $inner-background-color;
+    @include window-frame;
+}
+
 .article-metadata {
     margin-top: 5px;
     margin-bottom: 5px;
