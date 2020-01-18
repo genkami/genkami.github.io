@@ -5,3 +5,12 @@
         clear: both;
     }
 }
+
+$border-size: 2px;
+
+@mixin window-frame {
+    border-left: $border-size solid $border-light-color;
+    border-top: $border-size solid $border-light-color;
+    border-right: $border-size solid $border-dark-color;
+    border-bottom: $border-size solid $border-dark-color;
+}

@@ -24,13 +24,10 @@
 .top-nav ul li {
     display: block;
     list-style: none;
-    border-bottom: 1px solid $hr-color;
     font-size: 18px;
-    padding: 20px;
-}
-
-.top-nav ul li:last-child {
-    border-bottom: none;
+    padding: 9px;
+    margin: 9px;
+    @include window-frame;
 }
 
 @media print, screen and (max-width: 1200px) {

@@ -1,29 +1,29 @@
-$outer-background-color: #6eb7db;
-$inner-background-color: #ffffff;
+$outer-background-color: #008080;
+$inner-background-color: #c0c0c0;
 $shadow-color: #454e53;
 
-$border-color: $inner-background-color;
+$border-light-color: #ffffff;
+$border-dark-color: #000000;
+$border-color: #808080;
 
-$font-color: #727272;
+$font-color: #000000;
 
-$link-color: #1e98b9;
-$link-hover-color: #6bbed5;
+$link-color: #000080;
+$link-hover-color: #800000;
 
-$hr-color: $outer-background-color;
-$table-border-color: #e5e5e5;
+$hr-color: #808080;
+$table-border-color: $border-light-color;
 
 $code-background-color: $inner-background-color;
-$code-font-color: #333333;
-$code-border-color: $hr-color;
+$code-font-color: #800080;
 
 $tag-font-color: $font-color;
 $tag-font-hover-color: $tag-font-color;
 $tag-font-active-color: $tag-font-color;
 $tag-background-color: $inner-background-color;
-$tag-border-color: $outer-background-color;
 
-$h1-color: #292929;
-$h2-color: #393939;
-$h3-color: #494949;
+$h1-color: #000000;
+$h2-color: #000000;
+$h3-color: #000000;
 
-$copyright-color: #777777;
+$copyright-color: #000000;
