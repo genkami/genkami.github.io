@@ -15,3 +15,10 @@ $border-size: 2px;
     border-bottom: $border-size solid $border-dark-color;
     box-shadow: $border-size $border-size 0px 0px $shadow-color;
 }
+
+@mixin inverse-window-frame {
+    border-left: $border-size solid $border-dark-color;
+    border-top: $border-size solid $border-dark-color;
+    border-right: $border-size solid $border-light-color;
+    border-bottom: $border-size solid $border-light-color;
+}

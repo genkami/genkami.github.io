@@ -87,15 +87,16 @@ header h2, h3, h4, h5, h6 {
 blockquote {
     margin: 10px 0px 10px 0px;
     padding: 0px 20px 0px 20px;
+    background-color: $code-background-color;
     font-style: italic;
-    @include window-frame;
+    @include inverse-window-frame;
 }
 
 pre {
     padding: 8px 15px;
     background-color: $code-background-color;
     overflow-x: auto;
-    @include window-frame;
+    @include inverse-window-frame;
 }
 
 code, pre {
