@@ -13,4 +13,5 @@ $border-size: 2px;
     border-top: $border-size solid $border-light-color;
     border-right: $border-size solid $border-dark-color;
     border-bottom: $border-size solid $border-dark-color;
+    box-shadow: $border-size $border-size 0px 0px $shadow-color;
 }
