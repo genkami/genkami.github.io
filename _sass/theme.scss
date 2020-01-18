@@ -1,1 +1,29 @@
-@import "theme/pale";
+$outer-background-color: #008080;
+$inner-background-color: #c0c0c0;
+$shadow-color: #454e53;
+
+$border-light-color: #ffffff;
+$border-dark-color: #000000;
+$border-color: #808080;
+
+$font-color: #000000;
+
+$link-color: #000080;
+$link-hover-color: #800000;
+
+$hr-color: #808080;
+$table-border-color: $border-light-color;
+
+$code-background-color: $inner-background-color;
+$code-font-color: #800080;
+
+$tag-font-color: $font-color;
+$tag-font-hover-color: $tag-font-color;
+$tag-font-active-color: $tag-font-color;
+$tag-background-color: $inner-background-color;
+
+$h1-color: #000000;
+$h2-color: #000000;
+$h3-color: #000000;
+
+$copyright-color: #000000;
