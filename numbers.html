@@ -1,0 +1,29 @@
+---
+permalink: /numbers.html
+tags: []
+---
+<html>
+  <head>
+    <title>Numbers</title>
+    <style>
+     h1 {
+       width: 100%;
+       text-align: center;
+       font-size: 200px;
+     }
+    </style>
+  </head>
+  <body>
+    <h1 id="theNumber"></h1>
+
+    <script>
+     let setNumber = () => {
+       let n = Math.floor(Math.random() * Math.floor(300));
+       let elt = document.getElementById("theNumber");
+       elt.innerText = n;
+     }
+     setNumber();
+     setInterval(setNumber, 3000);
+    </script>
+  </body>
+</html>
