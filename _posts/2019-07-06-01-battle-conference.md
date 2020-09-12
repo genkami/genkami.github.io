@@ -3,6 +3,7 @@ layout: post
 title: Battle Conference Under30に登壇し(て)ました
 tags:
 - Slide
+- Event
 ---
 
 去年のやつです…(この記事を投稿したのは2020年夏)。

@@ -3,6 +3,7 @@ layout: post
 title: BIT VALLEY 2020 プレイベントで登壇しました
 tags:
 - Slide
+- Event
 ---
 
 [BIT VALLEY 2020 プレイベント#2 20代で圧倒的成長を目指すエンジニア～これが私のグロース戦略～](https://sbv.connpass.com/event/183549/) というイベントで、ガチャのリファクタリングについての話をしました。
