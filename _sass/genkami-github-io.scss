@@ -6,7 +6,7 @@ $wrapper-space-side: 25px;
 $wrapper-padding-bottom: 15px;
 
 body {
-    background-color: $outer-background-color;
+    background-color: $background-color;
     padding: 50px;
     font: 14px/1.5 "Times New Roman", Times, "Yu Mincho", YuMincho, "ヒラギノ明朝 ProN W3", "Hiragino Mincho ProN", "ＭＳ Ｐ明朝", "MS PMincho", "MS 明朝", serif;
     color: $font-color;
@@ -48,36 +48,7 @@ article {
     width: 960px;
     margin: 15px auto;
     padding: 0px;
-    @include window-frame;
-    background-color: $inner-background-color;
-}
-
-.wrapper-title {
-    width: auto;
-    margin: 1px;
-    padding: 2px;
-    color: $wrapper-title-text-color;
-    background-color: $wrapper-title-color;
-    font-size: 14px;
-    font-weight: bold;
-}
-
-.wrapper-title a {
-    color: $wrapper-title-text-color;
-    text-decoration: none;
-}
-
-.wrapper-title a:hover, a:focus {
-    color: $wrapper-title-text-color;
-}
-
-
-.wrapper-title-button {
-    width: 14px;
-    height: 14px;
-    float: right;
-    background-color:$inner-background-color;
-    @include window-frame;
+    background-color: $background-color;
 }
 
 header {
@@ -102,14 +73,12 @@ blockquote {
     padding: 0px 20px 0px 20px;
     background-color: $code-background-color;
     font-style: italic;
-    @include inverse-window-frame;
 }
 
 pre {
     padding: 8px 15px;
     background-color: $code-background-color;
     overflow-x: auto;
-    @include inverse-window-frame;
 }
 
 code, pre {
@@ -122,16 +91,6 @@ code, pre {
 th, td {
     text-align: left;
     padding: 5px 10px;
-    border-bottom: 1px solid $table-border-color;
-}
-
-hr {
-    border: 0;
-    background-color: $hr-color;
-    border-right: $border-size solid $border-light-color;
-    border-bottom: $border-size solid $border-light-color;
-    height: $border-size;
-    margin: 0 0 20px;
 }
 
 a {
@@ -145,8 +104,7 @@ a:hover, a:focus {
 
 button {
     padding: 5px 10px;
-    background-color: $inner-background-color;
-    @include window-frame;
+    background-color: $background-color;
 }
 
 .article-metadata {
@@ -184,7 +142,6 @@ button {
     font-size: 0.8em;
     padding: 2px 10px 2px 10px;
     margin: 2px 0px 2px 5px;
-    @include window-frame;
 }
 
 #prev-page {

@@ -1,31 +1,30 @@
-$outer-background-color: #008080;
-$inner-background-color: #c0c0c0;
+// https://www.schemecolor.com/2018-fifa-world-cup-logo-colors-russia.php
+$color1: #d30208;
+$color2: #e5c685;
+$color3: #f5eed5;
+$color4: #171714;
+$color5: #015386;
+$color6: #0074b1;
 
-$wrapper-title-color: #000080;
-$wrapper-title-text-color: #ffffff;
+$background-color: $color3;
 
-$border-light-color: #ffffff;
-$border-dark-color: #808080;
-$shadow-color: #000000;
+$border-color: $color4;
 
-$font-color: #000000;
+$font-color: $color4;
 
-$link-color: #0000ff;
-$link-hover-color: #800000;
+$link-color: $color6;
+$link-hover-color: $color6;
 
-$hr-color: #808080;
-$table-border-color: $border-light-color;
-
-$code-background-color: #ffffff;
-$code-font-color: #800080;
+$code-background-color: $color3;
+$code-font-color: $color4;
 
 $tag-font-color: $font-color;
 $tag-font-hover-color: $tag-font-color;
 $tag-font-active-color: $tag-font-color;
-$tag-background-color: $inner-background-color;
+$tag-background-color: $background-color;
 
-$h1-color: #000000;
-$h2-color: #000000;
-$h3-color: #000000;
+$h1-color: $color4;
+$h2-color: $color4;
+$h3-color: $color4;
 
-$copyright-color: #000000;
+$copyright-color: $color4;
