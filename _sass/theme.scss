@@ -6,22 +6,26 @@ $color4: #171714;
 $color5: #015386;
 $color6: #0074b1;
 
+$header-color: $color3;
+$header-background-color: $color5;
+
 $background-color: $color3;
 
 $border-color: $color4;
 
 $font-color: $color4;
 
-$link-color: $color6;
-$link-hover-color: $color6;
+$link-color: $color4;
+$link-hover-color: $color4;
 
 $code-background-color: $color3;
+$code-border-color: $color1;
 $code-font-color: $color4;
 
-$tag-font-color: $font-color;
+$tag-font-color: $color3;
 $tag-font-hover-color: $tag-font-color;
 $tag-font-active-color: $tag-font-color;
-$tag-background-color: $background-color;
+$tag-background-color: $color5;
 
 $h1-color: $color4;
 $h2-color: $color4;
