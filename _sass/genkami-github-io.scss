@@ -5,12 +5,13 @@
 body {
     background-color: $background-color;
     padding: 50px;
-    font-family: "M PLUS 1p";
+    font-family: "M+ C Type-1 (basic latin) Regular", "Helvetica Neue", Arial, "M+ Type-1 (general-j) Regular", sans-serif;
     color: $font-color;
-    font-weight: normal;
+    font-size: 14px;
 }
 
 h1, h2, h3 {
+    font-family: "M+ C Type-1 (basic latin) Medium", "Helvetica Neue", Arial, "M+ Type-1 (general-j) Medium", sans-serif;
     line-height: 1.1;
 }
 
