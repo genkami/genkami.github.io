@@ -25,17 +25,19 @@
     {% include head.html %}
   </head>
   <body>
-    <header>
-      {% include header.html %}
-    </header>
-    <section>
+    <div class="wrapper">
+      <header>
+        {% include header.html %}
+      </header>
+      <section>
 
-      {{ content }}
+        {{ content }}
 
-    </section>
-    <footer>
-      {% include footer.html %}
-    </footer>
+      </section>
+      <footer>
+        {% include footer.html %}
+      </footer>
+    </div>
     {% include scripts.html %}
   </body>
 </html>
