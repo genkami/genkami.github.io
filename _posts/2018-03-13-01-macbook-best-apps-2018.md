@@ -427,7 +427,7 @@ $ brew linkapps
 ## ホスト名の変更
 前に書いた通り。「システム設定」→「共有」と、`scutil`の二ヶ所で変更を行います。
 
-[Macで$HOSTNAMEとhostnameを一致させる - Moya Tetrad](https://genkami.github.io/2017/06/23/03-mac-host-name.html)
+[Macで$HOSTNAMEとhostnameを一致させる - blog.7nobo.me](https://genkami.github.io/2017/06/23/03-mac-host-name.html)
 
 ## *env系
 pyenv, rbenvとかとその仲間たち
@@ -458,7 +458,7 @@ $ CLOUDSDK_PYTHON_SITEPACKAGES=1 ./install.sh
 $ ./bin/gcloud auth login
 ```
 
-詳細はこの記事を参照: [pyenv上のPythonを使ってGoogle Cloud SDKをインストールする - Moya Tetrad](https://genkami.github.io/2017/06/25/01-gcloud.html)
+詳細はこの記事を参照: [pyenv上のPythonを使ってGoogle Cloud SDKをインストールする - blog.7nobo.me](https://genkami.github.io/2017/06/25/01-gcloud.html)
 
 ## Heroku
 

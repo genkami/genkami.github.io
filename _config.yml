@@ -4,7 +4,7 @@ kramdown:
   input: GFM
   highlighter: rouge
 
-title: Moya Tetrad
+title: blog.7nobo.me
 
 twitter:
   user: cloudear8
@@ -20,7 +20,7 @@ gems:
   - jekyll-feed
 
 # rss
-name: Moya Tetrad
+name: blog.7nobo.me
 description: プログラミング関係のメモ等
 url: https://genkami.github.io
 
