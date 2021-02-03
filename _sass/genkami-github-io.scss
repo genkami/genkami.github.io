@@ -8,11 +8,9 @@ $wrapper-padding-bottom: 15px;
 body {
     background-color: $background-color;
     padding: 50px;
-    font: 14px/1.5 "Times New Roman", Times, "Yu Mincho", YuMincho, "ヒラギノ明朝 ProN W3", "Hiragino Mincho ProN", "ＭＳ Ｐ明朝", "MS PMincho", "MS 明朝", serif;
+    font: 14px/1.5 "Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
     color: $font-color;
     font-weight: normal;
-    font-smooth: never;
-    -webkit-font-smoothing: none;
 }
 
 h1, h2, h3 {
