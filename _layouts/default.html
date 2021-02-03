@@ -25,23 +25,17 @@
     {% include head.html %}
   </head>
   <body>
-    <div class="wrapper">
-      <div class="wrapper-title">
-        <a href="/articles.html">blog.7nobo.me</a>
-        <i class="wrapper-title-button"></i>
-      </div>
-      <header>
-        {% include header.html %}
-      </header>
-      <section>
+    <header>
+      {% include header.html %}
+    </header>
+    <section>
 
-        {{ content }}
+      {{ content }}
 
-      </section>
-      <footer>
-        {% include footer.html %}
-      </footer>
-    </div>
+    </section>
+    <footer>
+      {% include footer.html %}
+    </footer>
     {% include scripts.html %}
   </body>
 </html>
