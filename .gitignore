@@ -1,7 +1,7 @@
 *~
 /_site
-.*
 *#
 .#*
 Gemfile.lock
 vendor/
+.sass-cache
